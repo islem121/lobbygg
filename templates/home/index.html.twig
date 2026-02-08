@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Network - Modern UI</title>
+    
+    <!-- Google Fonts - Major Mono Display -->
+    <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <link href="assets/css/social-mockup.css" rel="stylesheet">
+</head>
+<body>
+    <div class="social-container">
+        <!-- Top Navigation Bar -->
+        <nav class="top-navbar">
+            <div class="nav-content">
+                <div class="nav-left">
+                    <div class="logo">
+                        <i class="fas fa-network-wired"></i>
+                        <span>SocialHub</span>
+                    </div>
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search people, posts, groups...">
+                    </div>
+                </div>
+                <div class="nav-right">
+                    <button class="nav-icon-btn active">
+                        <i class="fas fa-home"></i>
+                    </button>
+                    <button class="nav-icon-btn">
+                        <i class="fas fa-users"></i>
+                        <span class="badge">3</span>
+                    </button>
+                    <button class="nav-icon-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">5</span>
+                    </button>
+                    <button class="nav-icon-btn">
+                        <i class="fas fa-comment-dots"></i>
+                        <span class="badge">2</span>
+                    </button>
+                    <div class="user-profile-nav">
+                        <img src="assets/images/users/user-4.jpg" alt="Profile" class="profile-avatar-small">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <div class="main-layout">
+            <!-- Left Sidebar -->
+            <aside class="left-sidebar">
+                <div class="sidebar-section">
+                    <div class="user-card">
+                        <div class="user-avatar">
+                            <img src="assets/images/users/user-4.jpg" alt="User">
+                        </div>
+                        <h3 class="user-name">Alex Johnson</h3>
+                        <p class="user-title">Software Developer</p>
+                    </div>
+                </div>
+                
+                <nav class="sidebar-nav">
+                    <a href="#" class="sidebar-item active">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                    <a href="#" class="sidebar-item">
+                        <i class="fas fa-user-friends"></i>
+                        <span>Friends</span>
+                        <span class="item-badge">12</span>
+                    </a>
+                    <a href="#" class="sidebar-item">
+                        <i class="fas fa-users"></i>
+                        <span>Groups</span>
+                        <span class="item-badge">8</span>
+                    </a>
+                    <a href="#" class="sidebar-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Events</span>
+                    </a>
+                    <a href="#" class="sidebar-item">
+                        <i class="fas fa-bookmark"></i>
+                        <span>Saved</span>
+                    </a>
+                    <a href="#" class="sidebar-item">
+                        <i class="fas fa-video"></i>
+                        <span>Watch</span>
+                    </a>
+                    <a href="#" class="sidebar-item">
+                        <i class="fas fa-store"></i>
+                        <span>Marketplace</span>
+                    </a>
+                    <a href="#" class="sidebar-item">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Center Feed -->
+            <main class="feed-container">
+                <div class="create-post-card">
+                    <div class="create-post-header">
+                        <img src="assets/images/users/user-4.jpg" alt="User" class="post-avatar">
+                        <input type="text" placeholder="What's on your mind, Alex?" class="post-input">
+                    </div>
+                    <div class="create-post-actions">
+                        <button class="action-btn">
+                            <i class="fas fa-video"></i>
+                            <span>Live Video</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-images"></i>
+                            <span>Photo/Video</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-smile"></i>
+                            <span>Feeling</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feed Cards -->
+                <div class="feed-card">
+                    <div class="feed-card-header">
+                        <div class="feed-user-info">
+                            <img src="assets/images/users/user-6.png" alt="User" class="feed-avatar">
+                            <div class="feed-user-details">
+                                <h4>Sarah Mitchell</h4>
+                                <span class="feed-time">2 hours ago · <i class="fas fa-globe-americas"></i></span>
+                            </div>
+                        </div>
+                        <button class="feed-menu-btn">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                    <div class="feed-card-content">
+                        <p>Just finished an amazing project! The team worked incredibly hard and I'm so proud of what we've accomplished. 🚀</p>
+                        <div class="feed-image">
+                            <img src="assets/images/users/post/post-1.jpg" alt="Post">
+                        </div>
+                    </div>
+                    <div class="feed-card-stats">
+                        <div class="stats-left">
+                            <i class="fas fa-thumbs-up"></i>
+                            <i class="fas fa-heart"></i>
+                            <span>124</span>
+                        </div>
+                        <div class="stats-right">
+                            <span>23 comments</span>
+                            <span>8 shares</span>
+                        </div>
+                    </div>
+                    <div class="feed-card-actions">
+                        <button class="feed-action-btn">
+                            <i class="fas fa-thumbs-up"></i>
+                            <span>Like</span>
+                        </button>
+                        <button class="feed-action-btn">
+                            <i class="fas fa-comment"></i>
+                            <span>Comment</span>
+                        </button>
+                        <button class="feed-action-btn">
+                            <i class="fas fa-share"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="feed-card">
+                    <div class="feed-card-header">
+                        <div class="feed-user-info">
+                            <img src="assets/images/users/user-5.png" alt="User" class="feed-avatar">
+                            <div class="feed-user-details">
+                                <h4>Michael Chen</h4>
+                                <span class="feed-time">5 hours ago · <i class="fas fa-globe-americas"></i></span>
+                            </div>
+                        </div>
+                        <button class="feed-menu-btn">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                    <div class="feed-card-content">
+                        <p>Beautiful sunset from my evening walk. Sometimes you need to slow down and appreciate the simple things in life. 🌅</p>
+                    </div>
+                    <div class="feed-card-stats">
+                        <div class="stats-left">
+                            <i class="fas fa-thumbs-up"></i>
+                            <i class="fas fa-heart"></i>
+                            <span>89</span>
+                        </div>
+                        <div class="stats-right">
+                            <span>15 comments</span>
+                            <span>4 shares</span>
+                        </div>
+                    </div>
+                    <div class="feed-card-actions">
+                        <button class="feed-action-btn">
+                            <i class="fas fa-thumbs-up"></i>
+                            <span>Like</span>
+                        </button>
+                        <button class="feed-action-btn">
+                            <i class="fas fa-comment"></i>
+                            <span>Comment</span>
+                        </button>
+                        <button class="feed-action-btn">
+                            <i class="fas fa-share"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="feed-card">
+                    <div class="feed-card-header">
+                        <div class="feed-user-info">
+                            <img src="assets/images/users/user-7.png" alt="User" class="feed-avatar">
+                            <div class="feed-user-details">
+                                <h4>Emily Rodriguez</h4>
+                                <span class="feed-time">1 day ago · <i class="fas fa-globe-americas"></i></span>
+                            </div>
+                        </div>
+                        <button class="feed-menu-btn">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                    <div class="feed-card-content">
+                        <p>Excited to announce that I'll be speaking at the Tech Conference next month! Can't wait to share my insights on modern web development.</p>
+                        <div class="feed-image">
+                            <img src="assets/images/groups/group-1.png" alt="Post">
+                        </div>
+                    </div>
+                    <div class="feed-card-stats">
+                        <div class="stats-left">
+                            <i class="fas fa-thumbs-up"></i>
+                            <i class="fas fa-heart"></i>
+                            <span>256</span>
+                        </div>
+                        <div class="stats-right">
+                            <span>42 comments</span>
+                            <span>18 shares</span>
+                        </div>
+                    </div>
+                    <div class="feed-card-actions">
+                        <button class="feed-action-btn">
+                            <i class="fas fa-thumbs-up"></i>
+                            <span>Like</span>
+                        </button>
+                        <button class="feed-action-btn">
+                            <i class="fas fa-comment"></i>
+                            <span>Comment</span>
+                        </button>
+                        <button class="feed-action-btn">
+                            <i class="fas fa-share"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Right Chat Panel -->
+            <aside class="right-chat-panel">
+                <div class="chat-panel-header">
+                    <h3>Messages</h3>
+                    <div class="chat-actions">
+                        <button class="chat-icon-btn">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="chat-icon-btn">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="chat-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search messages...">
+                </div>
+
+                <div class="chat-list">
+                    <div class="chat-item active">
+                        <div class="chat-avatar">
+                            <img src="assets/images/users/user-6.png" alt="User">
+                            <span class="online-indicator"></span>
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-header-row">
+                                <h4>Sarah Mitchell</h4>
+                                <span class="chat-time">2m</span>
+                            </div>
+                            <p class="chat-preview">Hey! How are you doing?</p>
+                        </div>
+                    </div>
+
+                    <div class="chat-item">
+                        <div class="chat-avatar">
+                            <img src="assets/images/users/user-5.png" alt="User">
+                            <span class="online-indicator"></span>
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-header-row">
+                                <h4>Michael Chen</h4>
+                                <span class="chat-time">1h</span>
+                            </div>
+                            <p class="chat-preview">Thanks for the help earlier!</p>
+                        </div>
+                    </div>
+
+                    <div class="chat-item">
+                        <div class="chat-avatar">
+                            <img src="assets/images/users/user-7.png" alt="User">
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-header-row">
+                                <h4>Emily Rodriguez</h4>
+                                <span class="chat-time">3h</span>
+                            </div>
+                            <p class="chat-preview">See you at the conference!</p>
+                        </div>
+                    </div>
+
+                    <div class="chat-item">
+                        <div class="chat-avatar">
+                            <img src="assets/images/users/user-8.png" alt="User">
+                            <span class="online-indicator"></span>
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-header-row">
+                                <h4>David Kim</h4>
+                                <span class="chat-time">5h</span>
+                            </div>
+                            <p class="chat-preview">Can we schedule a meeting?</p>
+                        </div>
+                    </div>
+
+                    <div class="chat-item">
+                        <div class="chat-avatar">
+                            <img src="assets/images/users/user-9.png" alt="User">
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-header-row">
+                                <h4>Lisa Anderson</h4>
+                                <span class="chat-time">1d</span>
+                            </div>
+                            <p class="chat-preview">Great work on the project!</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script src="assets/js/social-mockup.js"></script>
+</body>
+</html>

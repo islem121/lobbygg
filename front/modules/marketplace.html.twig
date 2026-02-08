@@ -1,0 +1,106 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg • Marketplace{% endblock %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">Marketplace</h1>
+      <p class="page-sub">Browse drops and gear. Save items, share deals, and flex your setup.</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-primary" type="button"><i class="fa-solid fa-bag-shopping"></i> My Cart</button>
+      <button class="btn btn-ghost" type="button"><i class="fa-solid fa-bookmark"></i> Saved</button>
+    </div>
+  </section>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title"><i class="fa-solid fa-infinity"></i> Infinite Scroll Carousel</h2>
+      <button class="btn btn-mini btn-ghost" type="button" data-carousel-pause><i class="fa-solid fa-pause"></i> Pause</button>
+    </div>
+
+    <div class="market-carousel big" data-infinite-carousel>
+      <div class="market-track">
+        {% for item in [
+          {name:'Violet Rift Skin', price:'29.99', tag:'Epic'},
+          {name:'Neon Mousepad XL', price:'19.90', tag:'Drop'},
+          {name:'ARGB Keycaps', price:'39.00', tag:'Hot'},
+          {name:'Headset Stand', price:'24.50', tag:'New'},
+          {name:'Pro Controller', price:'69.00', tag:'Top'},
+          {name:'Streamer Mic Arm', price:'44.00', tag:'Pro'},
+          {name:'RGB Light Bars', price:'27.00', tag:'Glow'},
+        ] %}
+          <div class="market-item card" data-tilt>
+            <div class="market-badge">{{ item.tag }}</div>
+            <div class="market-name">{{ item.name }}</div>
+            <div class="market-price">
+              <span class="accent">{{ item.price }}</span> <span class="muted">DT</span>
+            </div>
+            <div class="row-actions">
+              <button class="btn btn-mini btn-primary" type="button"><i class="fa-solid fa-bag-shopping"></i> Add</button>
+              <button class="btn btn-mini btn-ghost" type="button"><i class="fa-solid fa-pen"></i> Edit</button>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <section class="grid">
+    <div class="col span-8">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-box-open"></i> Inventory</h2>
+        </div>
+
+        <div class="table">
+          <div class="row head">
+            <div>Item</div>
+            <div>Stock</div>
+            <div>Price</div>
+          </div>
+          <div class="row">
+            <div class="brand"><span class="brand-dot"></span> Violet Rift Skin</div>
+            <div class="accent">12</div>
+            <div>29.99 DT</div>
+          </div>
+          <div class="row">
+            <div class="brand"><span class="brand-dot"></span> ARGB Keycaps</div>
+            <div class="accent">48</div>
+            <div>39.00 DT</div>
+          </div>
+          <div class="row">
+            <div class="brand"><span class="brand-dot"></span> Pro Controller</div>
+            <div class="accent">6</div>
+            <div>69.00 DT</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col span-4">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-wave-square"></i> Signals</h2>
+        </div>
+        <div class="mini-kpis">
+          <div class="kpi card">
+            <div class="kpi-label">Conversions</div>
+            <div class="kpi-value accent" data-countup data-to="931">0</div>
+          </div>
+          <div class="kpi card">
+            <div class="kpi-label">Refunds</div>
+            <div class="kpi-value" data-countup data-to="17">0</div>
+          </div>
+          <div class="kpi card">
+            <div class="kpi-label">Avg. order</div>
+            <div class="kpi-value" data-countup data-to="42">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+

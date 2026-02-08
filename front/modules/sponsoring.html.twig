@@ -1,0 +1,89 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg • Sponsoring{% endblock %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">Sponsoring</h1>
+      <p class="page-sub">Discover partners, spotlight brands, and track performance — social-first sponsorship space.</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-primary" type="button"><i class="fa-solid fa-handshake"></i> Become a Partner</button>
+      <button class="btn btn-ghost" type="button"><i class="fa-solid fa-bullhorn"></i> Spotlight</button>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="col span-8">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-handshake-angle"></i> Sponsors</h2>
+        </div>
+
+        <div class="sponsor-table" data-sponsor-table>
+          <div class="sponsor-filters">
+            <button class="chip chip-filter active" type="button" data-tier="all">All</button>
+            <button class="chip chip-filter" type="button" data-tier="platinum">Platinum</button>
+            <button class="chip chip-filter" type="button" data-tier="gold">Gold</button>
+            <button class="chip chip-filter" type="button" data-tier="silver">Silver</button>
+          </div>
+
+          <div class="table">
+            <div class="row head">
+              <div>Brand</div>
+              <div>Tier</div>
+              <div>CTR</div>
+              <div>Budget</div>
+            </div>
+
+            <div class="row" data-tier-row="platinum">
+              <div class="brand"><span class="brand-dot"></span> HyperNova</div>
+              <div><span class="pill">Platinum</span></div>
+              <div class="accent">4.8%</div>
+              <div>24,000 DT</div>
+            </div>
+
+            <div class="row" data-tier-row="gold">
+              <div class="brand"><span class="brand-dot"></span> RiftGear</div>
+              <div><span class="pill">Gold</span></div>
+              <div class="accent">3.1%</div>
+              <div>12,500 DT</div>
+            </div>
+
+            <div class="row" data-tier-row="silver">
+              <div class="brand"><span class="brand-dot"></span> NeonFuel</div>
+              <div><span class="pill">Silver</span></div>
+              <div class="accent">2.6%</div>
+              <div>7,300 DT</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col span-4">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-chart-pie"></i> Performance</h2>
+        </div>
+        <div class="mini-kpis">
+          <div class="kpi card">
+            <div class="kpi-label">Impressions</div>
+            <div class="kpi-value accent" data-countup data-to="912300">0</div>
+          </div>
+          <div class="kpi card">
+            <div class="kpi-label">Clicks</div>
+            <div class="kpi-value" data-countup data-to="28419">0</div>
+          </div>
+          <div class="kpi card">
+            <div class="kpi-label">Leads</div>
+            <div class="kpi-value" data-countup data-to="421">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+

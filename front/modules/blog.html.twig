@@ -1,0 +1,135 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg • Feed{% endblock %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">Feed</h1>
+      <p class="page-sub">The Lobby.gg timeline: posts, patch notes, tournament highlights — LinkedIn vibes, gamer energy.</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-primary" type="button"><i class="fa-solid fa-pen-nib"></i> Create Post</button>
+      <button class="btn btn-ghost" type="button"><i class="fa-solid fa-hashtag"></i> Topics</button>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="col span-8">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-rss"></i> Timeline</h2>
+        </div>
+
+        {# Composer (social fundamental) #}
+        <article class="card post-card" data-tilt>
+          <div class="post-top">
+            <div class="avatar avatar-grad">GG</div>
+            <div class="post-meta">
+              <div class="post-user">Guest Gamer <span class="muted">@lobby_guest</span></div>
+              <div class="post-time">Share an update • patch note • tournament highlight</div>
+            </div>
+            <button class="icon-btn" type="button" aria-label="Composer options"><i class="fa-solid fa-sliders"></i></button>
+          </div>
+          <div class="post-body">
+            <div class="lobby-search" style="max-width:none">
+              <i class="fa-regular fa-pen-to-square" aria-hidden="true"></i>
+              <input type="text" placeholder="Write something that helps your squad level up…" aria-label="Create post">
+              <div class="search-hint" aria-hidden="true">Enter</div>
+            </div>
+          </div>
+          <div class="post-actions">
+            <button class="chip" type="button"><i class="fa-solid fa-image"></i> Media</button>
+            <button class="chip" type="button"><i class="fa-solid fa-trophy"></i> Tournoi</button>
+            <button class="chip" type="button"><i class="fa-solid fa-tag"></i> Drop</button>
+            <button class="chip chip-like" type="button" data-reaction><i class="fa-solid fa-bolt"></i> Post</button>
+          </div>
+        </article>
+
+        <div class="feed" style="margin-top:12px">
+          {% for post in [
+            {tag:'Update', user:'LobbyOps', handle:'@lobbyops', time:'12m', text:'Patch 2.6 is live: faster matchmaking, new violet UI theme, and better anti-smurf signals.', reacts: 2481, comments: 219},
+            {tag:'Tournoi', user:'ArcadeNova', handle:'@arcadenova', time:'1h', text:'Violet Rift Cup brackets are out. If you’re looking for a duo, DM me — ranked 1.9K ELO.', reacts: 1402, comments: 188},
+            {tag:'Drop', user:'NeonViper', handle:'@neonviper', time:'3h', text:'Marketplace drop: minimal RGB essentials that don’t scream “gamer”. Clean. Vibrant. Controlled.', reacts: 912, comments: 76},
+          ] %}
+            <article class="card post-card" data-tilt>
+              <div class="post-top">
+                <div class="avatar avatar-grad">{{ post.user[:2]|upper }}</div>
+                <div class="post-meta">
+                  <div class="post-user">{{ post.user }} <span class="muted">{{ post.handle }}</span></div>
+                  <div class="post-time">{{ post.time }} · <span class="pill pill-accent" style="position:static;height:auto;min-width:auto;padding:2px 10px">{{ post.tag }}</span></div>
+                </div>
+                <button class="icon-btn" type="button" aria-label="Post menu"><i class="fa-solid fa-ellipsis"></i></button>
+              </div>
+              <div class="post-body">{{ post.text }}</div>
+              <div class="post-actions">
+                <button class="chip chip-like" type="button" data-reaction><i class="fa-solid fa-fire"></i> React</button>
+                <button class="chip" type="button"><i class="fa-regular fa-comment-dots"></i> Comment</button>
+                <button class="chip" type="button"><i class="fa-solid fa-share-nodes"></i> Share</button>
+                <div class="post-stats">
+                  <span><i class="fa-solid fa-heart"></i> {{ post.reacts }}</span>
+                  <span><i class="fa-solid fa-comment"></i> {{ post.comments }}</span>
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col span-4">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-people-group"></i> People to follow</h2>
+        </div>
+        <div class="stack">
+          {% for u in [
+            {name:'PulseKira', handle:'@pulsekira', note:'Strategy & reviews'},
+            {name:'RiftRunner', handle:'@riftrunner', note:'Tournament grinder'},
+            {name:'MetaSniper', handle:'@metasniper', note:'Loadouts & aim'},
+          ] %}
+            <div class="card user-card2" data-tilt style="padding:14px">
+              <div class="u-top">
+                <div class="avatar avatar-grad">{{ u.name[:2]|upper }}</div>
+                <div class="u-meta">
+                  <div class="u-name">{{ u.name }}</div>
+                  <div class="u-sub">{{ u.handle }} · {{ u.note }}</div>
+                </div>
+                <button class="btn btn-mini btn-primary" type="button">Follow</button>
+              </div>
+            </div>
+          {% endfor %}
+
+          <div class="panel" style="padding:14px">
+            <div class="panel-head" style="margin-bottom:10px">
+              <h2 class="panel-title"><i class="fa-solid fa-trophy"></i> Trending tournaments</h2>
+              <a class="panel-link" href="{{ path('front_tournaments') }}">View</a>
+            </div>
+            <div class="stack">
+              <div class="card tour-card" data-tilt data-countdown data-end="{{ ("now"|date('U') + 5400) }}">
+                <div class="tour-top">
+                  <div class="tour-name">Violet Rift Cup</div>
+                  <div class="pill pill-live"><span class="dot-live"></span> LIVE</div>
+                </div>
+                <div class="tour-count">
+                  <div class="count-label">Ends in</div>
+                  <div class="count-value" data-countdown-value>--:--:--</div>
+                </div>
+              </div>
+              <div class="card market-item" data-tilt>
+                <div class="market-badge">Drop</div>
+                <div class="market-name">ARGB Keycaps</div>
+                <div class="market-price"><span class="accent">39.00</span> <span class="muted">DT</span></div>
+                <div class="row-actions">
+                  <a class="btn btn-mini btn-ghost" href="{{ path('front_marketplace') }}"><i class="fa-solid fa-cart-shopping"></i> Marketplace</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+

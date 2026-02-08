@@ -1,0 +1,79 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg â€¢ User Management{% endblock %} {# Revert: original page title #}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">User Management</h1>
+      <p class="page-sub">Discover gamers, creators, teams â€” connect, message, follow. (Frontoffice social network layer.)</p> {# Revert: original subtitle #}
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-primary" type="button"><i class="fa-solid fa-user-plus"></i> Connect</button>
+      <button class="btn btn-ghost" type="button"><i class="fa-solid fa-user-group"></i> My Squad</button>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="col span-8">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-user-astronaut"></i> Users</h2> {# Revert: original section label #}
+          <div class="panel-actions">
+            <button class="btn btn-mini btn-ghost" type="button" data-toast="Synced">
+              <i class="fa-solid fa-rotate"></i> Sync
+            </button>
+          </div>
+        </div>
+
+        <div class="user-grid">
+          {% for u in [
+            {name:'NeonViper', status:'online', level:42},
+            {name:'ArcadeNova', status:'online', level:38},
+            {name:'RiftRunner', status:'away', level:27},
+            {name:'PulseKira', status:'offline', level:18},
+            {name:'LobbyOps', status:'online', level:99},
+            {name:'MetaSniper', status:'away', level:51},
+          ] %}
+            <div class="card user-card2" data-tilt>
+              <div class="u-top">
+                <div class="avatar avatar-grad">{{ u.name[:2]|upper }}</div>
+                <div class="u-meta">
+                  <div class="u-name">{{ u.name }}</div>
+                  <div class="u-sub">Level {{ u.level }}</div>
+                </div>
+                <span class="presence {{ u.status }}">{{ u.status }}</span>
+              </div>
+              <div class="u-actions">
+                <button class="chip" type="button"><i class="fa-solid fa-message"></i> Message</button>
+                <button class="chip chip-like" type="button" data-reaction><i class="fa-solid fa-fire"></i> Boost</button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col span-4">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-chart-line"></i> Engagement</h2> {# Revert: original panel title #}
+        </div>
+        <div class="mini-kpis">
+          <div class="kpi card">
+            <div class="kpi-label">New users</div> {# Revert: original KPI label #}
+            <div class="kpi-value accent" data-countup data-to="184">0</div>
+          </div>
+          <div class="kpi card">
+            <div class="kpi-label">Reports</div> {# Revert: original KPI label #}
+            <div class="kpi-value" data-countup data-to="12">0</div>
+          </div>
+          <div class="kpi card">
+            <div class="kpi-label">Verified</div>
+            <div class="kpi-value" data-countup data-to="36">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

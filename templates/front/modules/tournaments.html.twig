@@ -1,0 +1,92 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg • Tournaments{% endblock %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">Tournaments</h1>
+      <p class="page-sub">Join, watch, share. Live countdowns and clean cards — built for competitive gamers.</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-primary" type="button"><i class="fa-solid fa-bolt"></i> Quick Join</button>
+      <button class="btn btn-ghost" type="button"><i class="fa-solid fa-diagram-project"></i> Brackets</button>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="col span-8">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-trophy"></i> Featured</h2>
+        </div>
+
+        <div class="tour-grid">
+          <div class="card tour-card big" data-tilt data-countdown data-end="{{ ("now"|date('U') + 8200) }}">
+            <div class="tour-top">
+              <div class="tour-name">Violet Rift Cup</div>
+              <div class="pill pill-live"><span class="dot-live"></span> LIVE</div>
+            </div>
+            <div class="tour-meta">
+              <span><i class="fa-solid fa-users"></i> 64 teams</span>
+              <span><i class="fa-solid fa-location-dot"></i> EU</span>
+              <span><i class="fa-solid fa-gamepad"></i> FPS</span>
+            </div>
+            <div class="tour-count">
+              <div class="count-label">Ends in</div>
+              <div class="count-value" data-countdown-value>--:--:--</div>
+            </div>
+            <div class="row-actions">
+              <button class="btn btn-mini btn-primary" type="button"><i class="fa-solid fa-eye"></i> Watch</button>
+              <button class="btn btn-mini btn-ghost" type="button"><i class="fa-solid fa-gear"></i> Settings</button>
+            </div>
+          </div>
+
+          <div class="card tour-card big" data-tilt data-countdown data-end="{{ ("now"|date('U') + 3600) }}">
+            <div class="tour-top">
+              <div class="tour-name">Lobby.gg Arena</div>
+              <div class="pill"><i class="fa-solid fa-hourglass-start"></i> Soon</div>
+            </div>
+            <div class="tour-meta">
+              <span><i class="fa-solid fa-users"></i> 128 players</span>
+              <span><i class="fa-solid fa-location-dot"></i> NA</span>
+              <span><i class="fa-solid fa-chess-knight"></i> Mixed</span>
+            </div>
+            <div class="tour-count">
+              <div class="count-label">Starts in</div>
+              <div class="count-value" data-countdown-value>--:--:--</div>
+            </div>
+            <div class="row-actions">
+              <button class="btn btn-mini btn-primary" type="button"><i class="fa-solid fa-bolt"></i> Queue</button>
+              <button class="btn btn-mini btn-ghost" type="button"><i class="fa-solid fa-share-nodes"></i> Share</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col span-4">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-tower-broadcast"></i> Signals</h2>
+        </div>
+        <div class="mini-kpis">
+          <div class="kpi card">
+            <div class="kpi-label">Live viewers</div>
+            <div class="kpi-value accent" data-countup data-to="48291">0</div>
+          </div>
+          <div class="kpi card">
+            <div class="kpi-label">Registrations</div>
+            <div class="kpi-value" data-countup data-to="740">0</div>
+          </div>
+          <div class="kpi card">
+            <div class="kpi-label">Avg. match</div>
+            <div class="kpi-value" data-countup data-to="28">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+

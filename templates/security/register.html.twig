@@ -1,0 +1,667 @@
+{# templates/security/register.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 Inscription - LOBBY.GG</title>
+    
+    {# CSS Neon Cyber (même que login) #}
+    <link rel="stylesheet" href="{{ asset('css/neon-cyber.css') }}">
+    
+    {# Font Awesome #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Styles spécifiques à l'inscription */
+        .register-container {
+            max-width: 500px;
+        }
+        
+        .cyber-title span {
+            color: #9D4EDD;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .password-strength {
+            margin-top: 5px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .strength-bar {
+            height: 4px;
+            flex: 1;
+            background: #333;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            background: #ff5555;
+            transition: width 0.3s, background 0.3s;
+        }
+        
+        .requirement {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .requirement.valid {
+            color: #6A0DAD;
+        }
+        
+        .requirement.invalid {
+            color: #FF6B9D;
+        }
+        
+        .age-check {
+            background: rgba(106, 13, 173, 0.1);
+            border: 1px solid rgba(106, 13, 173, 0.3);
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-size: 12px;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #666;
+            color: #666;
+            padding: 12px 24px;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            border-color: #9D4EDD;
+            color: #9D4EDD;
+        }
+    </style>
+</head>
+<body>
+    {# Grille cyberpunk #}
+    <div class="cyber-grid">
+        <div class="grid-line grid-h-1"></div>
+        <div class="grid-line grid-v-1"></div>
+        <div class="grid-line grid-h-2"></div>
+        <div class="grid-line grid-v-2"></div>
+        <div class="grid-line grid-h-3"></div>
+        <div class="cyber-glitch glitch-1"></div>
+        <div class="cyber-glitch glitch-2"></div>
+    </div>
+
+    <div class="login-container register-container">
+        <div class="cyber-terminal">
+            <div class="terminal-header">
+                <div class="terminal-buttons">
+                    <div class="term-btn btn-red"></div>
+                    <div class="term-btn btn-yellow"></div>
+                    <div class="term-btn btn-green"></div>
+                </div>
+                <div class="terminal-title">ACCOUNT_CREATION.exe</div>
+            </div>
+            
+            <div class="cyber-content">
+                {# Logo et titre #}
+                <div class="neon-header">
+                    <div class="cyber-logo">
+                        <div class="logo-frame">
+                            <div class="logo-core">
+                                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                    <path d="M20 10C14.477 10 10 14.477 10 20C10 25.523 14.477 30 20 30C25.523 30 30 25.523 30 20C30 14.477 25.523 10 20 10ZM20 25C17.239 25 15 22.761 15 20C15 17.239 17.239 15 20 15C22.761 15 25 17.239 25 20C25 22.761 22.761 25 20 25Z" fill="#6A0DAD"/>
+                                    <path d="M22 18H18V22H22V18Z" fill="#FF6B9D"/>
+                                </svg>
+                            </div>
+                            <div class="logo-scanner"></div>
+                        </div>
+                        <div class="neon-glow"></div>
+                    </div>
+                    <h1 class="cyber-title">
+                        <span class="title-glitch" data-text="NEW_PROFILE">NEW_PROFILE</span>
+                    </h1>
+                    <p class="access-text">[ LOBBY.GG_REGISTRATION ]</p>
+                </div>
+                
+                {# Formulaire d'inscription #}
+                <form class="neon-form" id="registerForm" method="post" novalidate>
+
+                    {# Grille pour nom/prénom #}
+                    <div class="form-grid">
+                        <div class="cyber-field">
+                            <div class="field-frame">
+                                <div class="field-border"></div>
+                                <input type="text" 
+                                       id="nom" 
+                                       name="nom" 
+                                       required
+                                       placeholder=" ">
+                                <label for="nom">&gt; NOM</label>
+                                <div class="cyber-scanner">
+                                    <div class="scan-line"></div>
+                                </div>
+                            </div>
+                            <span class="cyber-error" id="nomError"></span>
+                        </div>
+                        
+                        <div class="cyber-field">
+                            <div class="field-frame">
+                                <div class="field-border"></div>
+                                <input type="text" 
+                                       id="prenom" 
+                                       name="prenom" 
+                                       required
+                                       placeholder=" ">
+                                <label for="prenom">&gt; PRÉNOM</label>
+                                <div class="cyber-scanner">
+                                    <div class="scan-line"></div>
+                                </div>
+                            </div>
+                            <span class="cyber-error" id="prenomError"></span>
+                        </div>
+                    </div>
+                    
+                    {# Email #}
+                    <div class="cyber-field">
+                        <div class="field-frame">
+                            <div class="field-border"></div>
+                            <input type="email" 
+                                   id="email" 
+                                   name="email" 
+                                   required
+                                   placeholder=" ">
+                            <label for="email">&gt; EMAIL</label>
+                            <div class="cyber-scanner">
+                                <div class="scan-line"></div>
+                            </div>
+                        </div>
+                        <div class="requirement invalid" id="emailRequirement">
+                            <i class="fas fa-times"></i> Doit contenir @
+                        </div>
+                        <span class="cyber-error" id="emailError"></span>
+                    </div>
+                    
+                    {# Mot de passe #}
+                    <div class="cyber-field">
+                        <div class="field-frame">
+                            <div class="field-border"></div>
+                            <input type="password" 
+                                   id="password" 
+                                   name="password" 
+                                   required
+                                   placeholder=" ">
+                            <label for="password">&gt; MOT_DE_PASSE</label>
+                            <button type="button" class="cyber-toggle" id="passwordToggle">
+                                <div class="toggle-frame">
+                                    <svg class="eye-scan" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                        <path d="M9 3c-4 0-7 3-8 6 1 3 4 6 8 6s7-3 8-6c-1-3-4-6-8-6zm0 10a4 4 0 110-8 4 4 0 010 8zm0-6a2 2 0 100 4 2 2 0 000-4z" fill="currentColor"/>
+                                    </svg>
+                                    <svg class="eye-blocked" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                        <path d="M3 3l12 12M7 7a3 3 0 003 3m3-3C13 7 10 4 9 4c-1 0-3 1-4 2M9 14c4 0 7-3 8-6-1-1-2-2-3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                            </button>
+                            <div class="cyber-scanner">
+                                <div class="scan-line"></div>
+                            </div>
+                        </div>
+                        <div class="password-strength">
+                            <span>FORCE:</span>
+                            <div class="strength-bar">
+                                <div class="strength-fill" id="strengthFill"></div>
+                            </div>
+                            <span id="strengthText">FAIBLE</span>
+                        </div>
+                        <div class="requirements">
+                            <div class="requirement invalid" id="lengthReq">
+                                <i class="fas fa-times"></i> ≥ 6 caractères
+                            </div>
+                            <div class="requirement invalid" id="numberReq">
+                                <i class="fas fa-times"></i> Contient un chiffre
+                            </div>
+                            <div class="requirement invalid" id="letterReq">
+                                <i class="fas fa-times"></i> Contient une lettre
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {# Confirmation mot de passe #}
+                    <div class="cyber-field">
+                        <div class="field-frame">
+                            <div class="field-border"></div>
+                            <input type="password" 
+                                   id="confirmPassword" 
+                                   name="confirm_password" 
+                                   required
+                                   placeholder=" ">
+                            <label for="confirmPassword">&gt; CONFIRMER</label>
+                            <button type="button" class="cyber-toggle" id="confirmPasswordToggle">
+                                <div class="toggle-frame">
+                                    <svg class="eye-scan" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                        <path d="M9 3c-4 0-7 3-8 6 1 3 4 6 8 6s7-3 8-6c-1-3-4-6-8-6zm0 10a4 4 0 110-8 4 4 0 010 8zm0-6a2 2 0 100 4 2 2 0 000-4z" fill="currentColor"/>
+                                    </svg>
+                                    <svg class="eye-blocked" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                        <path d="M3 3l12 12M7 7a3 3 0 003 3m3-3C13 7 10 4 9 4c-1 0-3 1-4 2M9 14c4 0 7-3 8-6-1-1-2-2-3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                            </button>
+                            <div class="cyber-scanner">
+                                <div class="scan-line"></div>
+                            </div>
+                        </div>
+                        <div class="requirement invalid" id="matchReq">
+                            <i class="fas fa-times"></i> Correspond au mot de passe
+                        </div>
+                        <span class="cyber-error" id="confirmError"></span>
+                    </div>
+                    
+                    {# Date de naissance #}
+                    <div class="cyber-field">
+                        <div class="field-frame">
+                            <div class="field-border"></div>
+                            <input type="date" 
+                                   id="date_naissance" 
+                                   name="date_naissance" 
+                                   required
+                                   placeholder=" ">
+                            <label for="date_naissance">&gt; DATE_DE_NAISSANCE</label>
+                            <div class="cyber-scanner">
+                                <div class="scan-line"></div>
+                            </div>
+                        </div>
+                        <div class="age-check" id="ageCheck">
+                            <i class="fas fa-user-clock"></i>
+                            <span id="ageText">Âge: calcul en cours...</span>
+                        </div>
+                        <span class="cyber-error" id="dateError"></span>
+                    </div>
+                    
+                    {# Téléphone #}
+                    <div class="cyber-field">
+                        <div class="field-frame">
+                            <div class="field-border"></div>
+                            <input type="tel" 
+                                   id="telephone" 
+                                   name="telephone" 
+                                   required
+                                   pattern="[0-9]{10}"
+                                   placeholder=" ">
+                            <label for="telephone">&gt; TÉLÉPHONE</label>
+                            <div class="cyber-scanner">
+                                <div class="scan-line"></div>
+                            </div>
+                        </div>
+                        <div class="requirement invalid" id="phoneReq">
+                            <i class="fas fa-times"></i> 10 chiffres
+                        </div>
+                        <span class="cyber-error" id="phoneError"></span>
+                    </div>
+                    
+                    {# Checkbox CGU #}
+                    <div class="cyber-options">
+                        <label class="neon-checkbox">
+                            <input type="checkbox" id="cgu" name="cgu" required>
+                            <span class="checkbox-matrix">
+                                <div class="matrix-frame"></div>
+                                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                    <path d="M1 4l2.5 2.5L9 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            <span class="checkbox-text">J'accepte les <a href="#" style="color: #9D4EDD;">CGU</a></span>
+                        </label>
+                    </div>
+                    <span class="cyber-error" id="cguError"></span>
+                    {# Boutons d'action #}
+                    <div class="form-actions">
+                        <button type="submit" class="neon-button">
+                            <div class="btn-matrix"></div>
+                            <span class="btn-text">[ CRÉER_COMPTE ]</span>
+                            <div class="btn-loader">
+                                <div class="matrix-loader">
+                                    <div class="matrix-bar"></div>
+                                    <div class="matrix-bar"></div>
+                                    <div class="matrix-bar"></div>
+                                    <div class="matrix-bar"></div>
+                                </div>
+                            </div>
+                            <div class="btn-glow"></div>
+                        </button>
+                        
+                        <a href="{{ path('app_login') }}" class="btn-secondary">
+                            <i class="fas fa-arrow-left"></i> RETOUR
+                        </a>
+                    </div>
+                </form>
+                
+                {# Footer #}
+                <div class="cyber-footer">
+                    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(106, 13, 173, 0.1);">
+                        <div style="color: rgba(106, 13, 173, 0.5); font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">
+                            <div>SYSTEM: <span style="color: #6A0DAD;">REGISTRATION_v2.0</span></div>
+                            <div>REQUIREMENTS: <span style="color: #6A0DAD;">AGE≥13 • PASSWORD_SECURE</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {# JavaScript d'inscription #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔐 Registration system initialized');
+            
+            // Éléments du formulaire
+            const form = document.getElementById('registerForm');
+            const passwordInput = document.getElementById('password');
+            const confirmInput = document.getElementById('confirmPassword');
+            const dateInput = document.getElementById('date_naissance');
+            const phoneInput = document.getElementById('telephone');
+            const emailInput = document.getElementById('email');
+            const submitBtn = form.querySelector('.neon-button');
+            
+            // 1. Validation en temps réel du mot de passe
+            passwordInput.addEventListener('input', function() {
+                validatePassword();
+                validatePasswordMatch();
+            });
+            
+            // 2. Validation de la confirmation
+            confirmInput.addEventListener('input', validatePasswordMatch);
+            
+            // 3. Validation de la date de naissance
+            dateInput.addEventListener('change', validateAge);
+            
+            // 4. Validation du téléphone
+            phoneInput.addEventListener('input', validatePhone);
+            
+            // 5. Validation de l'email
+            emailInput.addEventListener('input', validateEmail);
+            
+            // 6. Gestion de l'affichage/masquage des mots de passe
+            setupPasswordToggles();
+            
+            // 7. Soumission du formulaire
+            form.addEventListener('submit', handleSubmit);
+            
+            // Fonctions de validation
+            
+            function validatePassword() {
+                const password = passwordInput.value;
+                let strength = 0;
+                
+                // Vérifier les exigences
+                const lengthReq = document.getElementById('lengthReq');
+                const numberReq = document.getElementById('numberReq');
+                const letterReq = document.getElementById('letterReq');
+                const strengthFill = document.getElementById('strengthFill');
+                const strengthText = document.getElementById('strengthText');
+                
+                // Longueur ≥ 6
+                const hasLength = password.length >= 6;
+                updateRequirement(lengthReq, hasLength);
+                if (hasLength) strength += 1;
+                
+                // Contient un chiffre
+                const hasNumber = /\d/.test(password);
+                updateRequirement(numberReq, hasNumber);
+                if (hasNumber) strength += 1;
+                
+                // Contient une lettre
+                const hasLetter = /[a-zA-Z]/.test(password);
+                updateRequirement(letterReq, hasLetter);
+                if (hasLetter) strength += 1;
+                
+                // Calcul de la force
+                const percentage = (strength / 3) * 100;
+                strengthFill.style.width = percentage + '%';
+                
+                // Couleur et texte selon la force
+                if (strength === 0) {
+                    strengthFill.style.background = '#ff5555';
+                    strengthText.textContent = 'FAIBLE';
+                    strengthText.style.color = '#ff5555';
+                } else if (strength === 1) {
+                    strengthFill.style.background = '#FFD700';
+                    strengthText.textContent = 'MOYEN';
+                    strengthText.style.color = '#FFD700';
+                } else if (strength === 2) {
+                    strengthFill.style.background = '#6A0DAD';
+                    strengthText.textContent = 'FORT';
+                    strengthText.style.color = '#6A0DAD';
+                } else {
+                    strengthFill.style.background = '#00ff41';
+                    strengthText.textContent = 'TRÈS FORT';
+                    strengthText.style.color = '#00ff41';
+                }
+                
+                return strength === 3;
+            }
+            
+            function validatePasswordMatch() {
+                const password = passwordInput.value;
+                const confirm = confirmInput.value;
+                const matchReq = document.getElementById('matchReq');
+                const isValid = password === confirm && password.length > 0;
+                
+                updateRequirement(matchReq, isValid);
+                return isValid;
+            }
+            
+            function validateAge() {
+                const birthDate = new Date(dateInput.value);
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                
+                const ageCheck = document.getElementById('ageCheck');
+                const ageText = document.getElementById('ageText');
+                const isValid = age >= 13;
+                
+                ageText.textContent = `Âge: ${age} ans ${isValid ? '✓' : '✗'}`;
+                
+                if (isValid) {
+                    ageCheck.style.background = 'rgba(106, 13, 173, 0.2)';
+                    ageCheck.style.borderColor = '#6A0DAD';
+                    ageText.style.color = '#6A0DAD';
+                } else {
+                    ageCheck.style.background = 'rgba(255, 107, 157, 0.2)';
+                    ageCheck.style.borderColor = '#FF6B9D';
+                    ageText.style.color = '#FF6B9D';
+                }
+                
+                return isValid;
+            }
+            
+            function validatePhone() {
+                const phone = phoneInput.value.replace(/\D/g, ''); // Garde seulement les chiffres
+                const phoneReq = document.getElementById('phoneReq');
+                const isValid = phone.length === 10;
+                
+                // Formate le numéro
+                if (phone.length > 0) {
+                    let formatted = phone.match(/.{1,2}/g).join(' ');
+                    phoneInput.value = formatted;
+                }
+                
+                updateRequirement(phoneReq, isValid);
+                return isValid;
+            }
+            
+            function validateEmail() {
+                const email = emailInput.value;
+                const emailReq = document.getElementById('emailRequirement');
+                const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                
+                updateRequirement(emailReq, isValid);
+                return isValid;
+            }
+            
+            function updateRequirement(element, isValid) {
+                if (isValid) {
+                    element.classList.remove('invalid');
+                    element.classList.add('valid');
+                    element.querySelector('i').className = 'fas fa-check';
+                } else {
+                    element.classList.remove('valid');
+                    element.classList.add('invalid');
+                    element.querySelector('i').className = 'fas fa-times';
+                }
+            }
+            
+            function setupPasswordToggles() {
+                const toggle1 = document.getElementById('passwordToggle');
+                const toggle2 = document.getElementById('confirmPasswordToggle');
+                
+                [toggle1, toggle2].forEach((toggle, index) => {
+                    toggle.addEventListener('click', function() {
+                        const input = index === 0 ? passwordInput : confirmInput;
+                        const type = input.type === 'password' ? 'text' : 'password';
+                        input.type = type;
+                        
+                        // Animation
+                        this.classList.toggle('toggle-active', type === 'text');
+                    });
+                });
+            }
+            
+            function handleSubmit(e) {
+                e.preventDefault();
+                console.log('🔄 Processing registration...');
+                
+                // Validation finale
+                const isPasswordValid = validatePassword();
+                const isMatchValid = validatePasswordMatch();
+                const isAgeValid = validateAge();
+                const isPhoneValid = validatePhone();
+                const isEmailValid = validateEmail();
+                
+                // Vérifier tous les champs requis
+                const requiredFields = ['nom', 'prenom', 'email', 'password', 'confirmPassword', 'date_naissance', 'telephone'];
+                let allFieldsValid = true;
+                
+                requiredFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (!field.value.trim()) {
+                        showError(fieldId + 'Error', 'CHAMP_REQUIS');
+                        allFieldsValid = false;
+                    }
+                });
+                
+                // Vérifier CGU
+                const cguCheckbox = document.getElementById('cgu');
+                if (!cguCheckbox.checked) {
+                    showError('cguError', 'ACCEPTER_CGU_REQUIS');
+                    allFieldsValid = false;
+                }
+                
+                // Si tout est valide
+                if (allFieldsValid && isPasswordValid && isMatchValid && isAgeValid && isPhoneValid && isEmailValid) {
+                    // Animation de chargement
+                    submitBtn.classList.add('loading');
+                    submitBtn.disabled = true;
+                    
+                    // Simuler l'envoi au serveur
+                    setTimeout(() => {
+                        console.log('✅ Account created successfully!');
+                        
+                        // Afficher message de succès
+                        const successHTML = `
+                            <div class="cyber-success show">
+                                <div class="success-matrix">
+                                    <div class="matrix-rings">
+                                        <div class="success-ring ring-1"></div>
+                                        <div class="success-ring ring-2"></div>
+                                        <div class="success-ring ring-3"></div>
+                                    </div>
+                                    <div class="success-core">
+                                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                            <path d="M10 16l6 6 12-12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <h3 class="success-title">[ COMPTE_CRÉÉ ]</h3>
+                                <p class="success-desc">Redirection vers la connexion...</p>
+                            </div>
+                        `;
+                        
+                        form.style.opacity = '0.5';
+                        form.style.pointerEvents = 'none';
+                        
+                        setTimeout(() => {
+                            form.innerHTML = successHTML + form.innerHTML;
+                            
+                            // Redirection après 3 secondes
+                            setTimeout(() => {
+                                window.location.href = '/login?registered=true';
+                            }, 3000);
+                        }, 1000);
+                        
+                    }, 2000);
+                } else {
+                    // Effet d'erreur
+                    submitBtn.style.animation = 'shake 0.5s';
+                    setTimeout(() => {
+                        submitBtn.style.animation = '';
+                    }, 500);
+                    
+                    console.log('❌ Validation failed');
+                }
+            }
+            
+            function showError(elementId, message) {
+                const errorElement = document.getElementById(elementId);
+                if (errorElement) {
+                    errorElement.textContent = `[ ${message} ]`;
+                    errorElement.classList.add('show');
+                    
+                    setTimeout(() => {
+                        errorElement.classList.remove('show');
+                        setTimeout(() => {
+                            errorElement.textContent = '';
+                        }, 300);
+                    }, 5000);
+                }
+            }
+            
+            // Initialiser les validations
+            validatePassword();
+            validateAge();
+            validatePhone();
+            validateEmail();
+        });
+    </script>
+</body>
+</html>
