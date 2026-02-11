@@ -157,14 +157,14 @@
                     {# Grille pour nom/prénom #}
                     <div class="form-grid">
                         <div class="cyber-field">
+                            <label for="nom">&gt; NOM</label>
                             <div class="field-frame">
                                 <div class="field-border"></div>
                                 <input type="text" 
                                        id="nom" 
                                        name="nom" 
                                        required
-                                       placeholder=" ">
-                                <label for="nom">&gt; NOM</label>
+                                       placeholder="ENTREZ VOTRE NOM">
                                 <div class="cyber-scanner">
                                     <div class="scan-line"></div>
                                 </div>
@@ -173,14 +173,14 @@
                         </div>
                         
                         <div class="cyber-field">
+                            <label for="prenom">&gt; PRÉNOM</label>
                             <div class="field-frame">
                                 <div class="field-border"></div>
                                 <input type="text" 
                                        id="prenom" 
                                        name="prenom" 
                                        required
-                                       placeholder=" ">
-                                <label for="prenom">&gt; PRÉNOM</label>
+                                       placeholder="ENTREZ VOTRE PRÉNOM">
                                 <div class="cyber-scanner">
                                     <div class="scan-line"></div>
                                 </div>
@@ -191,14 +191,14 @@
                     
                     {# Email #}
                     <div class="cyber-field">
+                        <label for="email">&gt; EMAIL</label>
                         <div class="field-frame">
                             <div class="field-border"></div>
                             <input type="email" 
                                    id="email" 
                                    name="email" 
                                    required
-                                   placeholder=" ">
-                            <label for="email">&gt; EMAIL</label>
+                                   placeholder="EX: GAMER@LOBBY.GG">
                             <div class="cyber-scanner">
                                 <div class="scan-line"></div>
                             </div>
@@ -211,14 +211,14 @@
                     
                     {# Mot de passe #}
                     <div class="cyber-field">
+                        <label for="password">&gt; MOT_DE_PASSE</label>
                         <div class="field-frame">
                             <div class="field-border"></div>
                             <input type="password" 
                                    id="password" 
                                    name="password" 
                                    required
-                                   placeholder=" ">
-                            <label for="password">&gt; MOT_DE_PASSE</label>
+                                   placeholder="••••••••">
                             <button type="button" class="cyber-toggle" id="passwordToggle">
                                 <div class="toggle-frame">
                                     <svg class="eye-scan" width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -255,14 +255,14 @@
                     
                     {# Confirmation mot de passe #}
                     <div class="cyber-field">
+                        <label for="confirmPassword">&gt; CONFIRMER</label>
                         <div class="field-frame">
                             <div class="field-border"></div>
                             <input type="password" 
                                    id="confirmPassword" 
                                    name="confirm_password" 
                                    required
-                                   placeholder=" ">
-                            <label for="confirmPassword">&gt; CONFIRMER</label>
+                                   placeholder="RE-SAISIR">
                             <button type="button" class="cyber-toggle" id="confirmPasswordToggle">
                                 <div class="toggle-frame">
                                     <svg class="eye-scan" width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -285,6 +285,7 @@
                     
                     {# Date de naissance #}
                     <div class="cyber-field">
+                        <label for="date_naissance">&gt; DATE_DE_NAISSANCE</label>
                         <div class="field-frame">
                             <div class="field-border"></div>
                             <input type="date" 
@@ -292,7 +293,6 @@
                                    name="date_naissance" 
                                    required
                                    placeholder=" ">
-                            <label for="date_naissance">&gt; DATE_DE_NAISSANCE</label>
                             <div class="cyber-scanner">
                                 <div class="scan-line"></div>
                             </div>
@@ -306,6 +306,7 @@
                     
                     {# Téléphone #}
                     <div class="cyber-field">
+                        <label for="telephone">&gt; TÉLÉPHONE</label>
                         <div class="field-frame">
                             <div class="field-border"></div>
                             <input type="tel" 
@@ -313,8 +314,7 @@
                                    name="telephone" 
                                    required
                                    pattern="[0-9]{10}"
-                                   placeholder=" ">
-                            <label for="telephone">&gt; TÉLÉPHONE</label>
+                                   placeholder="0123456789">
                             <div class="cyber-scanner">
                                 <div class="scan-line"></div>
                             </div>
@@ -325,6 +325,24 @@
                         <span class="cyber-error" id="phoneError"></span>
                     </div>
                     
+                    {# Rôle #}
+                    <div class="cyber-field">
+                        <label for="role">&gt; RÔLE</label>
+                        <div class="field-frame">
+                            <div class="field-border"></div>
+                            <select id="role" name="role" required class="cyber-select">
+                                <option value="" disabled selected hidden>&gt; CHOISIR_RÔLE</option>
+                                <option value="client">JOUEUR (CLIENT)</option>
+                                <option value="admin">ADMIN</option>
+                                <option value="sponsor">SPONSOR</option>
+                            </select>
+                            <div class="cyber-scanner">
+                                <div class="scan-line"></div>
+                            </div>
+                        </div>
+                        <span class="cyber-error" id="roleError"></span>
+                    </div>
+
                     {# Checkbox CGU #}
                     <div class="cyber-options">
                         <label class="neon-checkbox">
@@ -593,43 +611,8 @@
                     submitBtn.classList.add('loading');
                     submitBtn.disabled = true;
                     
-                    // Simuler l'envoi au serveur
-                    setTimeout(() => {
-                        console.log('✅ Account created successfully!');
-                        
-                        // Afficher message de succès
-                        const successHTML = `
-                            <div class="cyber-success show">
-                                <div class="success-matrix">
-                                    <div class="matrix-rings">
-                                        <div class="success-ring ring-1"></div>
-                                        <div class="success-ring ring-2"></div>
-                                        <div class="success-ring ring-3"></div>
-                                    </div>
-                                    <div class="success-core">
-                                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                                            <path d="M10 16l6 6 12-12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <h3 class="success-title">[ COMPTE_CRÉÉ ]</h3>
-                                <p class="success-desc">Redirection vers la connexion...</p>
-                            </div>
-                        `;
-                        
-                        form.style.opacity = '0.5';
-                        form.style.pointerEvents = 'none';
-                        
-                        setTimeout(() => {
-                            form.innerHTML = successHTML + form.innerHTML;
-                            
-                            // Redirection après 3 secondes
-                            setTimeout(() => {
-                                window.location.href = '/login?registered=true';
-                            }, 3000);
-                        }, 1000);
-                        
-                    }, 2000);
+                    // On laisse le formulaire s'envoyer réellement à Symfony
+                    form.submit();
                 } else {
                     // Effet d'erreur
                     submitBtn.style.animation = 'shake 0.5s';

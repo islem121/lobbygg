@@ -112,6 +112,7 @@
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
                     
                     <div class="cyber-field">
+                        <label for="email">&gt; EMAIL_ADDRESS</label>
                         <div class="field-frame">
                             <div class="field-border"></div>
                             <input type="email" 
@@ -121,7 +122,6 @@
                                    required 
                                    autocomplete="email"
                                    autofocus>
-                            <label for="email">&gt; EMAIL_ADDRESS</label>
                             <div class="cyber-scanner">
                                 <div class="scan-line"></div>
                             </div>
@@ -130,6 +130,7 @@
                     </div>
 
                     <div class="cyber-field">
+                        <label for="password">&gt; ACCESS_CODE</label>
                         <div class="field-frame">
                             <div class="field-border"></div>
                             <input type="password" 
@@ -137,7 +138,6 @@
                                    name="password" 
                                    required 
                                    autocomplete="current-password">
-                            <label for="password">&gt; ACCESS_CODE</label>
                             <button type="button" class="cyber-toggle" id="passwordToggle" aria-label="Toggle password visibility">
                                 <div class="toggle-frame">
                                     <svg class="eye-scan" width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -215,45 +215,9 @@
     {# JavaScript adapté pour Symfony #}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Gestion de l'affichage/masquage du mot de passe
-            const passwordToggle = document.getElementById('passwordToggle');
-            const passwordInput = document.getElementById('password');
-            
-            if (passwordToggle && passwordInput) {
-                passwordToggle.addEventListener('click', function() {
-                    const type = passwordInput.type === 'password' ? 'text' : 'password';
-                    passwordInput.type = type;
-                    
-                    // Changer l'icône
-                    const eyeScan = this.querySelector('.eye-scan');
-                    const eyeBlocked = this.querySelector('.eye-blocked');
-                    
-                    if (type === 'text') {
-                        eyeScan.style.display = 'none';
-                        eyeBlocked.style.display = 'block';
-                    } else {
-                        eyeScan.style.display = 'block';
-                        eyeBlocked.style.display = 'none';
-                    }
-                });
-            }
-            
-            // Effet de soumission
-            const form = document.getElementById('loginForm');
-            const submitBtn = form.querySelector('.neon-button');
-            
-            form.addEventListener('submit', function(e) {
-                if (submitBtn) {
-                    submitBtn.classList.add('processing');
-                    submitBtn.disabled = true;
-                    submitBtn.querySelector('.btn-text').textContent = 'PROCESSING...';
-                }
-            });
-            
-            // Auto-remplir l'email si erreur
-            const emailInput = document.getElementById('email');
-            if (emailInput && !emailInput.value && '{{ last_username }}'.trim()) {
-                emailInput.value = '{{ last_username }}';
+            // Initialiser la classe NeonCyberLoginForm si elle existe
+            if (typeof NeonCyberLoginForm !== 'undefined') {
+                new NeonCyberLoginForm();
             }
         });
     </script>

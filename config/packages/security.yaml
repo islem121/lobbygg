@@ -23,17 +23,20 @@ security:
                 login_path: app_login
                 check_path: app_login
                 enable_csrf: true
-                default_target_path: app_dashboard
+                success_handler: App\Security\LoginSuccessHandler
+                username_parameter: email
+                password_parameter: password
 
             logout:
                 path: app_logout
                 target: app_login
 
     access_control:
-       
-    - { path: ^/login, roles: PUBLIC_ACCESS }
-    - { path: ^/register, roles: PUBLIC_ACCESS }
-    - { path: ^/blog, roles: PUBLIC_ACCESS }
-    - { path: ^/marketplace, roles: PUBLIC_ACCESS }
-    - { path: ^/tournaments, roles: PUBLIC_ACCESS }
-    - { path: ^/sponsoring, roles: PUBLIC_ACCESS }
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/home, roles: ROLE_USER }
+        - { path: ^/blog, roles: ROLE_USER }
+        - { path: ^/marketplace, roles: ROLE_USER }
+        - { path: ^/tournaments, roles: ROLE_USER }
+        - { path: ^/sponsoring, roles: ROLE_USER }

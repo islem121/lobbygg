@@ -1,0 +1,23 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Modifier l'Utilisateur{% endblock %}
+{% block content_title %}Modifier : {{ user.username }}{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_user_index') }}">Utilisateurs</a></li>
+    <li class="breadcrumb-item active">Modifier</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-warning">
+            <div class="card-header">
+                <h3 class="card-title">Édition des informations</h3>
+            </div>
+            {{ include('admin/user/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

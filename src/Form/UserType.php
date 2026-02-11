@@ -2,10 +2,9 @@
 
 namespace App\Form;
 
-use App\Entity\Role;
 use App\Entity\User;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -17,16 +16,16 @@ class UserType extends AbstractType
             ->add('username')
             ->add('email')
             ->add('password')
+            ->add('nom')
+            ->add('prenom')
             ->add('bio')
-            ->add('createdAt', null, [
-                'widget' => 'single_text',
-            ])
             ->add('telephone')
-            ->add('role')
-            ->add('roles', EntityType::class, [
-                'class' => Role::class,
-                'choice_label' => 'id',
-                'multiple' => true,
+            ->add('role', ChoiceType::class, [
+                'choices' => [
+                    'Joueur' => User::ROLE_CLIENT,
+                    'Admin' => User::ROLE_ADMIN,
+                    'Sponsor' => User::ROLE_SPONSOR,
+                ],
             ])
         ;
     }
