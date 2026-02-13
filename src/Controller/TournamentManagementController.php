@@ -437,80 +437,92 @@ SQL;
         return $rows;
     }
 
-    private function validateTournamentPayload(array $input, bool $isUpdate): array
-    {
-        $errors = [];
-        $clean = [];
+    private function validateTournamentPayload(array $data, bool $isUpdate = false): array
+{
+    $errors = [];
+    $clean = [];
 
-        $name = trim((string) ($input['name'] ?? ''));
-        if ($name === '' || mb_strlen($name) > 100) {
-            $errors[] = 'Name is required and must be <= 100 characters.';
+    // ID (required for update)
+    if ($isUpdate) {
+        if (empty($data['id']) || !ctype_digit((string)$data['id'])) {
+            $errors['id'] = 'Valid tournament ID is required.';
         } else {
-            $clean['name'] = $name;
+            $clean['id'] = (int) $data['id'];
         }
-
-        $status = $this->normalizeStatus((string) ($input['status'] ?? 'upcoming'));
-        if ($status === null) {
-            $errors[] = 'Status must be one of: upcoming, ongoing, finished.';
-        } else {
-            $clean['status'] = $status;
-        }
-
-        $startDate = $this->parseDateTime((string) ($input['start_datetime'] ?? ''));
-        if (!$startDate) {
-            $errors[] = 'start_datetime is required and must be a valid datetime.';
-        } else {
-            $clean['start_datetime'] = $startDate->format('Y-m-d H:i:s');
-        }
-
-        $endRaw = trim((string) ($input['end_datetime'] ?? ''));
-        if ($endRaw !== '') {
-            $endDate = $this->parseDateTime($endRaw);
-            if (!$endDate) {
-                $errors[] = 'end_datetime must be a valid datetime when provided.';
-            } else {
-                $clean['end_datetime'] = $endDate->format('Y-m-d H:i:s');
-            }
-        } else {
-            $clean['end_datetime'] = null;
-        }
-
-        if (isset($clean['start_datetime'], $clean['end_datetime']) && $clean['end_datetime'] !== null) {
-            if (strtotime($clean['end_datetime']) < strtotime($clean['start_datetime'])) {
-                $errors[] = 'end_datetime must be after start_datetime.';
-            }
-        }
-
-        $maxTeams = filter_var($input['max_teams'] ?? null, FILTER_VALIDATE_INT);
-        if ($maxTeams === false || $maxTeams < 1) {
-            $errors[] = 'max_teams must be a positive integer.';
-        } else {
-            $clean['max_teams'] = $maxTeams;
-        }
-
-        $description = trim((string) ($input['description'] ?? ''));
-        if ($description === '') {
-            $errors[] = 'Description is required.';
-        } else {
-            $clean['description'] = $description;
-        }
-
-        $region = trim((string) ($input['region'] ?? ''));
-        $mode = trim((string) ($input['mode'] ?? ''));
-        $clean['region'] = $region !== '' ? mb_substr($region, 0, 60) : null;
-        $clean['mode'] = $mode !== '' ? mb_substr($mode, 0, 60) : null;
-
-        if ($isUpdate) {
-            $id = filter_var($input['id'] ?? null, FILTER_VALIDATE_INT);
-            if ($id === false || $id < 1) {
-                $errors[] = 'Valid tournament id is required for update.';
-            } else {
-                $clean['id'] = $id;
-            }
-        }
-
-        return [$clean, $errors];
     }
+
+    // Name
+    if (empty($data['name']) || strlen(trim($data['name'])) < 3) {
+        $errors['name'] = 'Name must be at least 3 characters.';
+    } else {
+        $clean['name'] = htmlspecialchars(trim($data['name']));
+    }
+
+    // Status (allowed values)
+    $allowedStatuses = ['open', 'closed', 'ongoing', 'completed'];
+    if (empty($data['status']) || !in_array($data['status'], $allowedStatuses)) {
+        $errors['status'] = 'Invalid status selected.';
+    } else {
+        $clean['status'] = $data['status'];
+    }
+
+    // Dates
+    if (empty($data['start_datetime']) || !$this->isValidDate($data['start_datetime'])) {
+        $errors['start_datetime'] = 'Invalid start date.';
+    } else {
+        $clean['start_datetime'] = $data['start_datetime'];
+    }
+
+    if (empty($data['end_datetime']) || !$this->isValidDate($data['end_datetime'])) {
+        $errors['end_datetime'] = 'Invalid end date.';
+    } else {
+        $clean['end_datetime'] = $data['end_datetime'];
+    }
+
+    if (!empty($clean['start_datetime']) && !empty($clean['end_datetime'])) {
+        if (strtotime($clean['end_datetime']) <= strtotime($clean['start_datetime'])) {
+            $errors['end_datetime'] = 'End date must be after start date.';
+        }
+    }
+
+    // Region
+    if (empty($data['region']) || strlen(trim($data['region'])) < 2) {
+        $errors['region'] = 'Region is required.';
+    } else {
+        $clean['region'] = htmlspecialchars(trim($data['region']));
+    }
+
+    // Mode
+    $allowedModes = ['online', 'offline', 'hybrid'];
+    if (empty($data['mode']) || !in_array($data['mode'], $allowedModes)) {
+        $errors['mode'] = 'Invalid mode selected.';
+    } else {
+        $clean['mode'] = $data['mode'];
+    }
+
+    // Max teams
+    if (!isset($data['max_teams']) || !ctype_digit((string)$data['max_teams'])) {
+        $errors['max_teams'] = 'Max teams must be a positive number.';
+    } else {
+        $clean['max_teams'] = (int) $data['max_teams'];
+        if ($clean['max_teams'] <= 1) {
+            $errors['max_teams'] = 'Max teams must be greater than 1.';
+        }
+    }
+
+    // Description
+    if (!empty($data['description'])) {
+        if (strlen($data['description']) > 1000) {
+            $errors['description'] = 'Description too long (max 1000 characters).';
+        } else {
+            $clean['description'] = htmlspecialchars(trim($data['description']));
+        }
+    } else {
+        $clean['description'] = null;
+    }
+
+    return [$clean, $errors];
+}
 
     private function parseDateTime(string $value): ?DateTimeImmutable
     {
@@ -655,5 +667,7 @@ SQL;
         
         return $options;
     }
+
+    
 }
 
