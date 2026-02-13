@@ -12,7 +12,7 @@ class Product
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(name: 'product_id')]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -40,6 +40,7 @@ class Product
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'products')]
+    #[ORM\JoinColumn(name: 'category_id', referencedColumnName: 'category_id', nullable: false)]
     #[Assert\NotBlank(message: 'La catégorie est obligatoire.')]
     private ?Category $category = null;
 

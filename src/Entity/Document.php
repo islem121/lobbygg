@@ -22,7 +22,7 @@ class Document
     private ?User $client = null;
 
     #[ORM\ManyToOne(targetEntity: Sponsor::class)]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'offer_id', referencedColumnName: 'sponsor_id', nullable: false, onDelete: 'CASCADE')]
     #[Assert\NotNull(message: 'L\'offre est obligatoire.')]
     private ?Sponsor $offer = null;
 

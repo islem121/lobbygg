@@ -81,11 +81,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Notification::class, orphanRemoval: true)]
     private Collection $notifications;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Post::class, orphanRemoval: true)]
+    private Collection $posts;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Comment::class, orphanRemoval: true)]
+    private Collection $comments;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: PostReaction::class, orphanRemoval: true)]
+    private Collection $postReactions;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: CommentReaction::class, orphanRemoval: true)]
+    private Collection $commentReactions;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->role = self::ROLE_CLIENT;
         $this->notifications = new ArrayCollection();
+        $this->posts = new ArrayCollection();
+        $this->comments = new ArrayCollection();
+        $this->postReactions = new ArrayCollection();
+        $this->commentReactions = new ArrayCollection();
     }
 
     /**
@@ -94,6 +110,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getNotifications(): Collection
     {
         return $this->notifications;
+    }
+
+    /**
+     * @return Collection<int, Post>
+     */
+    public function getPosts(): Collection
+    {
+        return $this->posts;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    /**
+     * @return Collection<int, PostReaction>
+     */
+    public function getPostReactions(): Collection
+    {
+        return $this->postReactions;
+    }
+
+    /**
+     * @return Collection<int, CommentReaction>
+     */
+    public function getCommentReactions(): Collection
+    {
+        return $this->commentReactions;
     }
 
     // ==================== GETTERS & SETTERS ====================

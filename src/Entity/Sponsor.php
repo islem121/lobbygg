@@ -13,46 +13,48 @@ class Sponsor
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(name: 'sponsor_id')]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: 'Le nom de la société est obligatoire.')]
+    // DB column is company_name.
+    #[ORM\Column(name: 'company_name', length: 180)]
+    #[Assert\NotBlank(message: 'Le nom de la sociÃ©tÃ© est obligatoire.')]
     #[Assert\Length(
         min: 2,
         max: 255,
-        minMessage: 'Le nom de la société doit faire au moins {{ limit }} caractères.',
-        maxMessage: 'Le nom de la société ne peut pas dépasser {{ limit }} caractères.'
+        minMessage: 'Le nom de la sociÃ©tÃ© doit faire au moins {{ limit }} caractÃ¨res.',
+        maxMessage: 'Le nom de la sociÃ©tÃ© ne peut pas dÃ©passer {{ limit }} caractÃ¨res.'
     )]
     private ?string $nomSociete = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\NotBlank(message: 'La description est obligatoire.')]
     #[Assert\Length(
         min: 10,
-        minMessage: 'La description doit faire au moins {{ limit }} caractères.'
+        minMessage: 'La description doit faire au moins {{ limit }} caractÃ¨res.'
     )]
     private ?string $description = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     #[Assert\NotBlank(message: 'Le montant est obligatoire.')]
-    #[Assert\Positive(message: 'Le montant doit être un nombre positif.')]
-    #[Assert\Type(type: 'float', message: 'Le montant doit être un nombre.')]
+    #[Assert\Positive(message: 'Le montant doit Ãªtre un nombre positif.')]
+    #[Assert\Type(type: 'float', message: 'Le montant doit Ãªtre un nombre.')]
     private ?float $amount = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 50, nullable: true)]
     #[Assert\NotBlank(message: 'Le type de cible est obligatoire.')]
     #[Assert\Choice(choices: ['client', 'tournament'], message: 'Le type de cible choisi est invalide.')]
     private ?string $targetType = null; // 'client' ou 'tournament'
 
-    #[ORM\Column(length: 255, nullable: true)]
+    // Reuse existing logo column as storage for uploaded file reference.
+    #[ORM\Column(name: 'logo', length: 255, nullable: true)]
     private ?string $dossier = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'user_id', nullable: false)]
     private ?User $sponsor = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $createdAt = null;
 
     public function __construct()

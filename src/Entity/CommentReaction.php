@@ -24,7 +24,7 @@ class CommentReaction
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'reactions')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'comment_id', referencedColumnName: 'comment_id', nullable: false)]
     private ?Comment $comment = null;
 
     public function __construct()

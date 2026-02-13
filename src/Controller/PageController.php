@@ -62,7 +62,7 @@ class PageController extends AbstractController
         // Calculer les statistiques simples pour le client
         $stats = [
             'total' => count($requests),
-            'accepted' => count(array_filter($requests, fn($r) => $r->getStatus() === 'accepté')),
+            'accepted' => count(array_filter($requests, fn($r) => $r->getStatus() === 'acceptÃ©')),
             'pending' => count(array_filter($requests, fn($r) => $r->getStatus() === 'en attente')),
         ];
 
@@ -103,7 +103,7 @@ class PageController extends AbstractController
         $cart = $session->get('cart', []);
         $cart[$id] = ($cart[$id] ?? 0) + 1;
         $session->set('cart', $cart);
-        $this->addFlash('success', sprintf('"%s" ajouté au panier', $product->getName()));
+        $this->addFlash('success', sprintf('"%s" ajoutÃ© au panier', $product->getName()));
         return $this->redirectToRoute('front_marketplace');
     }
 
@@ -161,16 +161,14 @@ class PageController extends AbstractController
         }
         $em->flush();
         $session->remove('cart');
-        $this->addFlash('success', 'Commande créée avec succès.');
+        $this->addFlash('success', 'Commande crÃ©Ã©e avec succÃ¨s.');
         return $this->redirectToRoute('front_marketplace');
     }
 
     #[Route('/tournaments', name: 'front_tournaments')]
     public function tournaments(): Response
     {
-        return $this->render('front/modules/tournaments.html.twig', [
-            'page' => 'tournaments',
-        ]);
+        return $this->redirectToRoute('tournament_frontoffice');
     }
 
     #[Route('/sponsoring', name: 'front_sponsoring')]
@@ -207,7 +205,7 @@ class PageController extends AbstractController
             $entityManager->persist($sponsor);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Votre offre de sponsoring a été créée avec succès !');
+            $this->addFlash('success', 'Votre offre de sponsoring a Ã©tÃ© crÃ©Ã©e avec succÃ¨s !');
 
             return $this->redirectToRoute('front_sponsoring_my_offers');
         }
@@ -226,7 +224,7 @@ class PageController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        // Logique de création (pour la modale)
+        // Logique de crÃ©ation (pour la modale)
         $newSponsor = new Sponsor();
         $newSponsor->setNomSociete($user->getNom() . ' ' . $user->getPrenom());
         $newSponsor->setSponsor($user);
@@ -238,7 +236,7 @@ class PageController extends AbstractController
             $entityManager->persist($newSponsor);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Votre offre de sponsoring a été créée avec succès !');
+            $this->addFlash('success', 'Votre offre de sponsoring a Ã©tÃ© crÃ©Ã©e avec succÃ¨s !');
 
             return $this->redirectToRoute('front_sponsoring_my_offers');
         }
@@ -259,12 +257,12 @@ class PageController extends AbstractController
 
         $sponsor = $sponsorRepository->find($id);
         if (!$sponsor) {
-            throw $this->createNotFoundException('Offre non trouvée');
+            throw $this->createNotFoundException('Offre non trouvÃ©e');
         }
 
-        // Vérifier que le sponsor est bien le propriétaire de l'offre
+        // VÃ©rifier que le sponsor est bien le propriÃ©taire de l'offre
         if ($sponsor->getSponsor() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette offre');
+            throw $this->createAccessDeniedException('Vous n\'Ãªtes pas autorisÃ© Ã  modifier cette offre');
         }
 
         $form = $this->createForm(SponsorType::class, $sponsor);
@@ -273,7 +271,7 @@ class PageController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            $this->addFlash('success', 'Votre offre de sponsoring a été mise à jour avec succès !');
+            $this->addFlash('success', 'Votre offre de sponsoring a Ã©tÃ© mise Ã  jour avec succÃ¨s !');
 
             return $this->redirectToRoute('front_sponsoring_my_offers');
         }
@@ -292,18 +290,18 @@ class PageController extends AbstractController
 
         $sponsor = $sponsorRepository->find($id);
         if (!$sponsor) {
-            throw $this->createNotFoundException('Offre non trouvée');
+            throw $this->createNotFoundException('Offre non trouvÃ©e');
         }
 
-        // Vérifier que le sponsor est bien le propriétaire de l'offre
+        // VÃ©rifier que le sponsor est bien le propriÃ©taire de l'offre
         if ($sponsor->getSponsor() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à supprimer cette offre');
+            throw $this->createAccessDeniedException('Vous n\'Ãªtes pas autorisÃ© Ã  supprimer cette offre');
         }
 
         if ($this->isCsrfTokenValid('delete'.$sponsor->getId(), $request->request->get('_token'))) {
             $entityManager->remove($sponsor);
             $entityManager->flush();
-            $this->addFlash('success', 'Votre offre de sponsoring a été supprimée.');
+            $this->addFlash('success', 'Votre offre de sponsoring a Ã©tÃ© supprimÃ©e.');
         }
 
         return $this->redirectToRoute('front_sponsoring_my_offers');
@@ -320,7 +318,7 @@ class PageController extends AbstractController
 
         $sponsor = $sponsorRepository->find($id);
         if (!$sponsor) {
-            throw $this->createNotFoundException('Offre non trouvée');
+            throw $this->createNotFoundException('Offre non trouvÃ©e');
         }
 
         $document = new Document();
@@ -335,7 +333,7 @@ class PageController extends AbstractController
             $entityManager->persist($document);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Votre demande de sponsoring a été envoyée avec succès !');
+            $this->addFlash('success', 'Votre demande de sponsoring a Ã©tÃ© envoyÃ©e avec succÃ¨s !');
         } else {
             $this->addFlash('error', 'Une erreur est survenue lors de l\'envoi de votre demande.');
         }
@@ -355,20 +353,20 @@ class PageController extends AbstractController
 
         $document = $documentRepository->find($id);
         if (!$document) {
-            throw $this->createNotFoundException('Document non trouvé');
+            throw $this->createNotFoundException('Document non trouvÃ©');
         }
 
-        // Vérifier que le sponsor est bien le propriétaire de l'offre
+        // VÃ©rifier que le sponsor est bien le propriÃ©taire de l'offre
         if ($document->getOffer()->getSponsor() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier ce document');
+            throw $this->createAccessDeniedException('Vous n\'Ãªtes pas autorisÃ© Ã  modifier ce document');
         }
 
-        $validStatuses = ['accepté', 'refusé', 'en attente'];
+        $validStatuses = ['acceptÃ©', 'refusÃ©', 'en attente'];
         if (in_array($status, $validStatuses)) {
             $document->setStatus($status);
             
-            // Si accepté, créer un contrat s'il n'existe pas déjà
-            if ($status === 'accepté') {
+            // Si acceptÃ©, crÃ©er un contrat s'il n'existe pas dÃ©jÃ 
+            if ($status === 'acceptÃ©') {
                 $existingContract = $contractRepository->findOneBy(['request' => $document]);
                 if (!$existingContract) {
                     $contract = new Contract();
@@ -381,7 +379,7 @@ class PageController extends AbstractController
             }
             
             $entityManager->flush();
-            $this->addFlash('success', 'Le statut du contrat a été mis à jour : ' . $status);
+            $this->addFlash('success', 'Le statut du contrat a Ã©tÃ© mis Ã  jour : ' . $status);
         }
 
         return $this->redirectToRoute('front_sponsor_requests');
@@ -400,13 +398,13 @@ class PageController extends AbstractController
         }
 
         // --- SYNCHRONISATION AUTOMATIQUE DES ANCIENS CONTRATS ---
-        // On récupère toutes les demandes acceptées liées à l'utilisateur qui n'ont pas encore de contrat
+        // On rÃ©cupÃ¨re toutes les demandes acceptÃ©es liÃ©es Ã  l'utilisateur qui n'ont pas encore de contrat
         $criteria = in_array('ROLE_SPONSOR', $user->getRoles()) ? [] : ['client' => $user];
-        $acceptedDocs = $documentRepository->findBy(array_merge($criteria, ['status' => 'accepté']));
+        $acceptedDocs = $documentRepository->findBy(array_merge($criteria, ['status' => 'acceptÃ©']));
         
         $syncCount = 0;
         foreach ($acceptedDocs as $doc) {
-            // Pour le sponsor, on vérifie si l'offre lui appartient
+            // Pour le sponsor, on vÃ©rifie si l'offre lui appartient
             if (in_array('ROLE_SPONSOR', $user->getRoles()) && $doc->getOffer()->getSponsor() !== $user) {
                 continue;
             }
@@ -417,7 +415,7 @@ class PageController extends AbstractController
                 $contract->setRequest($doc);
                 $contract->setSponsor($doc->getOffer()->getSponsor());
                 $contract->setClient($doc->getClient());
-                $contract->setContent("Contrat de sponsoring récupéré automatiquement pour " . $doc->getOffer()->getNomSociete() . ".");
+                $contract->setContent("Contrat de sponsoring rÃ©cupÃ©rÃ© automatiquement pour " . $doc->getOffer()->getNomSociete() . ".");
                 $contract->setCreatedAt($doc->getCreatedAt());
                 $entityManager->persist($contract);
                 $syncCount++;
@@ -450,7 +448,7 @@ class PageController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_SPONSOR');
 
-        $acceptedDocuments = $documentRepository->findBy(['status' => 'accepté']);
+        $acceptedDocuments = $documentRepository->findBy(['status' => 'acceptÃ©']);
         $count = 0;
 
         foreach ($acceptedDocuments as $document) {
@@ -460,7 +458,7 @@ class PageController extends AbstractController
                 $contract->setRequest($document);
                 $contract->setSponsor($document->getOffer()->getSponsor());
                 $contract->setClient($document->getClient());
-                $contract->setContent("Contrat de sponsoring historique récupéré pour " . $document->getOffer()->getNomSociete() . ".");
+                $contract->setContent("Contrat de sponsoring historique rÃ©cupÃ©rÃ© pour " . $document->getOffer()->getNomSociete() . ".");
                 $contract->setCreatedAt($document->getCreatedAt()); // Garder la date originale
                 
                 $entityManager->persist($contract);
@@ -469,8 +467,10 @@ class PageController extends AbstractController
         }
 
         $entityManager->flush();
-        $this->addFlash('success', "$count contrats historiques ont été récupérés et stockés.");
+        $this->addFlash('success', "$count contrats historiques ont Ã©tÃ© rÃ©cupÃ©rÃ©s et stockÃ©s.");
 
         return $this->redirectToRoute('front_contracts');
     }
 }
+
+

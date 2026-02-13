@@ -31,7 +31,7 @@ class Notification
     private ?User $actor = null; // The user who triggered the notification (Liker/Commenter)
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'post_id', nullable: false)]
     private ?Post $post = null; // The related post
 
     public function __construct()

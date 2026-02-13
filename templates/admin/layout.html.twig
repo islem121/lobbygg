@@ -100,6 +100,12 @@
                             <p>Commentaires</p>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ path('tournament_dashboard') }}" class="nav-link {{ app.request.attributes.get('_route') == 'tournament_dashboard' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-trophy-fill"></i>
+                            <p>Tournaments</p>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </div>

@@ -1,0 +1,152 @@
+﻿{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg - Tournament Frontoffice{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="{{ asset('assets/css/tournaments-management.css') }}">
+{% endblock %}
+
+{% block content %}
+  <div class="tm-container">
+    <div class="tm-topbar">
+      <div>
+        <h1 class="tm-title">Tournaments Frontoffice</h1>
+        <p class="tm-subtitle">Browse tournaments and register while slots are available.</p>
+      </div>
+      <form method="get" class="tm-toolbar">
+        <label for="user_id">Current User ID</label>
+        <input type="number" min="1" name="user_id" id="user_id" value="{{ userId ?: '' }}" class="tm-user-input">
+        <small>Use a valid <code>users.user_id</code></small>
+        <button class="tm-btn tm-btn-primary" type="submit">Set User</button>
+        <a class="tm-btn tm-btn-secondary" href="{{ path('tournament_dashboard') }}">Admin Dashboard</a>
+      </form>
+    </div>
+
+    <div id="messageBox"></div>
+
+    <section class="tm-grid tm-front-grid">
+      <div class="tm-panel">
+        <h2>All Tournaments</h2>
+        <div class="tm-cards">
+          {% for t in tournaments %}
+            {% set registeredCount = (t.registered_teams|default(0)) + 0 %}
+            {% set maxTeams = (t.max_teams|default(0)) + 0 %}
+            {% set isFull = registeredCount >= maxTeams %}
+            <article class="tm-card tm-tournament-card"
+              data-id="{{ t.id }}"
+              data-name="{{ t.name }}"
+              data-description="{{ t.description }}"
+              data-start="{{ t.start_datetime }}"
+              data-end="{{ t.end_datetime ?? '' }}"
+              data-region="{{ t.region ?? '-' }}"
+              data-mode="{{ t.mode ?? '-' }}"
+              data-max="{{ maxTeams }}"
+              data-registered="{{ registeredCount }}"
+              data-status="{{ t.status }}"
+              data-is-registered="{{ t.is_registered ? '1' : '0' }}"
+            >
+              <h3>{{ t.name }}</h3>
+              <div class="tm-meta">
+                <span><strong>Date:</strong> {{ t.start_datetime|date('d M Y H:i') }}</span>
+                <span><strong>Region:</strong> {{ t.region ?? '-' }}</span>
+                <span><strong>Mode:</strong> {{ t.mode ?? '-' }}</span>
+                <span><strong>Status:</strong> <span class="tm-pill {{ t.status == 'ongoing' ? 'tm-status-ongoing' : (t.status == 'finished' ? 'tm-status-finished' : 'tm-status-upcoming') }}">{{ t.status }}</span></span>
+                <span><strong>Teams:</strong> <span class="tm-teams-view">{{ registeredCount }}</span>/{{ maxTeams }}</span>
+                <span><strong>Registration:</strong> <span class="tm-pill {{ t.is_registered ? 'tm-status-registered' : 'tm-status-not-registered' }} tm-reg-view">{{ t.is_registered ? 'Registered' : 'Not Registered' }}</span></span>
+              </div>
+              <div class="tm-actions">
+                <button type="button" class="tm-btn tm-btn-secondary tm-details-btn">View Details</button>
+                <button type="button" class="tm-btn tm-btn-primary tm-register-btn" {{ (t.is_registered or isFull or not userId) ? 'disabled' : '' }}>Register</button>
+              </div>
+            </article>
+          {% else %}
+            <p>No tournaments found.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="tm-panel">
+        <h2>Tournament Card</h2>
+        <div id="detailsBox" class="tm-full-card">
+          <p>Select a tournament to view full details.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    const userId = {{ userId ?: 0 }};
+    const cards = document.querySelectorAll('.tm-tournament-card');
+    const detailsBox = document.getElementById('detailsBox');
+    const messageBox = document.getElementById('messageBox');
+
+    function showMessage(msg, ok = true) {
+      messageBox.innerHTML = '<div class="tm-message ' + (ok ? 'tm-ok' : 'tm-err') + '">' + msg + '</div>';
+    }
+
+    function statusClass(status) {
+      switch ((status || '').toLowerCase()) {
+        case 'ongoing': return 'tm-status-ongoing';
+        case 'finished': return 'tm-status-finished';
+        default: return 'tm-status-upcoming';
+      }
+    }
+
+    function renderDetails(card) {
+      const end = card.dataset.end ? card.dataset.end : '-';
+      const registered = card.dataset.isRegistered === '1';
+      detailsBox.innerHTML = `
+        <p><strong>Name:</strong> ${card.dataset.name}</p>
+        <p><strong>Description:</strong> ${card.dataset.description}</p>
+        <p><strong>Start:</strong> ${card.dataset.start}</p>
+        <p><strong>End:</strong> ${end}</p>
+        <p><strong>Region:</strong> ${card.dataset.region}</p>
+        <p><strong>Mode:</strong> ${card.dataset.mode}</p>
+        <p><strong>Status:</strong> <span class="tm-pill ${statusClass(card.dataset.status)}">${card.dataset.status}</span></p>
+        <p><strong>Teams:</strong> ${card.dataset.registered}/${card.dataset.max}</p>
+        <p><strong>Registration:</strong> <span class="tm-pill ${registered ? 'tm-status-registered' : 'tm-status-not-registered'}">${registered ? 'Registered' : 'Not Registered'}</span></p>
+      `;
+    }
+
+    async function register(card) {
+      if (!userId) {
+        showMessage('Please set a valid user ID first.', false);
+        return;
+      }
+
+      const payload = new URLSearchParams();
+      payload.set('user_id', userId);
+      payload.set('tournament_id', card.dataset.id);
+
+      try {
+        const response = await fetch('{{ path('register_tournament_api') }}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: payload.toString()
+        });
+        const json = await response.json();
+        showMessage(json.message, json.success);
+        if (!json.success) return;
+
+        card.dataset.isRegistered = '1';
+        card.dataset.registered = String(json.data.registered_teams);
+        card.querySelector('.tm-teams-view').textContent = String(json.data.registered_teams);
+        card.querySelector('.tm-reg-view').className = 'tm-pill tm-status-registered tm-reg-view';
+        card.querySelector('.tm-reg-view').textContent = 'Registered';
+        card.querySelector('.tm-register-btn').disabled = true;
+        renderDetails(card);
+      } catch (e) {
+        showMessage('Registration failed due to a network error.', false);
+      }
+    }
+
+    cards.forEach((card) => {
+      card.querySelector('.tm-details-btn').addEventListener('click', () => renderDetails(card));
+      card.querySelector('.tm-register-btn').addEventListener('click', () => register(card));
+    });
+  </script>
+{% endblock %}
+

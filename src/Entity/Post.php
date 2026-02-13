@@ -14,7 +14,7 @@ class Post
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(name: 'post_id')]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -30,8 +30,15 @@ class Post
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
-    #[ORM\Column(length: 50, nullable: true)]
+    // DB column is `category` (VARCHAR(20)); keep property name for existing code.
+    #[ORM\Column(name: 'category', length: 20)]
     private ?string $type = null;
+
+    #[ORM\Column(name: 'up_votes')]
+    private int $upVotes = 0;
+
+    #[ORM\Column(name: 'down_votes')]
+    private int $downVotes = 0;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -100,6 +107,28 @@ class Post
     public function setType(?string $type): static
     {
         $this->type = $type;
+        return $this;
+    }
+
+    public function getUpVotes(): int
+    {
+        return $this->upVotes;
+    }
+
+    public function setUpVotes(int $upVotes): static
+    {
+        $this->upVotes = $upVotes;
+        return $this;
+    }
+
+    public function getDownVotes(): int
+    {
+        return $this->downVotes;
+    }
+
+    public function setDownVotes(int $downVotes): static
+    {
+        $this->downVotes = $downVotes;
         return $this;
     }
 
