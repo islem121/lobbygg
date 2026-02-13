@@ -70,6 +70,36 @@
                             <p>Users Management</p>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ path('app_admin_sponsoring') }}" class="nav-link {{ app.request.attributes.get('_route') == 'app_admin_sponsoring' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-briefcase-fill"></i>
+                            <p>Sponsor Management</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ path('app_admin_product_index') }}" class="nav-link {{ app.request.attributes.get('_route') starts with 'app_admin_product' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-cart-fill"></i>
+                            <p>Produits</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ path('app_admin_category_index') }}" class="nav-link {{ app.request.attributes.get('_route') starts with 'app_admin_category' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-tags-fill"></i>
+                            <p>Catégories</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ path('app_admin_post_index') }}" class="nav-link {{ app.request.attributes.get('_route') starts with 'app_admin_post' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-newspaper"></i>
+                            <p>Blog / Actualités</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ path('app_admin_comment_index') }}" class="nav-link {{ app.request.attributes.get('_route') starts with 'app_admin_comment' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-chat-left-text-fill"></i>
+                            <p>Commentaires</p>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </div>

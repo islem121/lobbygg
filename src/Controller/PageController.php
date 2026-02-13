@@ -3,60 +3,36 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 use App\Entity\Sponsor;
 use App\Entity\Document;
 use App\Form\SponsorType;
 use App\Form\DocumentType;
 use App\Entity\Contract;
+use App\Repository\ProductRepository;
 use App\Repository\ContractRepository;
 use App\Repository\SponsorRepository;
 use App\Repository\DocumentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class PageController extends AbstractController
 {
     #[Route('/', name: 'front_home')]
     public function home(): Response
     {
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('app_login');
+        }
+
         // Tout le monde sauf admin va vers app_home
         if ($this->isGranted('ROLE_ADMIN')) {
             return $this->redirectToRoute('app_admin');
         }
 
         return $this->redirectToRoute('app_home');
-    }
-
-    #[Route('/sponsoring/create', name: 'front_sponsoring_create')]
-    public function createSponsor(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_SPONSOR');
-
-        $sponsor = new Sponsor();
-        $user = $this->getUser();
-        
-        // On pré-remplit le nom de la société avec le nom de l'utilisateur
-        $sponsor->setNomSociete($user->getNom() . ' ' . $user->getPrenom());
-        $sponsor->setSponsor($user);
-
-        $form = $this->createForm(SponsorType::class, $sponsor);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($sponsor);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Votre offre de sponsoring a été créée avec succès !');
-
-            return $this->redirectToRoute('front_sponsoring');
-        }
-
-        return $this->render('front/modules/create_offre.html.twig', [
-            'form' => $form->createView(),
-            'page' => 'create_offre'
-        ]);
     }
 
     #[Route('/sponsoring/requests', name: 'front_sponsor_requests')]
@@ -107,11 +83,86 @@ class PageController extends AbstractController
     }
 
     #[Route('/marketplace', name: 'front_marketplace')]
-    public function marketplace(): Response
+    public function marketplace(ProductRepository $productRepository): Response
     {
+        $products = $productRepository->findBy([], ['createdAt' => 'DESC']);
         return $this->render('front/modules/marketplace.html.twig', [
             'page' => 'marketplace',
+            'products' => $products,
         ]);
+    }
+
+    #[Route('/marketplace/add/{id}', name: 'front_marketplace_add', methods: ['GET'])]
+    public function addToCart(int $id, Request $request, ProductRepository $productRepository): Response
+    {
+        $product = $productRepository->find($id);
+        if (!$product) {
+            throw $this->createNotFoundException('Produit introuvable');
+        }
+        $session = $request->getSession();
+        $cart = $session->get('cart', []);
+        $cart[$id] = ($cart[$id] ?? 0) + 1;
+        $session->set('cart', $cart);
+        $this->addFlash('success', sprintf('"%s" ajouté au panier', $product->getName()));
+        return $this->redirectToRoute('front_marketplace');
+    }
+
+    #[Route('/marketplace/cart', name: 'front_marketplace_cart')]
+    public function viewCart(Request $request, ProductRepository $productRepository): Response
+    {
+        $session = $request->getSession();
+        $cart = $session->get('cart', []);
+        $items = [];
+        $total = 0.0;
+        foreach ($cart as $productId => $qty) {
+            $p = $productRepository->find($productId);
+            if ($p) {
+                $lineTotal = $p->getPrice() * $qty;
+                $items[] = [
+                    'product' => $p,
+                    'qty' => $qty,
+                    'lineTotal' => $lineTotal,
+                ];
+                $total += $lineTotal;
+            }
+        }
+        return $this->render('front/modules/marketplace.html.twig', [
+            'page' => 'marketplace',
+            'products' => $productRepository->findBy([], ['createdAt' => 'DESC']),
+            'cartItems' => $items,
+            'cartTotal' => $total,
+        ]);
+    }
+
+    #[Route('/marketplace/checkout', name: 'front_marketplace_checkout')]
+    public function checkout(Request $request, EntityManagerInterface $em, ProductRepository $productRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        $session = $request->getSession();
+        $cart = $session->get('cart', []);
+        if (empty($cart)) {
+            $this->addFlash('error', 'Votre panier est vide.');
+            return $this->redirectToRoute('front_marketplace');
+        }
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        foreach ($cart as $productId => $qty) {
+            $product = $productRepository->find($productId);
+            if (!$product) {
+                continue;
+            }
+            $order = new \App\Entity\Order();
+            $order->setUser($user);
+            $order->setProduct($product);
+            $order->setQuantity($qty);
+            $order->setOrderDate(new \DateTimeImmutable());
+            $order->setStatus('pending');
+            $em->persist($order);
+        }
+        $em->flush();
+        $session->remove('cart');
+        $this->addFlash('success', 'Commande créée avec succès.');
+        return $this->redirectToRoute('front_marketplace');
     }
 
     #[Route('/tournaments', name: 'front_tournaments')]
@@ -135,6 +186,127 @@ class PageController extends AbstractController
             'offers' => $offers,
             'form' => $form->createView()
         ]);
+    }
+
+    #[Route('/sponsoring/new', name: 'front_sponsoring_new', methods: ['GET', 'POST'])]
+    public function createSponsor(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_SPONSOR');
+
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        $sponsor = new Sponsor();
+        $sponsor->setNomSociete($user->getNom() . ' ' . $user->getPrenom());
+        $sponsor->setSponsor($user);
+
+        $form = $this->createForm(SponsorType::class, $sponsor);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($sponsor);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Votre offre de sponsoring a été créée avec succès !');
+
+            return $this->redirectToRoute('front_sponsoring_my_offers');
+        }
+
+        return $this->render('front/modules/create_offre.html.twig', [
+            'form' => $form->createView(),
+            'page' => 'create_offre'
+        ]);
+    }
+
+    #[Route('/sponsoring/my-offers', name: 'front_sponsoring_my_offers')]
+    public function myOffers(Request $request, SponsorRepository $sponsorRepository, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_SPONSOR');
+
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        // Logique de création (pour la modale)
+        $newSponsor = new Sponsor();
+        $newSponsor->setNomSociete($user->getNom() . ' ' . $user->getPrenom());
+        $newSponsor->setSponsor($user);
+
+        $form = $this->createForm(SponsorType::class, $newSponsor);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($newSponsor);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Votre offre de sponsoring a été créée avec succès !');
+
+            return $this->redirectToRoute('front_sponsoring_my_offers');
+        }
+
+        $offers = $sponsorRepository->findBy(['sponsor' => $user]);
+
+        return $this->render('front/modules/my_offers.html.twig', [
+            'page' => 'my_offers',
+            'offers' => $offers,
+            'form' => $form->createView()
+        ]);
+    }
+
+    #[Route('/sponsoring/edit/{id}', name: 'front_sponsoring_edit')]
+    public function editSponsor(int $id, Request $request, SponsorRepository $sponsorRepository, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_SPONSOR');
+
+        $sponsor = $sponsorRepository->find($id);
+        if (!$sponsor) {
+            throw $this->createNotFoundException('Offre non trouvée');
+        }
+
+        // Vérifier que le sponsor est bien le propriétaire de l'offre
+        if ($sponsor->getSponsor() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette offre');
+        }
+
+        $form = $this->createForm(SponsorType::class, $sponsor);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Votre offre de sponsoring a été mise à jour avec succès !');
+
+            return $this->redirectToRoute('front_sponsoring_my_offers');
+        }
+
+        return $this->render('front/modules/create_offre.html.twig', [
+            'form' => $form->createView(),
+            'page' => 'edit_offre',
+            'sponsor' => $sponsor
+        ]);
+    }
+
+    #[Route('/sponsoring/delete/{id}', name: 'front_sponsoring_delete', methods: ['POST'])]
+    public function deleteSponsor(int $id, Request $request, SponsorRepository $sponsorRepository, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_SPONSOR');
+
+        $sponsor = $sponsorRepository->find($id);
+        if (!$sponsor) {
+            throw $this->createNotFoundException('Offre non trouvée');
+        }
+
+        // Vérifier que le sponsor est bien le propriétaire de l'offre
+        if ($sponsor->getSponsor() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à supprimer cette offre');
+        }
+
+        if ($this->isCsrfTokenValid('delete'.$sponsor->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($sponsor);
+            $entityManager->flush();
+            $this->addFlash('success', 'Votre offre de sponsoring a été supprimée.');
+        }
+
+        return $this->redirectToRoute('front_sponsoring_my_offers');
     }
 
     #[Route('/sponsoring/request/{id}', name: 'front_sponsoring_request_submit', methods: ['POST'])]
@@ -300,12 +472,5 @@ class PageController extends AbstractController
         $this->addFlash('success', "$count contrats historiques ont été récupérés et stockés.");
 
         return $this->redirectToRoute('front_contracts');
-    }
-
-    #[Route('/blog', name: 'front_blog')]
-    public function blog(): Response
-    {
-        // Social frontoffice: render the news feed
-        return $this->render('front/feed.html.twig', ['page' => 'blog']);
     }
 }

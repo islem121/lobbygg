@@ -24,11 +24,38 @@
   </div>
 
   <div class="header-right">
-    <button class="header-icon" type="button" data-notif-trigger aria-label="Notifications">
-      <i class="fa-solid fa-bell"></i>
-      <span class="pill pill-accent" data-notif-count>7</span>
-      <span class="micro-explosion" aria-hidden="true"></span>
-    </button>
+    {% if app.user %}
+        {% set unread_notifs = app.user.notifications|filter(n => not n.isRead) %}
+        <div class="profile-dropdown">
+            <button class="header-icon" type="button" data-notif-trigger aria-label="Notifications">
+              <i class="fa-solid fa-bell"></i>
+              {% if unread_notifs|length > 0 %}
+                <span class="pill pill-accent" data-notif-count>{{ unread_notifs|length }}</span>
+                <span class="micro-explosion" aria-hidden="true"></span>
+              {% endif %}
+            </button>
+            <div class="dropdown-content" style="width: 300px; max-height: 400px; overflow-y: auto;">
+                <div style="padding: 10px; border-bottom: 1px solid rgba(139, 61, 255, 0.1); font-weight: bold; color: #fff;">Notifications</div>
+                {% for notif in unread_notifs %}
+                    <a href="{{ path('app_notification_read', {id: notif.id}) }}" style="display: flex; align-items: center; gap: 10px; white-space: normal;">
+                        <div class="avatar avatar-xs" style="width: 30px; height: 30px; font-size: 10px;">{{ notif.actor.username[:2]|upper }}</div>
+                        <div>
+                            <span style="color: var(--accent);">{{ notif.actor.username }}</span>
+                            {% if notif.type == 'like' %}
+                                liked your post.
+                            {% elseif notif.type == 'comment' %}
+                                commented on your post.
+                            {% endif %}
+                            <div style="font-size: 10px; color: var(--text-muted);">{{ notif.createdAt|date('H:i') }}</div>
+                        </div>
+                    </a>
+                {% else %}
+                    <div style="padding: 15px; text-align: center; color: var(--text-muted); font-size: 12px;">No new notifications</div>
+                {% endfor %}
+                <a href="{{ path('app_notifications') }}" style="text-align: center; color: var(--text-muted);">View all</a>
+            </div>
+        </div>
+    {% endif %}
 
     <button class="header-icon" type="button" aria-label="Quick Messages">
       <i class="fa-solid fa-comment-dots"></i>

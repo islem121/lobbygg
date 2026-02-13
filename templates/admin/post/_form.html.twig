@@ -1,0 +1,35 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="mb-3">
+                    {{ form_label(form.title) }}
+                    {{ form_widget(form.title) }}
+                    {{ form_errors(form.title) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.content) }}
+                    {{ form_widget(form.content) }}
+                    {{ form_errors(form.content) }}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    {{ form_label(form.type) }}
+                    {{ form_widget(form.type) }}
+                    {{ form_errors(form.type) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.image) }}
+                    {{ form_widget(form.image) }}
+                    <small class="text-muted">URL (http://...) ou chemin (assets/images/blog/...)</small>
+                    {{ form_errors(form.image) }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer text-right">
+        <button class="btn btn-success">{{ button_label|default('Enregistrer') }}</button>
+        <a href="{{ path('app_admin_post_index') }}" class="btn btn-secondary">Annuler</a>
+    </div>
+{{ form_end(form) }}

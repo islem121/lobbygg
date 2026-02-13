@@ -14,9 +14,25 @@
     
     <style>
         /* Styles spécifiques à l'inscription */
+        body {
+            height: auto !important;
+            min-height: 100vh;
+            overflow-y: auto !important;
+            display: block !important; /* Pour éviter les problèmes de centrage flex qui coupent le contenu */
+            padding-top: 50px;
+            padding-bottom: 50px;
+        }
+
         .register-container {
             max-width: 500px;
+            margin: 0 auto; /* Centrage horizontal manuel */
         }
+        
+        .cyber-terminal {
+            overflow: visible !important; /* Permet au contenu de dépasser si besoin */
+        }
+        
+        #optionalFields { display: none; }
         
         .cyber-title span {
             color: #9D4EDD;
@@ -149,13 +165,29 @@
                         <span class="title-glitch" data-text="NEW_PROFILE">NEW_PROFILE</span>
                     </h1>
                     <p class="access-text">[ LOBBY.GG_REGISTRATION ]</p>
+                    <div class="form-actions" style="justify-content: space-between; margin-top: 10px;">
+                        <button id="submitTop" type="submit" form="registerForm" class="neon-button">
+                            <div class="btn-matrix"></div>
+                            <span class="btn-text">[ CRÉER_COMPTE ]</span>
+                            <div class="btn-loader">
+                                <div class="matrix-loader">
+                                    <div class="matrix-bar"></div>
+                                    <div class="matrix-bar"></div>
+                                    <div class="matrix-bar"></div>
+                                    <div class="matrix-bar"></div>
+                                </div>
+                            </div>
+                            <div class="btn-glow"></div>
+                        </button>
+                        <button type="button" class="btn-secondary" id="simpleToggle">Mode avancé</button>
+                    </div>
                 </div>
                 
                 {# Formulaire d'inscription #}
                 <form class="neon-form" id="registerForm" method="post" novalidate>
 
                     {# Grille pour nom/prénom #}
-                    <div class="form-grid">
+                    <div class="form-grid" id="optionalFields">
                         <div class="cyber-field">
                             <label for="nom">&gt; NOM</label>
                             <div class="field-frame">
@@ -163,13 +195,13 @@
                                 <input type="text" 
                                        id="nom" 
                                        name="nom" 
-                                       required
+                                       
                                        placeholder="ENTREZ VOTRE NOM">
                                 <div class="cyber-scanner">
                                     <div class="scan-line"></div>
                                 </div>
                             </div>
-                            <span class="cyber-error" id="nomError"></span>
+                            <span class="cyber-error" id="nomError">{% if errors.nom is defined %}{{ errors.nom }}{% endif %}</span>
                         </div>
                         
                         <div class="cyber-field">
@@ -179,17 +211,16 @@
                                 <input type="text" 
                                        id="prenom" 
                                        name="prenom" 
-                                       required
+                                       value="{{ app.request.request.get('prenom') }}"
                                        placeholder="ENTREZ VOTRE PRÉNOM">
                                 <div class="cyber-scanner">
                                     <div class="scan-line"></div>
                                 </div>
                             </div>
-                            <span class="cyber-error" id="prenomError"></span>
+                            <span class="cyber-error" id="prenomError">{% if errors.prenom is defined %}{{ errors.prenom }}{% endif %}</span>
                         </div>
                     </div>
                     
-                    {# Email #}
                     <div class="cyber-field">
                         <label for="email">&gt; EMAIL</label>
                         <div class="field-frame">
@@ -197,6 +228,7 @@
                             <input type="email" 
                                    id="email" 
                                    name="email" 
+                                   value="{{ app.request.request.get('email') }}"
                                    required
                                    placeholder="EX: GAMER@LOBBY.GG">
                             <div class="cyber-scanner">
@@ -206,10 +238,9 @@
                         <div class="requirement invalid" id="emailRequirement">
                             <i class="fas fa-times"></i> Doit contenir @
                         </div>
-                        <span class="cyber-error" id="emailError"></span>
+                        <span class="cyber-error" id="emailError">{% if errors.email is defined %}{{ errors.email }}{% endif %}</span>
                     </div>
                     
-                    {# Mot de passe #}
                     <div class="cyber-field">
                         <label for="password">&gt; MOT_DE_PASSE</label>
                         <div class="field-frame">
@@ -233,6 +264,7 @@
                                 <div class="scan-line"></div>
                             </div>
                         </div>
+                        <span class="cyber-error" id="passwordError">{% if errors.password is defined %}{{ errors.password }}{% endif %}</span>
                         <div class="password-strength">
                             <span>FORCE:</span>
                             <div class="strength-bar">
@@ -253,7 +285,6 @@
                         </div>
                     </div>
                     
-                    {# Confirmation mot de passe #}
                     <div class="cyber-field">
                         <label for="confirmPassword">&gt; CONFIRMER</label>
                         <div class="field-frame">
@@ -283,36 +314,34 @@
                         <span class="cyber-error" id="confirmError"></span>
                     </div>
                     
-                    {# Date de naissance #}
-                    <div class="cyber-field">
+                    <div class="cyber-field" id="optionalDate">
                         <label for="date_naissance">&gt; DATE_DE_NAISSANCE</label>
                         <div class="field-frame">
                             <div class="field-border"></div>
                             <input type="date" 
                                    id="date_naissance" 
                                    name="date_naissance" 
-                                   required
+                                   
                                    placeholder=" ">
                             <div class="cyber-scanner">
                                 <div class="scan-line"></div>
                             </div>
                         </div>
-                        <div class="age-check" id="ageCheck">
+                        <div class="requirement invalid" id="ageCheck">
                             <i class="fas fa-user-clock"></i>
                             <span id="ageText">Âge: calcul en cours...</span>
                         </div>
-                        <span class="cyber-error" id="dateError"></span>
+                        <span class="cyber-error" id="dateError">{% if errors.dateNaissance is defined %}{{ errors.dateNaissance }}{% endif %}</span>
                     </div>
                     
-                    {# Téléphone #}
-                    <div class="cyber-field">
+                    <div class="cyber-field" id="optionalPhone">
                         <label for="telephone">&gt; TÉLÉPHONE</label>
                         <div class="field-frame">
                             <div class="field-border"></div>
                             <input type="tel" 
                                    id="telephone" 
                                    name="telephone" 
-                                   required
+                                   value="{{ app.request.request.get('telephone') }}"
                                    pattern="[0-9]{10}"
                                    placeholder="0123456789">
                             <div class="cyber-scanner">
@@ -322,28 +351,26 @@
                         <div class="requirement invalid" id="phoneReq">
                             <i class="fas fa-times"></i> 10 chiffres
                         </div>
-                        <span class="cyber-error" id="phoneError"></span>
+                        <span class="cyber-error" id="phoneError">{% if errors.telephone is defined %}{{ errors.telephone }}{% endif %}</span>
                     </div>
                     
-                    {# Rôle #}
-                    <div class="cyber-field">
+                    <div class="cyber-field" id="optionalRole">
                         <label for="role">&gt; RÔLE</label>
                         <div class="field-frame">
                             <div class="field-border"></div>
-                            <select id="role" name="role" required class="cyber-select">
+                            <select id="role" name="role" class="cyber-select">
                                 <option value="" disabled selected hidden>&gt; CHOISIR_RÔLE</option>
-                                <option value="client">JOUEUR (CLIENT)</option>
-                                <option value="admin">ADMIN</option>
-                                <option value="sponsor">SPONSOR</option>
+                                <option value="client" {% if app.request.request.get('role') == 'client' %}selected{% endif %}>JOUEUR (CLIENT)</option>
+                                <option value="admin" {% if app.request.request.get('role') == 'admin' %}selected{% endif %}>ADMIN</option>
+                                <option value="sponsor" {% if app.request.request.get('role') == 'sponsor' %}selected{% endif %}>SPONSOR</option>
                             </select>
                             <div class="cyber-scanner">
                                 <div class="scan-line"></div>
                             </div>
                         </div>
-                        <span class="cyber-error" id="roleError"></span>
+                        <span class="cyber-error" id="roleError">{% if errors.role is defined %}{{ errors.role }}{% endif %}</span>
                     </div>
 
-                    {# Checkbox CGU #}
                     <div class="cyber-options">
                         <label class="neon-checkbox">
                             <input type="checkbox" id="cgu" name="cgu" required>
@@ -359,20 +386,6 @@
                     <span class="cyber-error" id="cguError"></span>
                     {# Boutons d'action #}
                     <div class="form-actions">
-                        <button type="submit" class="neon-button">
-                            <div class="btn-matrix"></div>
-                            <span class="btn-text">[ CRÉER_COMPTE ]</span>
-                            <div class="btn-loader">
-                                <div class="matrix-loader">
-                                    <div class="matrix-bar"></div>
-                                    <div class="matrix-bar"></div>
-                                    <div class="matrix-bar"></div>
-                                    <div class="matrix-bar"></div>
-                                </div>
-                            </div>
-                            <div class="btn-glow"></div>
-                        </button>
-                        
                         <a href="{{ path('app_login') }}" class="btn-secondary">
                             <i class="fas fa-arrow-left"></i> RETOUR
                         </a>
@@ -404,7 +417,12 @@
             const dateInput = document.getElementById('date_naissance');
             const phoneInput = document.getElementById('telephone');
             const emailInput = document.getElementById('email');
-            const submitBtn = form.querySelector('.neon-button');
+            const submitBtn = document.getElementById('submitTop');
+            const simpleToggle = document.getElementById('simpleToggle');
+            const optionalFields = document.getElementById('optionalFields');
+            const optionalDate = document.getElementById('optionalDate');
+            const optionalPhone = document.getElementById('optionalPhone');
+            const optionalRole = document.getElementById('optionalRole');
             
             // 1. Validation en temps réel du mot de passe
             passwordInput.addEventListener('input', function() {
@@ -429,6 +447,15 @@
             
             // 7. Soumission du formulaire
             form.addEventListener('submit', handleSubmit);
+            
+            simpleToggle.addEventListener('click', function() {
+                const isHidden = optionalFields.style.display === 'none';
+                optionalFields.style.display = isHidden ? 'grid' : 'none';
+                optionalDate.style.display = isHidden ? 'block' : 'none';
+                optionalPhone.style.display = isHidden ? 'block' : 'none';
+                optionalRole.style.display = isHidden ? 'block' : 'none';
+                this.textContent = isHidden ? 'Mode simple' : 'Mode avancé';
+            });
             
             // Fonctions de validation
             
@@ -496,6 +523,15 @@
             
             function validateAge() {
                 const birthDate = new Date(dateInput.value);
+                if (!dateInput.value) {
+                    const ageCheck = document.getElementById('ageCheck');
+                    const ageText = document.getElementById('ageText');
+                    ageText.textContent = 'Âge: optionnel';
+                    ageCheck.style.background = 'rgba(106, 13, 173, 0.1)';
+                    ageCheck.style.borderColor = 'rgba(106, 13, 173, 0.3)';
+                    ageText.style.color = '#6A0DAD';
+                    return true;
+                }
                 const today = new Date();
                 let age = today.getFullYear() - birthDate.getFullYear();
                 const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -526,6 +562,12 @@
             function validatePhone() {
                 const phone = phoneInput.value.replace(/\D/g, ''); // Garde seulement les chiffres
                 const phoneReq = document.getElementById('phoneReq');
+                if (!phoneInput.value.trim()) {
+                    phoneReq.classList.remove('invalid');
+                    phoneReq.classList.add('valid');
+                    phoneReq.querySelector('i').className = 'fas fa-check';
+                    return true;
+                }
                 const isValid = phone.length === 10;
                 
                 // Formate le numéro
@@ -582,12 +624,12 @@
                 // Validation finale
                 const isPasswordValid = validatePassword();
                 const isMatchValid = validatePasswordMatch();
-                const isAgeValid = validateAge();
-                const isPhoneValid = validatePhone();
+                const isAgeValid = dateInput.value ? validateAge() : true;
+                const isPhoneValid = phoneInput.value ? validatePhone() : true;
                 const isEmailValid = validateEmail();
                 
                 // Vérifier tous les champs requis
-                const requiredFields = ['nom', 'prenom', 'email', 'password', 'confirmPassword', 'date_naissance', 'telephone'];
+                const requiredFields = ['email', 'password', 'confirmPassword'];
                 let allFieldsValid = true;
                 
                 requiredFields.forEach(fieldId => {

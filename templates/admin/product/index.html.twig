@@ -1,0 +1,71 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Gestion des Produits{% endblock %}
+{% block content_title %}Liste des Produits{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item active">Produits</li>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Produits du Marketplace</h3>
+        <div class="card-tools">
+            <a href="{{ path('app_admin_product_new') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i> Nouveau Produit
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Image</th>
+                    <th>Nom</th>
+                    <th>Catégorie</th>
+                    <th>Prix</th>
+                    <th>Stock</th>
+                    <th>Date Création</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for product in products %}
+                <tr>
+                    <td>{{ product.id }}</td>
+                    <td>
+                        {% if product.image %}
+                            <img src="{{ product.image starts with 'http' ? product.image : asset(product.image) }}" alt="{{ product.name }}" style="height: 50px; border-radius: 4px;">
+                        {% else %}
+                            <span class="badge bg-secondary">Pas d'image</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.category ? product.category.name : 'Aucune' }}</td>
+                    <td>{{ product.price }} €</td>
+                    <td>{{ product.stock }}</td>
+                    <td>{{ product.createdAt ? product.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{{ path('app_admin_product_show', {'id': product.id}) }}" class="btn btn-info btn-sm">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ path('app_admin_product_edit', {'id': product.id}) }}" class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">Aucun produit trouvé</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

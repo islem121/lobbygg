@@ -1,0 +1,39 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Article : {{ post.title }}{% endblock %}
+
+{% block body %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Détails de l'article</h3>
+            <div class="card-tools">
+                <a href="{{ path('app_admin_post_edit', {'id': post.id}) }}" class="btn btn-primary btn-sm">Modifier</a>
+                {{ include('admin/post/_delete_form.html.twig') }}
+                <a href="{{ path('app_admin_post_index') }}" class="btn btn-secondary btn-sm">Retour</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    {% if post.image %}
+                        <img src="{{ post.image starts with 'http' ? post.image : asset(post.image) }}" alt="{{ post.title }}" class="img-fluid rounded shadow-sm">
+                    {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center rounded shadow-sm" style="height: 200px;">
+                            <span class="text-muted">Aucune image</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <h4>{{ post.title }}</h4>
+                    <p><strong>Type :</strong> <span class="badge bg-info">{{ post.type|capitalize }}</span></p>
+                    <p><strong>Auteur :</strong> {{ post.user.nom }} {{ post.user.prenom }}</p>
+                    <p><strong>Date de création :</strong> {{ post.createdAt|date('d/m/Y H:i') }}</p>
+                    <hr>
+                    <div class="content">
+                        {{ post.content|nl2br }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -107,7 +107,7 @@
 
                 
                 {# FORMULAIRE SYMFONY #}
-                <form method="post" action="{{ path('app_login') }}" class="neon-form" id="loginForm">
+                <form method="post" action="{{ path('app_login') }}" class="neon-form" id="loginForm" novalidate>
                     {# Token CSRF OBLIGATOIRE pour Symfony #}
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
                     

@@ -9,7 +9,7 @@
       <p class="page-sub">Browse drops and gear. Save items, share deals, and flex your setup.</p>
     </div>
     <div class="page-actions">
-      <button class="btn btn-primary" type="button"><i class="fa-solid fa-bag-shopping"></i> My Cart</button>
+      <a class="btn btn-primary" href="{{ path('front_marketplace_cart') }}"><i class="fa-solid fa-bag-shopping"></i> Mon Panier</a>
       <button class="btn btn-ghost" type="button"><i class="fa-solid fa-bookmark"></i> Saved</button>
     </div>
   </section>
@@ -51,53 +51,86 @@
     <div class="col span-8">
       <div class="panel">
         <div class="panel-head">
-          <h2 class="panel-title"><i class="fa-solid fa-box-open"></i> Inventory</h2>
+          <h2 class="panel-title"><i class="fa-solid fa-box-open"></i> Produits</h2>
         </div>
 
-        <div class="table">
-          <div class="row head">
-            <div>Item</div>
-            <div>Stock</div>
-            <div>Price</div>
+        {% if products is defined and products|length > 0 %}
+          <div class="market-grid">
+            {% for product in products %}
+              <div class="market-item card" data-tilt>
+                {% if product.image %}
+                  <div class="market-image-container" style="height: 150px; overflow: hidden; border-radius: 4px; margin-bottom: 10px;">
+                    <img src="{{ product.image starts with 'http' ? product.image : asset(product.image) }}" alt="{{ product.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                  </div>
+                {% endif %}
+                <div class="market-badge">{{ product.category ? product.category.name : 'Général' }}</div>
+                <div class="market-name">{{ product.name }}</div>
+                <div class="market-price">
+                  <span class="accent">{{ product.price|number_format(2, '.', ' ') }}</span> <span class="muted">DT</span>
+                </div>
+                <div class="market-stock">Stock: <span class="accent">{{ product.stock }}</span></div>
+                <div class="row-actions">
+                  <a class="btn btn-mini btn-primary" href="{{ path('front_marketplace_add', {id: product.id}) }}"><i class="fa-solid fa-bag-shopping"></i> Ajouter</a>
+                </div>
+              </div>
+            {% endfor %}
           </div>
-          <div class="row">
-            <div class="brand"><span class="brand-dot"></span> Violet Rift Skin</div>
-            <div class="accent">12</div>
-            <div>29.99 DT</div>
+        {% else %}
+          <div class="empty-state">
+            <p>Aucun produit disponible pour le moment.</p>
           </div>
-          <div class="row">
-            <div class="brand"><span class="brand-dot"></span> ARGB Keycaps</div>
-            <div class="accent">48</div>
-            <div>39.00 DT</div>
-          </div>
-          <div class="row">
-            <div class="brand"><span class="brand-dot"></span> Pro Controller</div>
-            <div class="accent">6</div>
-            <div>69.00 DT</div>
-          </div>
-        </div>
+        {% endif %}
       </div>
     </div>
 
     <div class="col span-4">
       <div class="panel">
         <div class="panel-head">
-          <h2 class="panel-title"><i class="fa-solid fa-wave-square"></i> Signals</h2>
+          {% if cartItems is defined %}
+            <h2 class="panel-title"><i class="fa-solid fa-bag-shopping"></i> Mon Panier</h2>
+          {% else %}
+            <h2 class="panel-title"><i class="fa-solid fa-wave-square"></i> Signals</h2>
+          {% endif %}
         </div>
-        <div class="mini-kpis">
-          <div class="kpi card">
-            <div class="kpi-label">Conversions</div>
-            <div class="kpi-value accent" data-countup data-to="931">0</div>
+        {% if cartItems is defined %}
+          <div class="table">
+            <div class="row head">
+              <div>Produit</div>
+              <div>Qté</div>
+              <div>Total</div>
+            </div>
+            {% for item in cartItems %}
+              <div class="row">
+                <div class="brand">{{ item.product.name }}</div>
+                <div class="accent">{{ item.qty }}</div>
+                <div>{{ item.lineTotal|number_format(2, '.', ' ') }} DT</div>
+              </div>
+            {% endfor %}
+            <div class="row">
+              <div class="brand">Total</div>
+              <div></div>
+              <div class="accent">{{ cartTotal|number_format(2, '.', ' ') }} DT</div>
+            </div>
+            <div class="row-actions" style="padding: 12px">
+              <a class="btn btn-primary" href="{{ path('front_marketplace_checkout') }}"><i class="fa-solid fa-credit-card"></i> Passer la commande</a>
+            </div>
           </div>
-          <div class="kpi card">
-            <div class="kpi-label">Refunds</div>
-            <div class="kpi-value" data-countup data-to="17">0</div>
+        {% else %}
+          <div class="mini-kpis">
+            <div class="kpi card">
+              <div class="kpi-label">Conversions</div>
+              <div class="kpi-value accent" data-countup data-to="931">0</div>
+            </div>
+            <div class="kpi card">
+              <div class="kpi-label">Refunds</div>
+              <div class="kpi-value" data-countup data-to="17">0</div>
+            </div>
+            <div class="kpi card">
+              <div class="kpi-label">Avg. order</div>
+              <div class="kpi-value" data-countup data-to="42">0</div>
+            </div>
           </div>
-          <div class="kpi card">
-            <div class="kpi-label">Avg. order</div>
-            <div class="kpi-value" data-countup data-to="42">0</div>
-          </div>
-        </div>
+        {% endif %}
       </div>
     </div>
   </section>

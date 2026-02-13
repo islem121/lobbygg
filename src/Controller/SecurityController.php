@@ -8,7 +8,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class SecurityController extends AbstractController
 {
@@ -34,33 +35,40 @@ class SecurityController extends AbstractController
     }
 
     #[Route('/register', name: 'app_register', methods: ['GET', 'POST'])]
-    public function register(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager): Response
+    public function register(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager, ValidatorInterface $validator): Response
     {
+        $errors = [];
         if ($request->isMethod('POST')) {
-            try {
-                $email = $request->request->get('email');
-                $password = $request->request->get('password');
-                $nom = $request->request->get('nom');
-                $prenom = $request->request->get('prenom');
-                $dateNaissance = $request->request->get('date_naissance');
-                $telephone = $request->request->get('telephone');
-                $role = $request->request->get('role');
+            $email = $request->request->get('email');
+            $password = $request->request->get('password');
+            $nom = $request->request->get('nom');
+            $prenom = $request->request->get('prenom');
+            $dateNaissance = $request->request->get('date_naissance');
+            $telephone = $request->request->get('telephone');
+            $role = $request->request->get('role') ?: User::ROLE_CLIENT;
 
-                if (!$role) {
-                    $role = User::ROLE_CLIENT;
-                }
-
-                $user = new User();
-                $user->setEmail($email);
-                $user->setUsername($prenom . ' ' . $nom);
-                $user->setNom($nom);
-                $user->setPrenom($prenom);
-                if ($dateNaissance) {
+            $user = new User();
+            $user->setEmail($email);
+            $user->setUsername($prenom . ' ' . $nom);
+            $user->setNom($nom);
+            $user->setPrenom($prenom);
+            if ($dateNaissance) {
+                try {
                     $user->setDateNaissance(new \DateTime($dateNaissance));
+                } catch (\Exception $e) {}
+            }
+            $user->setTelephone($telephone);
+            $user->setRole($role);
+            $user->setPassword($password); // Temporairement pour la validation
+
+            // Validation Symfony
+            $violations = $validator->validate($user, null, ['Default', 'registration']);
+            
+            if (count($violations) > 0) {
+                foreach ($violations as $violation) {
+                    $errors[$violation->getPropertyPath()] = $violation->getMessage();
                 }
-                $user->setTelephone($telephone);
-                $user->setRole($role);
-                
+            } else {
                 // Hachage du mot de passe
                 $hashedPassword = $passwordHasher->hashPassword($user, $password);
                 $user->setPassword($hashedPassword);
@@ -68,16 +76,14 @@ class SecurityController extends AbstractController
                 $entityManager->persist($user);
                 $entityManager->flush();
 
-                // On redirige vers login après inscription pour que l'utilisateur se connecte
+                $this->addFlash('success', 'Inscription réussie ! Veuillez vous connecter.');
                 return $this->redirectToRoute('app_login');
-            } catch (\Exception $e) {
-                return $this->render('security/register.html.twig', [
-                    'error' => 'Erreur : ' . $e->getMessage()
-                ]);
             }
         }
 
-        return $this->render('security/register.html.twig');
+        return $this->render('security/register.html.twig', [
+            'errors' => $errors
+        ]);
     }
 
     #[Route('/forgot-password', name: 'app_forgot_password')]

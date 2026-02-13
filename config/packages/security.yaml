@@ -31,6 +31,11 @@ security:
                 path: app_logout
                 target: app_login
 
+    role_hierarchy:
+        ROLE_CLIENT:      ROLE_USER
+        ROLE_SPONSOR:     ROLE_USER
+        ROLE_ADMIN:       [ROLE_CLIENT, ROLE_SPONSOR, ROLE_USER]
+
     access_control:
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/login, roles: PUBLIC_ACCESS }
@@ -40,3 +45,4 @@ security:
         - { path: ^/marketplace, roles: ROLE_USER }
         - { path: ^/tournaments, roles: ROLE_USER }
         - { path: ^/sponsoring, roles: ROLE_USER }
+        - { path: ^/contracts, roles: ROLE_USER }

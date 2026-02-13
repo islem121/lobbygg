@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     {# Icons #}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('assets/vendor/css/all.min.css') }}">
 
     {# Front assets #}
     <link rel="stylesheet" href="{{ asset('assets/front/css/front.css') }}">
@@ -42,6 +42,13 @@
         {% include 'partials/_cyber_navbar.html.twig' %}
 
         <main class="lobby-content">
+          {% for label, messages in app.flashes %}
+            {% for message in messages %}
+              <div class="alert alert-{{ label == 'error' ? 'danger' : label }}" style="padding: 15px; margin: 20px; border-radius: 4px; background: rgba(0,0,0,0.5); border: 1px solid {{ label == 'error' ? '#ff0055' : '#8b3dff' }}; color: #fff;">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endfor %}
           {% block content %}{% endblock %}
         </main>
 
@@ -52,7 +59,7 @@
     {% include 'front/partials/bottom-bar.html.twig' %}
 
     {# Optional: GSAP via CDN (no npm) #}
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script defer src="{{ asset('assets/vendor/js/gsap.min.js') }}"></script>
     <script defer src="{{ asset('assets/front/js/front.js') }}"></script>
     {% block javascripts %}{% endblock %}
   </body>

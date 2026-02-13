@@ -209,7 +209,7 @@
         <a href="{{ path('front_tournaments') }}" class="nav-link {{ app.request.get('_route') == 'front_tournaments' ? 'active' : '' }}">TOURNOI</a>
             
             {% if is_granted('ROLE_SPONSOR') %}
-                <a href="{{ path('front_sponsoring_create') }}" class="nav-link {{ app.request.get('_route') == 'front_sponsoring_create' ? 'active' : '' }}">CREATE OFFRE</a>
+                <a href="{{ path('front_sponsoring_my_offers') }}" class="nav-link {{ app.request.get('_route') == 'front_sponsoring_my_offers' ? 'active' : '' }}">MES OFFRES</a>
                 <a href="{{ path('front_sponsor_requests') }}" class="nav-link {{ app.request.get('_route') == 'front_sponsor_requests' ? 'active' : '' }}">DEMANDES</a>
                 <a href="{{ path('front_contracts') }}" class="nav-link {{ app.request.get('_route') == 'front_contracts' ? 'active' : '' }}">CONTRATS</a>
             {% elseif is_granted('ROLE_CLIENT') %}
