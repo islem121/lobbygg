@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -61,10 +63,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Notification::class, orphanRemoval: true)]
+    private Collection $notifications;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->role = self::ROLE_CLIENT;
+        $this->notifications = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, Notification>
+     */
+    public function getNotifications(): Collection
+    {
+        return $this->notifications;
     }
 
     // ==================== GETTERS & SETTERS ====================

@@ -35,6 +35,7 @@ class PageController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_SPONSOR');
 
         $sponsor = new Sponsor();
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         
         // On pré-remplit le nom de la société avec le nom de l'utilisateur
@@ -302,10 +303,10 @@ class PageController extends AbstractController
         return $this->redirectToRoute('front_contracts');
     }
 
-    #[Route('/blog', name: 'front_blog')]
-    public function blog(): Response
-    {
-        // Social frontoffice: render the news feed
-        return $this->render('front/feed.html.twig', ['page' => 'blog']);
-    }
+    // #[Route('/blog', name: 'front_blog')]
+    // public function blog(): Response
+    // {
+    //     // Social frontoffice: render the news feed
+    //     return $this->render('front/feed.html.twig', ['page' => 'blog']);
+    // }
 }

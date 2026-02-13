@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\UserType;
 use App\Repository\UserRepository;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,11 +16,13 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 #[Route('/user')]
+#[IsGranted('ROLE_ADMIN')]
 final class UserController extends AbstractController
 {
     #[Route('/update-image', name: 'app_user_update_image', methods: ['POST'])]
     public function updateImage(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        /** @var User $user */
         $user = $this->getUser();
         if (!$user) return $this->redirectToRoute('app_login');
 
@@ -107,6 +110,7 @@ final class UserController extends AbstractController
     #[Route('/settings', name: 'app_settings', priority: 10)]
     public function settings(Request $request, EntityManagerInterface $entityManager): Response
     {
+        /** @var User $user */
         $user = $this->getUser();
         if (!$user) return $this->redirectToRoute('app_login');
 
@@ -119,6 +123,7 @@ final class UserController extends AbstractController
     #[Route('/profile/view', name: 'app_profile_view', priority: 10)]
     public function viewProfile(): Response
     {
+        /** @var User $user */
         $user = $this->getUser();
         if (!$user) return $this->redirectToRoute('app_login');
 
