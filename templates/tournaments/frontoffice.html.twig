@@ -22,6 +22,59 @@
       </form>
     </div>
 
+    <!-- Filter and Search Bar -->
+    <div class="tm-filter-bar">
+      <form method="get" class="tm-filter-form">
+        <div class="tm-filter-group">
+          <input type="text" name="search" id="search" value="{{ filters.search }}" placeholder="Search tournaments..." class="tm-search-input">
+        </div>
+        <div class="tm-filter-group">
+          <select name="status" id="status" class="tm-filter-select">
+            <option value="">All Statuses</option>
+            {% for status in filterOptions.status %}
+              <option value="{{ status }}" {{ filters.status == status ? 'selected' : '' }}>{{ status }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="tm-filter-group">
+          <select name="region" id="region" class="tm-filter-select">
+            <option value="">All Regions</option>
+            {% for region in filterOptions.region %}
+              <option value="{{ region }}" {{ filters.region == region ? 'selected' : '' }}>{{ region }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="tm-filter-group">
+          <select name="mode" id="mode" class="tm-filter-select">
+            <option value="">All Modes</option>
+            {% for mode in filterOptions.mode %}
+              <option value="{{ mode }}" {{ filters.mode == mode ? 'selected' : '' }}>{{ mode }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="tm-filter-group">
+          <select name="sort" id="sort" class="tm-filter-select">
+            <option value="start_datetime" {{ sort == 'start_datetime' ? 'selected' : '' }}>Sort by Date</option>
+            <option value="name" {{ sort == 'name' ? 'selected' : '' }}>Sort by Name</option>
+            <option value="status" {{ sort == 'status' ? 'selected' : '' }}>Sort by Status</option>
+            <option value="created_at" {{ sort == 'created_at' ? 'selected' : '' }}>Sort by Created</option>
+          </select>
+        </div>
+        <div class="tm-filter-group">
+          <select name="order" id="order" class="tm-filter-select">
+            <option value="asc" {{ order == 'asc' ? 'selected' : '' }}>Ascending</option>
+            <option value="desc" {{ order == 'desc' ? 'selected' : '' }}>Descending</option>
+          </select>
+        </div>
+        <!-- Preserve user_id if set -->
+        {% if userId %}
+          <input type="hidden" name="user_id" value="{{ userId }}">
+        {% endif %}
+        <button type="submit" class="tm-btn tm-btn-primary">Apply Filters</button>
+        <a href="{{ path('tournament_frontoffice') }}" class="tm-btn tm-btn-secondary">Clear</a>
+      </form>
+    </div>
+
     <div id="messageBox"></div>
 
     <section class="tm-grid tm-front-grid">

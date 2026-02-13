@@ -28,34 +28,57 @@ final class TournamentManagementController extends AbstractController
         }
 
         $userId = $this->resolveUserId($request);
-        $tournaments = $this->fetchTournamentsWithRegistration($userId);
+        
+        // Get filter, sort, and search parameters
+        $filters = [
+            'search' => trim((string) $request->query->get('search', '')),
+            'status' => $request->query->get('status', ''),
+            'region' => $request->query->get('region', ''),
+            'mode' => $request->query->get('mode', ''),
+        ];
+        $sort = $request->query->get('sort', 'start_datetime');
+        $order = $request->query->get('order', 'asc');
+        
+        $tournaments = $this->fetchTournamentsWithRegistration($userId, $filters, $sort, $order);
+        
+        // Get unique values for filter dropdowns
+        $filterOptions = $this->getFilterOptions();
 
         return $this->render('tournaments/frontoffice.html.twig', [
             'page' => 'tournaments',
             'userId' => $userId,
             'tournaments' => $tournaments,
+            'filters' => $filters,
+            'sort' => $sort,
+            'order' => $order,
+            'filterOptions' => $filterOptions,
         ]);
     }
 
     #[Route('/admin/tournaments', name: 'tournament_dashboard', methods: ['GET'])]
-    public function dashboard(): Response
+    public function dashboard(Request $request): Response
     {
-        $sql = <<<SQL
-SELECT
-    t.id, t.name, t.status, t.start_datetime, t.end_datetime, t.region, t.mode, t.max_teams, t.description, t.created_at,
-    COUNT(tp.participation_id) AS registered_teams
-FROM tournament t
-LEFT JOIN tournament_participation tp
-    ON tp.tournament_id = t.id
-    AND tp.status = 'registered'
-GROUP BY t.id
-ORDER BY t.created_at DESC
-SQL;
-
-        $tournaments = $this->connection->fetchAllAssociative($sql);
+        // Get filter, sort, and search parameters
+        $filters = [
+            'search' => trim((string) $request->query->get('search', '')),
+            'status' => $request->query->get('status', ''),
+            'region' => $request->query->get('region', ''),
+            'mode' => $request->query->get('mode', ''),
+        ];
+        $sort = $request->query->get('sort', 'created_at');
+        $order = $request->query->get('order', 'desc');
+        
+        $tournaments = $this->fetchTournamentsForDashboard($filters, $sort, $order);
+        
+        // Get unique values for filter dropdowns
+        $filterOptions = $this->getFilterOptions();
 
         return $this->render('tournaments/dashboard.html.twig', [
             'tournaments' => $tournaments,
+            'filters' => $filters,
+            'sort' => $sort,
+            'order' => $order,
+            'filterOptions' => $filterOptions,
         ]);
     }
 
@@ -65,7 +88,18 @@ SQL;
     {
         try {
             $userId = filter_var($request->query->get('user_id'), FILTER_VALIDATE_INT);
-            $tournaments = $this->fetchTournamentsWithRegistration($userId ?: null);
+            
+            // Get filter, sort, and search parameters
+            $filters = [
+                'search' => trim((string) $request->query->get('search', '')),
+                'status' => $request->query->get('status', ''),
+                'region' => $request->query->get('region', ''),
+                'mode' => $request->query->get('mode', ''),
+            ];
+            $sort = $request->query->get('sort', 'start_datetime');
+            $order = $request->query->get('order', 'asc');
+            
+            $tournaments = $this->fetchTournamentsWithRegistration($userId ?: null, $filters, $sort, $order);
             return $this->jsonSuccess('Tournaments loaded successfully.', ['tournaments' => $tournaments]);
         } catch (\Throwable $e) {
             return $this->jsonError('Failed to load tournaments: ' . $e->getMessage(), 500);
@@ -320,29 +354,65 @@ SQL;
         );
     }
 
-    private function fetchTournamentsWithRegistration(?int $userId): array
+    private function fetchTournamentsWithRegistration(?int $userId, array $filters = [], string $sort = 'start_datetime', string $order = 'asc'): array
     {
-        $sql = <<<SQL
-SELECT
-    t.id,
-    t.name,
-    t.status,
-    t.start_datetime,
-    t.end_datetime,
-    t.region,
-    t.mode,
-    t.max_teams,
-    t.description,
-    t.created_at,
-    COUNT(tp.participation_id) AS registered_teams
-FROM tournament t
-LEFT JOIN tournament_participation tp
-    ON tp.tournament_id = t.id
-    AND tp.status = 'registered'
-GROUP BY t.id
-ORDER BY t.start_datetime ASC, t.id DESC
-SQL;
-        $rows = $this->connection->fetchAllAssociative($sql);
+        $sql = "SELECT
+            t.id,
+            t.name,
+            t.status,
+            t.start_datetime,
+            t.end_datetime,
+            t.region,
+            t.mode,
+            t.max_teams,
+            t.description,
+            t.created_at,
+            COUNT(tp.participation_id) AS registered_teams
+        FROM tournament t
+        LEFT JOIN tournament_participation tp
+            ON tp.tournament_id = t.id
+            AND tp.status = 'registered'";
+        
+        $where = [];
+        $params = [];
+        
+        // Add search filter
+        if (!empty($filters['search'])) {
+            $where[] = "(t.name LIKE :search OR t.description LIKE :search)";
+            $params['search'] = '%' . $filters['search'] . '%';
+        }
+        
+        // Add status filter
+        if (!empty($filters['status'])) {
+            $where[] = "t.status = :status";
+            $params['status'] = $filters['status'];
+        }
+        
+        // Add region filter
+        if (!empty($filters['region'])) {
+            $where[] = "t.region = :region";
+            $params['region'] = $filters['region'];
+        }
+        
+        // Add mode filter
+        if (!empty($filters['mode'])) {
+            $where[] = "t.mode = :mode";
+            $params['mode'] = $filters['mode'];
+        }
+        
+        if (!empty($where)) {
+            $sql .= " WHERE " . implode(" AND ", $where);
+        }
+        
+        $sql .= " GROUP BY t.id";
+        
+        // Add sorting
+        $allowedSorts = ['start_datetime', 'name', 'status', 'created_at'];
+        $sort = in_array($sort, $allowedSorts) ? $sort : 'start_datetime';
+        $order = strtolower($order) === 'desc' ? 'DESC' : 'ASC';
+        $sql .= " ORDER BY t.$sort $order, t.id DESC";
+        
+        $rows = $this->connection->fetchAllAssociative($sql, $params);
 
         if (!$userId || $userId < 1) {
             foreach ($rows as &$row) {
@@ -500,6 +570,90 @@ SQL;
             'message' => $message,
             'data' => $data,
         ], $status);
+    }
+
+    private function fetchTournamentsForDashboard(array $filters = [], string $sort = 'created_at', string $order = 'desc'): array
+    {
+        $sql = "SELECT
+            t.id,
+            t.name,
+            t.status,
+            t.start_datetime,
+            t.end_datetime,
+            t.region,
+            t.mode,
+            t.max_teams,
+            t.description,
+            t.created_at,
+            COUNT(tp.participation_id) AS registered_teams
+        FROM tournament t
+        LEFT JOIN tournament_participation tp
+            ON tp.tournament_id = t.id
+            AND tp.status = 'registered'";
+        
+        $where = [];
+        $params = [];
+        
+        // Add search filter
+        if (!empty($filters['search'])) {
+            $where[] = "(t.name LIKE :search OR t.description LIKE :search)";
+            $params['search'] = '%' . $filters['search'] . '%';
+        }
+        
+        // Add status filter
+        if (!empty($filters['status'])) {
+            $where[] = "t.status = :status";
+            $params['status'] = $filters['status'];
+        }
+        
+        // Add region filter
+        if (!empty($filters['region'])) {
+            $where[] = "t.region = :region";
+            $params['region'] = $filters['region'];
+        }
+        
+        // Add mode filter
+        if (!empty($filters['mode'])) {
+            $where[] = "t.mode = :mode";
+            $params['mode'] = $filters['mode'];
+        }
+        
+        if (!empty($where)) {
+            $sql .= " WHERE " . implode(" AND ", $where);
+        }
+        
+        $sql .= " GROUP BY t.id";
+        
+        // Add sorting
+        $allowedSorts = ['start_datetime', 'name', 'status', 'created_at'];
+        $sort = in_array($sort, $allowedSorts) ? $sort : 'created_at';
+        $order = strtolower($order) === 'asc' ? 'ASC' : 'DESC';
+        $sql .= " ORDER BY t.$sort $order, t.id DESC";
+        
+        return $this->connection->fetchAllAssociative($sql, $params);
+    }
+
+    private function getFilterOptions(): array
+    {
+        $options = [
+            'status' => [],
+            'region' => [],
+            'mode' => [],
+        ];
+        
+        // Get unique statuses
+        $statuses = $this->connection->fetchFirstColumn('SELECT DISTINCT status FROM tournament WHERE status IS NOT NULL ORDER BY status');
+        $options['status'] = array_values($statuses);
+        
+        // Get unique regions
+        $regions = $this->connection->fetchFirstColumn('SELECT DISTINCT region FROM tournament WHERE region IS NOT NULL AND region != "" ORDER BY region');
+        $options['region'] = array_values($regions);
+        
+        // Get unique modes
+        $modes = $this->connection->fetchFirstColumn('SELECT DISTINCT mode FROM tournament WHERE mode IS NOT NULL AND mode != "" ORDER BY mode');
+        $options['mode'] = array_values($modes);
+        
+        return $options;
     }
 }
 
