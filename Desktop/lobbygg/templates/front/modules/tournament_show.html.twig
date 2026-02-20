@@ -1,0 +1,92 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg - {{ tournament.title }}{% endblock %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">{{ tournament.title }}</h1>
+      <p class="page-sub">{{ tournament.description|default('No description') }}</p>
+    </div>
+    <div class="page-actions">
+      <a class="btn btn-ghost" href="{{ path('front_tournaments') }}">
+        <i class="fa-solid fa-arrow-left"></i> Back
+      </a>
+      {% if is_granted('ROLE_ADMIN') %}
+        <a class="btn btn-primary" href="{{ path('front_tournaments_edit', {id: tournament.id}) }}">
+          <i class="fa-solid fa-pen"></i> Edit
+        </a>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="col span-7">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-circle-info"></i> Tournament Info</h2>
+        </div>
+        <ul style="display:grid; gap:8px; list-style:none; padding:0; margin:0;">
+          <li><strong>Status:</strong> {{ tournament.status }}</li>
+          <li><strong>Start:</strong> {{ tournament.startDate ? tournament.startDate|date('Y-m-d H:i') : 'N/A' }}</li>
+          <li><strong>End:</strong> {{ tournament.endDate ? tournament.endDate|date('Y-m-d H:i') : 'N/A' }}</li>
+          <li><strong>Slots:</strong> {{ participantsCount }} / {{ tournament.maxPlayers }}</li>
+        </ul>
+
+        <div class="row-actions" style="margin-top:16px;">
+          {% if is_granted('ROLE_USER') %}
+            {% if isJoined %}
+              <form method="post" action="{{ path('front_tournaments_leave', {id: tournament.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('leave_tournament_' ~ tournament.id) }}">
+                <button class="btn btn-ghost" type="submit">
+                  <i class="fa-solid fa-right-from-bracket"></i> Leave
+                </button>
+              </form>
+            {% else %}
+              <form method="post" action="{{ path('front_tournaments_join', {id: tournament.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('join_tournament_' ~ tournament.id) }}">
+                <button class="btn btn-primary" type="submit">
+                  <i class="fa-solid fa-bolt"></i> Join
+                </button>
+              </form>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col span-5">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-users"></i> Participants</h2>
+        </div>
+
+        {% if participations is empty %}
+          <p>No participants yet.</p>
+        {% else %}
+          <div style="display:grid; gap:10px;">
+            {% for p in participations %}
+              <div class="card" style="padding:10px;">
+                <div><strong>{{ p.user ? p.user.email : 'Unknown user' }}</strong></div>
+                <div>Status: {{ p.status }}</div>
+                <div>Joined: {{ p.registrationDate ? p.registrationDate|date('Y-m-d H:i') : 'N/A' }}</div>
+
+                {% if is_granted('ROLE_ADMIN') %}
+                  <div class="row-actions" style="margin-top:8px;">
+                    {% for nextStatus in ['confirmed', 'eliminated', 'winner'] %}
+                      <form method="post" action="{{ path('front_tournaments_participation_status', {id: p.id, status: nextStatus}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('participation_status_' ~ p.id) }}">
+                        <button class="btn btn-mini btn-ghost" type="submit">{{ nextStatus }}</button>
+                      </form>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+{% endblock %}
+

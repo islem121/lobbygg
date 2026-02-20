@@ -1,0 +1,39 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+    <div class="card-body">
+        <div class="mb-3">
+            {{ form_label(form.name, 'Nom du produit') }}
+            {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.name) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.price, 'Prix (€)') }}
+            {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.price) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.description, 'Description') }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+            {{ form_errors(form.description) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.stock, 'Quantité en stock') }}
+            {{ form_widget(form.stock, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.stock) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.image, 'URL ou Chemin de l\'image') }}
+            {{ form_widget(form.image, {'attr': {'class': 'form-control', 'placeholder': 'Ex: https://... ou assets/images/product/nom.jpg'}}) }}
+            <small class="text-muted">Entrez une URL complète (http/https) ou un chemin relatif à partir du dossier <code>public/</code>.</small>
+            {{ form_errors(form.image) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.category, 'Catégorie') }}
+            {{ form_widget(form.category, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.category) }}
+        </div>
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+        <a href="{{ path('app_admin_product_index') }}" class="btn btn-default">Annuler</a>
+    </div>
+{{ form_end(form) }}

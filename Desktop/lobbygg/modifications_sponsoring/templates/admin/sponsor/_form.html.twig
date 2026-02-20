@@ -1,0 +1,9 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+    <div class="card-body">
+        {{ form_widget(form) }}
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-success">{{ button_label|default('Enregistrer') }}</button>
+        <a href="{{ back_path }}" class="btn btn-secondary">Retour à la liste</a>
+    </div>
+{{ form_end(form) }}

@@ -1,0 +1,88 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg - Tournaments{% endblock %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">Tournaments</h1>
+      <p class="page-sub">Manage tournaments, join events, and track participants in real time.</p>
+    </div>
+    <div class="page-actions">
+      {% if is_granted('ROLE_ADMIN') %}
+        <a class="btn btn-primary" href="{{ path('front_tournaments_new') }}">
+          <i class="fa-solid fa-plus"></i> New Tournament
+        </a>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="col span-12">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-trophy"></i> All Tournaments</h2>
+        </div>
+
+        {% if tournaments is empty %}
+          <p>No tournaments found.</p>
+        {% else %}
+          <div class="tour-grid">
+            {% for row in tournaments %}
+              {% set t = row.entity %}
+              <div class="card tour-card big">
+                <div class="tour-top">
+                  <div class="tour-name">{{ t.title }}</div>
+                  <div class="pill">{{ t.status|upper }}</div>
+                </div>
+                <div class="tour-meta">
+                  <span><i class="fa-solid fa-users"></i> {{ row.participantsCount }} / {{ t.maxPlayers }}</span>
+                  <span><i class="fa-solid fa-calendar"></i> {{ t.startDate ? t.startDate|date('Y-m-d H:i') : 'N/A' }}</span>
+                  <span><i class="fa-solid fa-clock"></i> {{ t.endDate ? t.endDate|date('Y-m-d H:i') : 'N/A' }}</span>
+                </div>
+                <p style="margin-top:8px;">{{ t.description|default('No description') }}</p>
+
+                <div class="row-actions">
+                  <a class="btn btn-mini btn-ghost" href="{{ path('front_tournaments_show', {id: t.id}) }}">
+                    <i class="fa-solid fa-eye"></i> View
+                  </a>
+
+                  {% if is_granted('ROLE_USER') %}
+                    {% if row.isJoined %}
+                      <form method="post" action="{{ path('front_tournaments_leave', {id: t.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('leave_tournament_' ~ t.id) }}">
+                        <button class="btn btn-mini btn-ghost" type="submit">
+                          <i class="fa-solid fa-right-from-bracket"></i> Leave
+                        </button>
+                      </form>
+                    {% else %}
+                      <form method="post" action="{{ path('front_tournaments_join', {id: t.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('join_tournament_' ~ t.id) }}">
+                        <button class="btn btn-mini btn-primary" type="submit">
+                          <i class="fa-solid fa-bolt"></i> Join
+                        </button>
+                      </form>
+                    {% endif %}
+                  {% endif %}
+
+                  {% if is_granted('ROLE_ADMIN') %}
+                    <a class="btn btn-mini btn-ghost" href="{{ path('front_tournaments_edit', {id: t.id}) }}">
+                      <i class="fa-solid fa-pen"></i> Edit
+                    </a>
+                    <form method="post" action="{{ path('front_tournaments_delete', {id: t.id}) }}" onsubmit="return confirm('Delete tournament?');">
+                      <input type="hidden" name="_token" value="{{ csrf_token('delete_tournament_' ~ t.id) }}">
+                      <button class="btn btn-mini btn-ghost" type="submit">
+                        <i class="fa-solid fa-trash"></i> Delete
+                      </button>
+                    </form>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+{% endblock %}
+

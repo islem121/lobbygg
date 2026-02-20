@@ -1,0 +1,230 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg • Community{% endblock %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">Community Feed</h1>
+      <p class="page-sub">Connect with gamers from around the world.</p>
+    </div>
+    <div class="page-actions">
+      {% if form %}
+        <button onclick="openPostModal()" class="btn btn-primary"><i class="fa-solid fa-pen-nib"></i> Create Post</button>
+      {% else %}
+        <a href="{{ path('app_login') }}" class="btn btn-primary"><i class="fa-solid fa-pen-nib"></i> Create Post</a>
+      {% endif %}
+      <a href="{{ path('app_my_posts') }}" class="btn btn-ghost"><i class="fa-solid fa-user"></i> My Posts</a>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="col span-8">
+      
+      {% include 'front/modules/_create_post_modal.html.twig' %}
+ 
+      <div class="panel">
+        <div class="panel-head" style="justify-content: space-between;">
+          <form action="{{ path('front_blog') }}" method="get" class="lobby-search" style="width: 250px;">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="search" name="q" value="{{ searchQuery }}" placeholder="Search posts or users..." aria-label="Search posts">
+          </form>
+
+          <div class="notification-wrapper" style="position: relative;">
+            <button class="btn btn-ghost notification-btn" onclick="toggleNotifications()">
+              <i class="fa-solid fa-bell"></i>
+              {% if unreadCount > 0 %}
+                <span class="badge-count">{{ unreadCount }}</span>
+              {% endif %}
+            </button>
+            
+            <div id="notification-dropdown" class="notification-dropdown">
+                <div class="dropdown-header">
+                    <h4>Notifications</h4>
+                    {% if unreadCount > 0 %}
+                        <span class="new-count">{{ unreadCount }} new</span>
+                    {% endif %}
+                </div>
+                <div class="dropdown-body">
+                    {% for notification in notifications %}
+                        <a href="{{ path('app_notification_read', {id: notification.id}) }}" class="notification-item {% if not notification.isRead %}unread{% endif %}">
+                            <div class="notif-avatar">{{ notification.actor.username[:2]|upper }}</div>
+                            <div class="notif-content">
+                                <p><strong>{{ notification.actor.username }}</strong> 
+                                    {% if notification.type == 'like' %}
+                                        liked your post
+                                    {% elseif notification.type == 'comment' %}
+                                        commented on your post
+                                    {% endif %}
+                                </p>
+                                <span class="notif-time">{{ notification.createdAt|date('M d, H:i') }}</span>
+                            </div>
+                            {% if not notification.isRead %}
+                                <div class="notif-dot"></div>
+                            {% endif %}
+                        </a>
+                    {% else %}
+                        <div class="empty-notif">No notifications yet</div>
+                    {% endfor %}
+                </div>
+            </div>
+          </div>
+        </div>
+
+        {% if searchQuery %}
+            <div class="search-info" style="padding: 10px 20px; color: var(--accent);">
+                Search results for: "<strong>{{ searchQuery }}</strong>"
+                <a href="{{ path('front_blog') }}" style="margin-left: 10px; color: var(--text-muted); text-decoration: none;"><i class="fa-solid fa-xmark"></i> Clear</a>
+            </div>
+        {% endif %}
+
+        <div class="feed" style="margin-top:12px" data-feed>
+          {% for post in posts %}
+            {% include 'front/modules/_post_item.html.twig' with {'post': post} %}
+          {% else %}
+            <div class="empty-feed" style="text-align: center; padding: 40px; color: #888;">
+                <i class="fa-solid fa-ghost" style="font-size: 48px; margin-bottom: 20px;"></i>
+                <p>No posts found.</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col span-4">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-people-group"></i> People to follow</h2>
+        </div>
+        {# Placeholder for dynamic suggestions #}
+        <div class="stack">
+            <div class="empty-feed" style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 12px;">
+                <i class="fa-solid fa-user-group" style="font-size: 24px; margin-bottom: 10px; opacity: 0.5;"></i>
+                <p>Suggestions coming soon.</p>
+            </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comments Modal -->
+  {% include 'front/modules/_comments_modal.html.twig' %}
+
+  <style>
+    .badge-count {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #ff4757;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 10px;
+        font-weight: bold;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .notification-dropdown {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        width: 320px;
+        background: rgba(30, 30, 50, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        z-index: 1000;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+
+    .notification-dropdown.show {
+        display: block;
+        animation: fadeIn 0.2s ease;
+    }
+
+    .dropdown-header {
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .dropdown-header h4 { margin: 0; font-size: 14px; color: #fff; }
+    .new-count { font-size: 11px; color: var(--accent); background: rgba(var(--accent-rgb), 0.1); padding: 2px 8px; border-radius: 10px; }
+
+    .dropdown-body {
+        max-height: 350px;
+        overflow-y: auto;
+    }
+
+    .notification-item {
+        display: flex;
+        gap: 12px;
+        padding: 12px 16px;
+        text-decoration: none;
+        color: var(--text-main);
+        border-bottom: 1px solid rgba(255,255,255,0.03);
+        transition: background 0.2s;
+        align-items: center;
+    }
+
+    .notification-item:hover { background: rgba(255,255,255,0.05); }
+    .notification-item.unread { background: rgba(var(--accent-rgb), 0.05); }
+    .notification-item.unread:hover { background: rgba(var(--accent-rgb), 0.1); }
+
+    .notif-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--secondary), var(--accent));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        font-size: 12px;
+        flex-shrink: 0;
+    }
+
+    .notif-content { flex: 1; overflow: hidden; }
+    .notif-content p { margin: 0; font-size: 13px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .notif-content strong { color: #fff; }
+    .notif-time { font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px; }
+
+    .notif-dot {
+        width: 8px;
+        height: 8px;
+        background: var(--accent);
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .empty-notif { padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+
+  <script>
+    function toggleNotifications() {
+        const dropdown = document.getElementById('notification-dropdown');
+        dropdown.classList.toggle('show');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        const wrapper = document.querySelector('.notification-wrapper');
+        const dropdown = document.getElementById('notification-dropdown');
+        if (wrapper && !wrapper.contains(e.target) && dropdown.classList.contains('show')) {
+            dropdown.classList.remove('show');
+        }
+    });
+  </script>
+
+{% endblock %}

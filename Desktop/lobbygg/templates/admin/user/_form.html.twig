@@ -1,0 +1,54 @@
+{{ form_start(form) }}
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    {{ form_label(form.username, 'Nom d\'utilisateur') }}
+                    {{ form_widget(form.username, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.username) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.email, 'Email') }}
+                    {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.email) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.password, 'Mot de passe') }}
+                    {{ form_widget(form.password, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.password) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    {{ form_label(form.nom, 'Nom') }}
+                    {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.nom) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.prenom, 'Prénom') }}
+                    {{ form_widget(form.prenom, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.prenom) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.role, 'Rôle') }}
+                    {{ form_widget(form.role, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.role) }}
+                </div>
+            </div>
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.bio, 'Biographie') }}
+            {{ form_widget(form.bio, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+            {{ form_errors(form.bio) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.telephone, 'Téléphone') }}
+            {{ form_widget(form.telephone, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.telephone) }}
+        </div>
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+        <a href="{{ path('app_admin_user_index') }}" class="btn btn-default">Annuler</a>
+    </div>
+{{ form_end(form) }}

@@ -1,0 +1,64 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Tournament Management{% endblock %}
+{% block content_title %}Tournaments{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item active">Tournaments</li>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Tournaments List</h3>
+        <div class="card-tools">
+            <a href="{{ path('app_admin_tournament_new') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i> New Tournament
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Max Players</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for tournament in tournaments %}
+                <tr>
+                    <td>{{ tournament.id }}</td>
+                    <td>{{ tournament.title }}</td>
+                    <td><span class="badge bg-info">{{ tournament.status }}</span></td>
+                    <td>{{ tournament.startDate ? tournament.startDate|date('d/m/Y H:i') : '-' }}</td>
+                    <td>{{ tournament.endDate ? tournament.endDate|date('d/m/Y H:i') : '-' }}</td>
+                    <td>{{ tournament.maxPlayers }}</td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{{ path('app_admin_tournament_show', {'id': tournament.id}) }}" class="btn btn-info btn-sm">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ path('app_admin_tournament_edit', {'id': tournament.id}) }}" class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">No tournaments found</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

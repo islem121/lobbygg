@@ -1,0 +1,33 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Tournament Details{% endblock %}
+{% block content_title %}Tournament Details{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_tournament_index') }}">Tournaments</a></li>
+    <li class="breadcrumb-item active">Details</li>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <table class="table">
+            <tbody>
+                <tr><th>ID</th><td>{{ tournament.id }}</td></tr>
+                <tr><th>Title</th><td>{{ tournament.title }}</td></tr>
+                <tr><th>Description</th><td>{{ tournament.description }}</td></tr>
+                <tr><th>Status</th><td>{{ tournament.status }}</td></tr>
+                <tr><th>Start</th><td>{{ tournament.startDate ? tournament.startDate|date('d/m/Y H:i') : '-' }}</td></tr>
+                <tr><th>End</th><td>{{ tournament.endDate ? tournament.endDate|date('d/m/Y H:i') : '-' }}</td></tr>
+                <tr><th>Max Players</th><td>{{ tournament.maxPlayers }}</td></tr>
+                <tr><th>Created At</th><td>{{ tournament.createdAt ? tournament.createdAt|date('d/m/Y H:i') : '-' }}</td></tr>
+            </tbody>
+        </table>
+
+        <a class="btn btn-secondary" href="{{ path('app_admin_tournament_index') }}">Back</a>
+        <a class="btn btn-warning" href="{{ path('app_admin_tournament_edit', {'id': tournament.id}) }}">Edit</a>
+    </div>
+</div>
+{% endblock %}
+
