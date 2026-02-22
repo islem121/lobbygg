@@ -4,52 +4,70 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 25px 40px;
-        background: rgba(45, 20, 80, 0.7); /* Violet transparent */
-        backdrop-filter: blur(15px);
-        border-bottom: 1px solid rgba(139, 61, 255, 0.4);
+        padding: 15px 40px;
+        background: rgba(15, 5, 30, 0.85); /* Plus sombre pour le contraste */
+        backdrop-filter: blur(20px);
+        border-bottom: 2px solid rgba(139, 61, 255, 0.3);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(139, 61, 255, 0.1);
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         z-index: 1000;
         font-family: 'Courier New', monospace;
+        transition: all 0.3s ease;
+    }
+
+    .cyber-header.scrolled {
+        padding: 10px 40px;
+        background: rgba(10, 5, 20, 0.95);
+        border-bottom-color: var(--primary);
     }
 
     /* Left: Logo & User Info */
-    .header-logo {
-        flex: 1;
+    .header-logo-container {
         display: flex;
-        flex-direction: column;
-        gap: 8px;
+        align-items: center;
+        gap: 20px;
+        flex: 1;
+    }
+
+    .nav-logo-link {
+        display: flex;
+        align-items: center;
     }
 
     .nav-logo {
-        height: 40px;
+        height: 45px;
         width: auto;
         object-fit: contain;
+        filter: drop-shadow(0 0 8px rgba(139, 61, 255, 0.5));
     }
 
-    .user-tag-left {
-        text-align: left;
-        margin-top: 5px;
+    .user-info-mini {
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+        padding-left: 15px;
     }
 
     .user-name-nav {
-        display: block;
-        color: #ff0080;
-        font-size: 11px;
-        font-weight: bold;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 900;
         letter-spacing: 1px;
         text-transform: uppercase;
+        background: linear-gradient(90deg, #fff, var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
     .user-role-nav {
-        display: block;
         color: rgba(255, 255, 255, 0.4);
-        font-size: 8px;
+        font-size: 9px;
         letter-spacing: 1px;
         text-transform: uppercase;
+        font-weight: bold;
     }
 
     /* Center: Nav Links */
@@ -57,35 +75,231 @@
         flex: 2;
         display: flex;
         justify-content: center;
-        gap: 40px;
+        gap: 25px;
     }
 
     .nav-link {
         color: rgba(255, 255, 255, 0.6);
         text-decoration: none;
         text-transform: uppercase;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: bold;
-        letter-spacing: 2px;
-        transition: all 0.3s ease;
+        letter-spacing: 1px;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         position: relative;
-        padding: 5px 0;
+        padding: 8px 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        border-radius: 8px;
     }
 
-    .nav-link:hover, .nav-link.active {
+    .nav-link i {
+        font-size: 16px;
+        margin-bottom: 2px;
+        transition: transform 0.3s ease;
+    }
+
+    .nav-link:hover {
         color: #fff !important;
-        text-shadow: 0 0 8px rgba(139, 61, 255, 1);
+        background: rgba(139, 61, 255, 0.1);
+    }
+
+    .nav-link:hover i {
+        transform: translateY(-3px);
+        color: var(--accent);
+    }
+
+    .nav-link.active {
+        color: #fff !important;
+        background: rgba(139, 61, 255, 0.15);
+        border: 1px solid rgba(139, 61, 255, 0.3);
+    }
+
+    .nav-link.active i {
+        color: var(--accent);
+        filter: drop-shadow(0 0 5px var(--accent));
     }
 
     .nav-link.active::after {
         content: "";
         position: absolute;
-        bottom: -5px;
+        bottom: -2px;
+        left: 20%;
+        width: 60%;
+        height: 2px;
+        background: var(--accent);
+        box-shadow: 0 0 10px var(--accent);
+        border-radius: 10px;
+    }
+
+    /* Voice Search Styles */
+    .btn-voice-nav {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(139, 61, 255, 0.3);
+        color: #fff;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-right: 15px;
+    }
+
+    .btn-voice-nav:hover {
+        background: rgba(139, 61, 255, 0.2);
+        box-shadow: 0 0 15px rgba(139, 61, 255, 0.5);
+        transform: scale(1.1);
+        color: var(--accent);
+    }
+
+    .voice-overlay {
+        position: fixed;
+        top: 0;
         left: 0;
         width: 100%;
-        height: 2px;
-        background: #8B3DFF;
-        box-shadow: 0 0 10px #8B3DFF;
+        height: 100%;
+        background: rgba(10, 5, 20, 0.95);
+        backdrop-filter: blur(15px);
+        z-index: 9999;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .voice-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .voice-content {
+        text-align: center;
+        width: 100%;
+        max-width: 1000px;
+    }
+
+    .voice-status {
+        color: #fff;
+        font-family: 'Courier New', monospace;
+        font-size: 24px;
+        margin-bottom: 30px;
+        text-shadow: 0 0 10px var(--accent);
+        min-height: 30px;
+    }
+
+    .voice-waves {
+        display: flex;
+        gap: 6px;
+        height: 60px;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 40px;
+    }
+
+    .voice-wave {
+        width: 6px;
+        height: 20px;
+        background: var(--accent);
+        border-radius: 3px;
+        animation: wave 1s infinite ease-in-out;
+    }
+
+    .voice-wave:nth-child(2) { animation-delay: 0.1s; height: 30px; }
+    .voice-wave:nth-child(3) { animation-delay: 0.2s; height: 40px; }
+    .voice-wave:nth-child(4) { animation-delay: 0.3s; height: 30px; }
+    .voice-wave:nth-child(5) { animation-delay: 0.4s; height: 20px; }
+
+    @keyframes wave {
+        0%, 100% { transform: scaleY(1); opacity: 0.5; }
+        50% { transform: scaleY(2.5); opacity: 1; box-shadow: 0 0 15px var(--accent); }
+    }
+
+    .voice-results {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 25px;
+        padding: 20px;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .voice-product-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(139, 61, 255, 0.2);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        text-align: left;
+    }
+
+    .voice-product-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--accent);
+        box-shadow: 0 5px 20px rgba(139, 61, 255, 0.2);
+    }
+
+    .voice-product-img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .voice-product-info {
+        padding: 15px;
+    }
+
+    .voice-product-title {
+        color: #fff;
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .voice-product-price {
+        color: var(--accent);
+        font-weight: 900;
+        font-size: 16px;
+        letter-spacing: 1px;
+    }
+
+    .voice-close {
+        position: absolute;
+        top: 30px;
+        right: 40px;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 32px;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: none;
+        border: none;
+    }
+
+    .voice-close:hover {
+        color: #ff4d4d;
+        transform: rotate(90deg);
+    }
+
+    /* Scrollbar for results */
+    .voice-results::-webkit-scrollbar {
+        width: 6px;
+    }
+    .voice-results::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.3);
+    }
+    .voice-results::-webkit-scrollbar-thumb {
+        background: var(--accent);
+        border-radius: 3px;
     }
 
     /* Right: Buttons */
@@ -94,108 +308,162 @@
         display: flex;
         justify-content: flex-end;
         align-items: center;
-        gap: 15px;
+        gap: 20px;
     }
 
     .profile-dropdown {
         position: relative;
-        display: inline-block;
     }
 
     .btn-profile-nav {
-        background: rgba(139, 61, 255, 0.1);
-        border: 1px solid rgba(139, 61, 255, 0.5);
-        color: rgba(255, 255, 255, 0.8);
-        padding: 8px 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        padding: 10px 18px;
         font-size: 11px;
-        font-weight: bold;
+        font-weight: 900;
         letter-spacing: 2px;
         text-transform: uppercase;
-        text-decoration: none;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
         transition: all 0.3s ease;
         cursor: pointer;
+    }
+
+    .btn-profile-nav i {
+        font-size: 14px;
+        color: var(--primary);
+    }
+
+    .btn-profile-nav:hover {
+        background: rgba(139, 61, 255, 0.2);
+        border-color: var(--primary);
+        box-shadow: 0 0 15px rgba(139, 61, 255, 0.3);
     }
 
     .dropdown-content {
         display: none;
         position: absolute;
         right: 0;
-        top: 100%;
-        background: rgba(25, 10, 45, 0.95);
-        backdrop-filter: blur(10px);
-        min-width: 180px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-        border: 1px solid rgba(139, 61, 255, 0.3);
+        top: calc(100% + 15px);
+        background: rgba(15, 5, 25, 0.98);
+        backdrop-filter: blur(15px);
+        min-width: 220px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        border: 1px solid var(--primary);
         z-index: 1001;
-        margin-top: 10px;
-        border-radius: 4px;
+        border-radius: 12px;
         overflow: hidden;
+        animation: fadeInDown 0.3s ease;
+    }
+
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     .dropdown-content a {
-        color: rgba(255, 255, 255, 0.8);
-        padding: 12px 16px;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 15px 20px;
         text-decoration: none;
-        display: block;
-        font-size: 11px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 12px;
         text-transform: uppercase;
         letter-spacing: 1px;
-        transition: all 0.2s ease;
-        border-bottom: 1px solid rgba(139, 61, 255, 0.1);
+        transition: all 0.3s ease;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    .dropdown-content a:last-child {
-        border-bottom: none;
+    .dropdown-content a i {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+        color: var(--primary);
     }
 
     .dropdown-content a:hover {
-        background: rgba(139, 61, 255, 0.2);
+        background: rgba(139, 61, 255, 0.15);
         color: #fff;
-        padding-left: 20px;
+        padding-left: 25px;
+    }
+
+    .dropdown-content a:hover i {
+        color: var(--accent);
+        transform: scale(1.2);
     }
 
     .profile-dropdown:hover .dropdown-content {
         display: block;
     }
 
-    .profile-dropdown:hover .btn-profile-nav {
-        background: rgba(139, 61, 255, 0.2);
+    .btn-logout-nav {
+        background: linear-gradient(45deg, #ff0080, #ff4d4d);
         color: #fff;
-        border-color: #8B3DFF;
-    }
-
-    .btn-dissoudre-nav {
-        background: transparent;
-        border: 1px solid rgba(255, 0, 128, 0.5);
-        color: rgba(255, 0, 128, 0.8);
-        padding: 8px 15px;
+        padding: 10px 20px;
         font-size: 11px;
-        font-weight: bold;
-        letter-spacing: 2px;
+        font-weight: 900;
+        letter-spacing: 1px;
         text-transform: uppercase;
         text-decoration: none;
+        border-radius: 4px;
         transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
-    .btn-dissoudre-nav:hover {
-        background: rgba(255, 0, 128, 0.1);
-        color: #ff0080;
-        border-color: #ff0080;
-        box-shadow: 0 0 15px rgba(255, 0, 128, 0.3);
+    .btn-logout-nav:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 0, 128, 0.4);
+        filter: brightness(1.1);
     }
 
-    /* Adjust content padding for fixed header */
-    .lobby-content {
-        padding-top: 100px !important;
+    /* Mobile Menu Toggle */
+    .mobile-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+    @media (max-width: 1200px) {
+        .header-nav { gap: 10px; }
+        .nav-link { font-size: 10px; padding: 8px 5px; }
+    }
+
+    @media (max-width: 992px) {
+        .mobile-toggle { display: block; }
+        .header-nav {
+            display: none; /* Will be toggled via JS */
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(10, 5, 20, 0.98);
+            flex-direction: column;
+            padding: 20px;
+            gap: 15px;
+            border-bottom: 2px solid var(--primary);
+        }
+        .header-nav.active { display: flex; }
+        .nav-link { flex-direction: row; gap: 15px; font-size: 14px; width: 100%; justify-content: flex-start; }
+        .header-user-nav { flex: 0; }
+        .user-info-mini { display: none; }
     }
 </style>
 
-<header class="cyber-header">
-    <div class="header-logo">
-        <a href="{{ path('app_home') }}">
+<header class="cyber-header" id="mainHeader">
+    <div class="header-logo-container">
+        <a href="{{ path('app_home') }}" class="nav-logo-link">
             <img src="/assets/images/lobby-logo-white.png" alt="LOBBY.GG" class="nav-logo">
         </a>
-        <div class="user-tag-left">
+        <div class="user-info-mini">
             <span class="user-name-nav">{{ app.user.prenom|default('USER')|upper }}</span>
             <span class="user-role-nav">
                 {% if app.user and 'ROLE_SPONSOR' in app.user.roles %}LECTEUR (SPONSOR){% else %}JOUEUR (CLIENT){% endif %}
@@ -203,32 +471,243 @@
         </div>
     </div>
 
-    <nav class="header-nav">
-        <a href="{{ path('app_home') }}" class="nav-link {{ app.request.get('_route') == 'app_home' ? 'active' : '' }}">HOME</a>
-        <a href="{{ path('front_marketplace') }}" class="nav-link {{ app.request.get('_route') == 'front_marketplace' ? 'active' : '' }}">MARKET</a>
-        <a href="{{ path('front_tournaments') }}" class="nav-link {{ app.request.get('_route') == 'front_tournaments' ? 'active' : '' }}">TOURNOI</a>
+    <button class="mobile-toggle" id="mobileToggle">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <nav class="header-nav" id="navMenu">
+        <a href="{{ path('app_home') }}" class="nav-link {{ app.request.get('_route') == 'app_home' ? 'active' : '' }}">
+            <i class="fa-solid fa-house"></i>
+            <span>HOME</span>
+        </a>
+        <a href="{{ path('front_marketplace') }}" class="nav-link {{ app.request.get('_route') == 'front_marketplace' ? 'active' : '' }}">
+            <i class="fa-solid fa-shop"></i>
+            <span>MARKET</span>
+        </a>
+        <a href="{{ path('front_tournaments') }}" class="nav-link {{ app.request.get('_route') == 'front_tournaments' ? 'active' : '' }}">
+            <i class="fa-solid fa-trophy"></i>
+            <span>TOURNOI</span>
+        </a>
             
-            {% if is_granted('ROLE_SPONSOR') %}
-                <a href="{{ path('front_sponsoring_my_offers') }}" class="nav-link {{ app.request.get('_route') == 'front_sponsoring_my_offers' ? 'active' : '' }}">MES OFFRES</a>
-                <a href="{{ path('front_sponsor_requests') }}" class="nav-link {{ app.request.get('_route') == 'front_sponsor_requests' ? 'active' : '' }}">DEMANDES</a>
-                <a href="{{ path('front_contracts') }}" class="nav-link {{ app.request.get('_route') == 'front_contracts' ? 'active' : '' }}">CONTRATS</a>
-            {% elseif is_granted('ROLE_CLIENT') %}
-                <a href="{{ path('front_sponsoring') }}" class="nav-link {{ app.request.get('_route') == 'front_sponsoring' ? 'active' : '' }}">SPONSORING</a>
-                <a href="{{ path('front_client_requests') }}" class="nav-link {{ app.request.get('_route') == 'front_client_requests' ? 'active' : '' }}">MES DEMANDES</a>
-                <a href="{{ path('front_contracts') }}" class="nav-link {{ app.request.get('_route') == 'front_contracts' ? 'active' : '' }}">CONTRATS</a>
-            {% endif %}
+        {% if is_granted('ROLE_SPONSOR') %}
+            <a href="{{ path('front_sponsoring_my_offers') }}" class="nav-link {{ app.request.get('_route') == 'front_sponsoring_my_offers' ? 'active' : '' }}">
+                <i class="fa-solid fa-briefcase"></i>
+                <span>OFFRES</span>
+            </a>
+            <a href="{{ path('front_sponsor_requests') }}" class="nav-link {{ app.request.get('_route') == 'front_sponsor_requests' ? 'active' : '' }}">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>DEMANDES</span>
+            </a>
+        {% elseif is_granted('ROLE_CLIENT') %}
+            <a href="{{ path('front_sponsoring') }}" class="nav-link {{ app.request.get('_route') == 'front_sponsoring' ? 'active' : '' }}">
+                <i class="fa-solid fa-handshake"></i>
+                <span>SPONSORS</span>
+            </a>
+            <a href="{{ path('front_client_requests') }}" class="nav-link {{ app.request.get('_route') == 'front_client_requests' ? 'active' : '' }}">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>DEMANDES</span>
+            </a>
+        {% endif %}
+
+        <a href="{{ path('front_contracts') }}" class="nav-link {{ app.request.get('_route') == 'front_contracts' ? 'active' : '' }}">
+            <i class="fa-solid fa-file-contract"></i>
+            <span>CONTRATS</span>
+        </a>
             
-            <a href="{{ path('front_blog') }}" class="nav-link {{ app.request.get('_route') == 'front_blog' ? 'active' : '' }}">COMMUNITY</a>
+        <a href="{{ path('front_blog') }}" class="nav-link {{ app.request.get('_route') == 'front_blog' ? 'active' : '' }}">
+            <i class="fa-solid fa-users"></i>
+            <span>COMMUNITY</span>
+        </a>
     </nav>
 
     <div class="header-user-nav">
+        <div class="voice-search-container">
+            <button id="voiceSearchBtn" class="btn-voice-nav" title="Recherche vocale">
+                <i class="fa-solid fa-microphone"></i>
+            </button>
+        </div>
         <div class="profile-dropdown">
-            <span class="btn-profile-nav">PROFILE</span>
+            <div class="btn-profile-nav">
+                <i class="fa-solid fa-circle-user"></i>
+                <span>COMPTE</span>
+                <i class="fa-solid fa-chevron-down" style="font-size: 8px; opacity: 0.5;"></i>
+            </div>
             <div class="dropdown-content">
-                <a href="{{ path('app_settings') }}"><i class="fa-solid fa-gear"></i> Settings</a>
-                <a href="{{ path('app_profile_view') }}"><i class="fa-solid fa-user-astronaut"></i> View Profile</a>
+                <a href="{{ path('app_profile_view') }}"><i class="fa-solid fa-user-astronaut"></i> Mon Profil</a>
+                <a href="{{ path('app_messages') }}"><i class="fa-solid fa-comments"></i> Mes Messages</a>
+                <a href="{{ path('app_settings') }}"><i class="fa-solid fa-gear"></i> Paramètres</a>
+                <div style="border-top: 1px solid rgba(255,255,255,0.05); margin: 5px 0;"></div>
+                <a href="{{ path('app_logout') }}" style="color: #ff4d4d;"><i class="fa-solid fa-power-off"></i> Déconnexion</a>
             </div>
         </div>
-        <a href="{{ path('app_logout') }}" class="btn-dissoudre-nav">DÉCONNEXION</a>
+    </div>
+    <!-- Voice Overlay -->
+    <div class="voice-overlay" id="voiceOverlay">
+        <button class="voice-close" id="voiceClose">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        
+        <div class="voice-content">
+            <div class="voice-status" id="voiceStatus">En attente...</div>
+            
+            <div class="voice-waves" id="voiceWaves" style="opacity: 0; transition: opacity 0.3s;">
+                <div class="voice-wave"></div>
+                <div class="voice-wave"></div>
+                <div class="voice-wave"></div>
+                <div class="voice-wave"></div>
+                <div class="voice-wave"></div>
+            </div>
+
+            <div class="voice-results" id="voiceResults">
+                <!-- Results will appear here -->
+            </div>
+        </div>
     </div>
 </header>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const header = document.getElementById('mainHeader');
+        const mobileToggle = document.getElementById('mobileToggle');
+        const navMenu = document.getElementById('navMenu');
+
+        // Scroll effect
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile menu toggle
+        mobileToggle.addEventListener('click', function() {
+            navMenu.classList.toggle('active');
+            const icon = mobileToggle.querySelector('i');
+            if (navMenu.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-xmark');
+            } else {
+                icon.classList.remove('fa-xmark');
+                icon.classList.add('fa-bars');
+            }
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const voiceBtn = document.getElementById('voiceSearchBtn');
+        const voiceOverlay = document.getElementById('voiceOverlay');
+        const voiceStatus = document.getElementById('voiceStatus');
+        const voiceResults = document.getElementById('voiceResults');
+        const voiceClose = document.getElementById('voiceClose');
+        const voiceWaves = document.getElementById('voiceWaves');
+
+        // Web Speech API
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'fr-FR';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            voiceBtn.addEventListener('click', () => {
+                voiceOverlay.classList.add('active');
+                voiceStatus.textContent = "Je vous écoute...";
+                voiceWaves.style.opacity = '1';
+                voiceResults.innerHTML = '';
+                recognition.start();
+            });
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                voiceStatus.textContent = `"${transcript}"`;
+                voiceWaves.style.opacity = '0';
+                searchProducts(transcript);
+            };
+
+            recognition.onerror = (event) => {
+                voiceStatus.textContent = "Erreur: " + event.error;
+                voiceWaves.style.opacity = '0';
+                setTimeout(() => {
+                    if (voiceResults.children.length === 0) voiceOverlay.classList.remove('active');
+                }, 2000);
+            };
+            
+            recognition.onend = () => {
+                voiceWaves.style.opacity = '0';
+            };
+        } else {
+            if(voiceBtn) voiceBtn.style.display = 'none';
+            console.log("Web Speech API not supported");
+        }
+
+        if(voiceClose) {
+            voiceClose.addEventListener('click', () => {
+                voiceOverlay.classList.remove('active');
+            });
+        }
+
+        function searchProducts(transcript) {
+            voiceStatus.textContent = "Recherche en cours...";
+            
+            fetch('/voice/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ transcript: transcript })
+            })
+            .then(response => response.json())
+            .then(data => {
+                voiceStatus.textContent = data.message;
+                voiceResults.innerHTML = '';
+                
+                // Text to Speech response
+                speak(data.message);
+
+                if (data.products && data.products.length > 0) {
+                    data.products.forEach(product => {
+                        const card = document.createElement('div');
+                        card.className = 'voice-product-card';
+                        // Handle image path (local vs external)
+                        let imgPath = 'https://via.placeholder.com/300x200?text=No+Image';
+                        if (product.image) {
+                            if (product.image.startsWith('http')) {
+                                imgPath = product.image;
+                            } else {
+                                // Assume image is in public root or uploads, try root first
+                                imgPath = '/' + product.image;
+                            }
+                        }
+                        
+                        card.innerHTML = `
+                            <a href="${product.url}" style="text-decoration: none;">
+                                <img src="${imgPath}" class="voice-product-img" alt="${product.name}">
+                                <div class="voice-product-info">
+                                    <div class="voice-product-title">${product.name}</div>
+                                    <div class="voice-product-price">${product.price} TND</div>
+                                </div>
+                            </a>
+                        `;
+                        voiceResults.appendChild(card);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                voiceStatus.textContent = "Une erreur est survenue.";
+            });
+        }
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'fr-FR';
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+    });
+</script>

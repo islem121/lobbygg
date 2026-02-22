@@ -17,10 +17,19 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ProductController extends AbstractController
 {
     #[Route('/', name: 'app_admin_product_index', methods: ['GET'])]
-    public function index(ProductRepository $productRepository): Response
+    public function index(Request $request, ProductRepository $productRepository): Response
     {
+        $query = $request->query->get('q');
+        $sortField = $request->query->get('sort', 'id');
+        $sortDirection = $request->query->get('direction', 'DESC');
+        
+        $products = $productRepository->searchByName($query, $sortField, $sortDirection);
+
         return $this->render('admin/product/index.html.twig', [
-            'products' => $productRepository->findAll(),
+            'products' => $products,
+            'searchQuery' => $query,
+            'currentSort' => $sortField,
+            'currentDirection' => $sortDirection
         ]);
     }
 

@@ -43,9 +43,24 @@ class Product
     #[Assert\NotBlank(message: 'La catégorie est obligatoire.')]
     private ?Category $category = null;
 
+    #[ORM\ManyToOne(inversedBy: 'products')]
+    private ?User $seller = null;
+
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getSeller(): ?User
+    {
+        return $this->seller;
+    }
+
+    public function setSeller(?User $seller): static
+    {
+        $this->seller = $seller;
+
+        return $this;
     }
 
     public function getName(): ?string

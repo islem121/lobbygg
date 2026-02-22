@@ -1,0 +1,106 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Gestion des Commandes{% endblock %}
+{% block content_title %}Liste des Commandes Clients{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item active">Commandes</li>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Commandes du Marketplace</h3>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Client</th>
+                    <th>Produit</th>
+                    <th>Quantité</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for order in orders %}
+                <tr>
+                    <td>{{ order.id }}</td>
+                    <td>{{ order.orderDate|date('d/m/Y H:i') }}</td>
+                    <td>{{ order.user.nom }} {{ order.user.prenom }}</td>
+                    <td>{{ order.product.name }}</td>
+                    <td>{{ order.quantity }}</td>
+                    <td>
+                        {% if order.status == 'pending' %}
+                            <span class="badge bg-warning">En attente</span>
+                        {% elseif order.status == 'shipped' %}
+                            <span class="badge bg-info">Expédiée</span>
+                        {% elseif order.status == 'delivered' %}
+                            <span class="badge bg-success">Livrée</span>
+                        {% elseif order.status == 'cancelled' %}
+                            <span class="badge bg-danger">Annulée</span>
+                        {% elseif order.status == 'returned' %}
+                            <span class="badge bg-dark text-white">Retournée</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ order.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{{ path('app_admin_order_show', {'id': order.id}) }}" class="btn btn-info btn-sm">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            
+                            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="bi bi-gear"></i> Statut
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <form method="post" action="{{ path('app_admin_order_status', {'id': order.id, 'status': 'pending'}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('status' ~ order.id) }}">
+                                        <button class="dropdown-item">En attente</button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form method="post" action="{{ path('app_admin_order_status', {'id': order.id, 'status': 'shipped'}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('status' ~ order.id) }}">
+                                        <button class="dropdown-item">Expédiée</button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form method="post" action="{{ path('app_admin_order_status', {'id': order.id, 'status': 'delivered'}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('status' ~ order.id) }}">
+                                        <button class="dropdown-item">Livrée</button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form method="post" action="{{ path('app_admin_order_status', {'id': order.id, 'status': 'cancelled'}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('status' ~ order.id) }}">
+                                        <button class="dropdown-item text-danger">Annulée</button>
+                                    </form>
+                                </li>
+                            </ul>
+
+                            <form method="post" action="{{ path('app_admin_order_delete', {'id': order.id}) }}" style="display:inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette commande ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
+                                <button class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">Aucune commande trouvée</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

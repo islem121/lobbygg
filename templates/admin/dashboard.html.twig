@@ -1,27 +1,166 @@
 {% extends 'admin/layout.html.twig' %}
 
-{% block admin_title %}Dashboard - AdminLTE 4{% endblock %}
-{% block content_title %}Dashboard{% endblock %}
+{% block admin_title %}Dashboard - Lobby.gg Admin{% endblock %}
+{% block content_title %}Tableau de Bord Général{% endblock %}
 
 {% block breadcrumb %}
-    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+    <li class="breadcrumb-item active">Dashboard</li>
 {% endblock %}
 
 {% block content %}
-    <div class="row">
-        <div class="col-lg-3 col-6">
-            <div class="small-box text-bg-primary">
-                <div class="inner">
-                    <h3>150</h3>
-                    <p>New Orders</p>
+    <!-- Info Boxes Summary -->
+    <div class="row g-4 mb-4">
+        <!-- Revenue -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="info-box shadow-sm border-0 rounded-4">
+                <span class="info-box-icon text-bg-success elevation-1 rounded-4"><i class="bi bi-currency-euro"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text fw-bold text-uppercase small text-muted">Revenu Total</span>
+                    <span class="info-box-number h4 mb-0">{{ summary.total_revenue|number_format(2) }} <small>DT</small></span>
                 </div>
-                <div class="icon"><i class="bi bi-bag-plus-fill"></i></div>
-                <a href="#" class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
-                    More info <i class="bi bi-link-45deg"></i>
-                </a>
             </div>
         </div>
-        <!-- Add more dashboard widgets here if needed -->
+        <!-- Orders -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="info-box shadow-sm border-0 rounded-4">
+                <span class="info-box-icon text-bg-primary elevation-1 rounded-4"><i class="bi bi-cart-check-fill"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text fw-bold text-uppercase small text-muted">Commandes</span>
+                    <span class="info-box-number h4 mb-0">{{ summary.total_orders }}</span>
+                </div>
+            </div>
+        </div>
+        <!-- Users -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="info-box shadow-sm border-0 rounded-4">
+                <span class="info-box-icon text-bg-warning elevation-1 rounded-4 text-white"><i class="bi bi-people-fill"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text fw-bold text-uppercase small text-muted">Utilisateurs</span>
+                    <span class="info-box-number h4 mb-0">{{ summary.total_users }}</span>
+                </div>
+            </div>
+        </div>
+        <!-- Sponsoring -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="info-box shadow-sm border-0 rounded-4">
+                <span class="info-box-icon text-bg-danger elevation-1 rounded-4"><i class="bi bi-briefcase-fill"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text fw-bold text-uppercase small text-muted">Sponsors</span>
+                    <span class="info-box-number h4 mb-0">{{ summary.total_sponsors }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column: Recent Orders -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Commandes Récentes</h5>
+                    <a href="{{ path('app_admin_order_index') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Voir tout</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="bg-light text-muted small text-uppercase">
+                                <tr>
+                                    <th class="ps-4">ID</th>
+                                    <th>Client</th>
+                                    <th>Produit</th>
+                                    <th>Total</th>
+                                    <th>Statut</th>
+                                    <th class="pe-4">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recentOrders %}
+                                <tr>
+                                    <td class="ps-4 fw-bold">#{{ order.id }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar avatar-sm me-2 bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                {{ order.user.username|first|upper }}
+                                            </div>
+                                            <span class="small">{{ order.user.username }}</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="small text-truncate d-inline-block" style="max-width: 150px;">{{ order.product.name }}</span></td>
+                                    <td class="fw-bold">{{ (order.quantity * order.product.price)|number_format(2) }} <small>DT</small></td>
+                                    <td>
+                                        {% if order.status == 'pending' %}
+                                            <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill">Attente</span>
+                                        {% elseif order.status == 'delivered' %}
+                                            <span class="badge bg-success-subtle text-success-emphasis rounded-pill">Livrée</span>
+                                        {% elseif order.status == 'returned' %}
+                                            <span class="badge bg-dark rounded-pill">Retournée</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill">{{ order.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="pe-4 small text-muted">{{ order.orderDate|date('d/m/Y') }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">Aucune commande récente.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Recent Users & Quick Stats -->
+        <div class="col-lg-4">
+            <!-- Recent Users -->
+            <div class="card shadow-sm border-0 rounded-4 mb-4">
+                <div class="card-header bg-transparent border-0 pt-4 px-4">
+                    <h5 class="card-title fw-bold mb-0"><i class="bi bi-people me-2 text-warning"></i>Nouveaux Membres</h5>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <ul class="list-unstyled mb-0">
+                        {% for user in recentUsers %}
+                        <li class="d-flex align-items-center mb-3">
+                            <div class="avatar avatar-md me-3 bg-light text-dark rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; border: 1px solid #eee;">
+                                {{ user.username|first|upper }}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold small">{{ user.username }}</div>
+                                <div class="text-muted small">{{ user.createdAt|date('d M Y') }}</div>
+                            </div>
+                            <span class="badge bg-light text-dark border rounded-pill small">{{ user.role|replace({'ROLE_': ''}) }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <a href="{{ path('app_admin_user_index') }}" class="btn btn-light w-100 rounded-pill mt-2">Gérer les utilisateurs</a>
+                </div>
+            </div>
+
+            <!-- Blog Stats -->
+            <div class="card shadow-sm border-0 rounded-4 bg-primary text-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Communauté & Blog</h5>
+                        <i class="bi bi-newspaper fs-4 opacity-50"></i>
+                    </div>
+                    <div class="row text-center g-0">
+                        <div class="col-6 border-end border-white border-opacity-25">
+                            <div class="h3 fw-bold mb-0">{{ summary.total_posts }}</div>
+                            <div class="small opacity-75">Articles</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="h3 fw-bold mb-0">{{ summary.total_comments }}</div>
+                            <div class="small opacity-75">Commentaires</div>
+                        </div>
+                    </div>
+                    <hr class="my-3 opacity-25">
+                    <a href="{{ path('app_admin_post_index') }}" class="btn btn-link text-white text-decoration-none w-100 p-0 small">
+                        Gérer le contenu <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}

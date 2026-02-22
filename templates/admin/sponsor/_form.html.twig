@@ -1,6 +1,25 @@
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
 {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
     <div class="card-body">
-        {{ form_widget(form) }}
+        <div class="row">
+            <div class="col-md-6">
+                {{ form_row(form.nomSociete) }}
+            </div>
+            <div class="col-md-6">
+                {{ form_row(form.targetType) }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                {{ form_row(form.amount) }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                {{ form_row(form.description) }}
+            </div>
+        </div>
     </div>
     <div class="card-footer">
         <button class="btn btn-success">{{ button_label|default('Enregistrer') }}</button>

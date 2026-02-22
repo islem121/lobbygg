@@ -1,0 +1,106 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Gestion des Retours - Marketplace{% endblock %}
+{% block content_title %}Gestion des Retours <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill ms-2">Returns Management</span>{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="text-muted small text-uppercase">
+                            <tr>
+                                <th>Client & Commande</th>
+                                <th>Produit</th>
+                                <th>Raison</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for return in returns %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">{{ return.orderItem.user.username }}</div>
+                                        <div class="small text-muted">Cmd #{{ return.orderItem.id }} • {{ return.createdAt|date('d/m/Y H:i') }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">{{ return.orderItem.product.name }}</div>
+                                        <div class="small text-muted">Qté: {{ return.orderItem.quantity }} • {{ (return.orderItem.product.price * return.orderItem.quantity)|number_format(2) }} DT</div>
+                                    </td>
+                                    <td style="max-width: 250px;">
+                                        <div class="text-truncate" title="{{ return.reason }}">{{ return.reason }}</div>
+                                    </td>
+                                    <td>
+                                        {% if return.status == 'pending' %}
+                                            <span class="badge bg-warning">En attente</span>
+                                        {% elseif return.status == 'approved' %}
+                                            <span class="badge bg-success">Validé</span>
+                                        {% elseif return.status == 'rejected' %}
+                                            <span class="badge bg-danger">Rejeté</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if return.status == 'pending' %}
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#handleModal{{ return.id }}">
+                                                Traiter
+                                            </button>
+
+                                            <!-- Modal Traitement -->
+                                            <div class="modal fade" id="handleModal{{ return.id }}" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <form action="{{ path('app_admin_return_handle', {id: return.id}) }}" method="POST">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Traiter le retour #{{ return.id }}</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Action</label>
+                                                                    <select name="action" class="form-select" required>
+                                                                        <option value="approve">Valider le retour & Rembourser</option>
+                                                                        <option value="reject">Rejeter le retour</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Montant du remboursement (DT)</label>
+                                                                    <input type="number" step="0.01" name="refund_amount" class="form-control" value="{{ return.orderItem.product.price * return.orderItem.quantity }}">
+                                                                    <small class="text-muted">Le remboursement partiel est possible.</small>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Commentaire admin (sera visible par le client)</label>
+                                                                    <textarea name="admin_comment" class="form-control" rows="3"></textarea>
+                                                                </div>
+                                                                <div class="alert alert-info small">
+                                                                    <i class="bi bi-info-circle"></i> En validant, le stock du produit sera automatiquement augmenté de {{ return.orderItem.quantity }} unité(s).
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                                <button type="submit" class="btn btn-primary">Confirmer</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted small">Traité ({{ return.refundAmount ?? 0 }} DT)</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted italic">Aucune demande de retour pour le moment.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

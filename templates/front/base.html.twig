@@ -56,7 +56,9 @@
       </div>
     </div>
 
-    {% include 'front/partials/bottom-bar.html.twig' %}
+    {% if app.request.attributes.get('_route') != 'front_marketplace' %}
+      {% include 'front/partials/bottom-bar.html.twig' %}
+    {% endif %}
 
     {# Optional: GSAP via CDN (no npm) #}
     <script defer src="{{ asset('assets/vendor/js/gsap.min.js') }}"></script>

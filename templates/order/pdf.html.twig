@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Commande #{{ order.id }}</title>
+    <style>
+        body { font-family: sans-serif; font-size: 14px; color: #333; }
+        .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #8b3dff; padding-bottom: 20px; }
+        .logo { font-size: 32px; font-weight: bold; color: #8b3dff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
+        .subtitle { font-size: 16px; color: #666; }
+        
+        .info-section { margin-bottom: 30px; }
+        .row { width: 100%; clear: both; }
+        .col-left { float: left; width: 50%; }
+        .col-right { float: right; width: 50%; text-align: right; }
+        
+        .box { background: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #eee; }
+        .box h3 { margin-top: 0; margin-bottom: 10px; font-size: 14px; color: #8b3dff; text-transform: uppercase; }
+        .box p { margin: 0; line-height: 1.5; }
+
+        .table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        .table th { background-color: #8b3dff; color: white; padding: 12px; text-align: left; text-transform: uppercase; font-size: 12px; }
+        .table td { border-bottom: 1px solid #ddd; padding: 12px; }
+        .table tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        .total-section { margin-top: 30px; text-align: right; }
+        .total-row { font-size: 16px; margin-bottom: 5px; }
+        .grand-total { font-size: 24px; font-weight: bold; color: #8b3dff; margin-top: 10px; }
+        
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 20px; }
+        .badge { display: inline-block; padding: 5px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; background: #eee; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">Lobby.gg</div>
+        <div class="subtitle">Facture / Reçu de commande</div>
+    </div>
+
+    <div class="row info-section">
+        <div class="col-left">
+            <div class="box">
+                <h3>Vendeur</h3>
+                <p><strong>Lobby.gg Marketplace</strong></p>
+                <p>Tunis, Tunisie</p>
+                <p>Email: support@lobby.gg</p>
+            </div>
+        </div>
+        <div class="col-right">
+            <div class="box">
+                <h3>Détails Commande</h3>
+                <p><strong>N° Commande :</strong> #{{ order.id }}</p>
+                <p><strong>Date :</strong> {{ order.orderDate|date('d/m/Y') }}</p>
+                <p><strong>Heure :</strong> {{ order.orderDate|date('H:i') }}</p>
+                <p><strong>Statut :</strong> {{ order.status|upper }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row info-section" style="margin-top: 160px;"> <!-- Margin to clear floats -->
+        <div class="box">
+            <h3>Client</h3>
+            <p><strong>Email :</strong> {{ user.email }}</p>
+            {# Add name if available in user entity #}
+        </div>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th style="width: 15%;">Quantité</th>
+                <th style="width: 20%;">Prix Unitaire</th>
+                <th style="width: 20%;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <strong>{{ order.product.name }}</strong><br>
+                    <span style="font-size: 12px; color: #666;">Réf: {{ order.product.id }}</span>
+                </td>
+                <td>{{ order.quantity }}</td>
+                <td>{{ order.product.price|number_format(2, '.', ' ') }} DT</td>
+                <td>{{ (order.product.price * order.quantity)|number_format(2, '.', ' ') }} DT</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="total-section">
+        <div class="grand-total">
+            Total Payé : {{ (order.product.price * order.quantity)|number_format(2, '.', ' ') }} DT
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Merci de votre confiance !</p>
+        <p>Lobby.gg - La plateforme ultime pour les gamers.</p>
+        <p>Ce document est une preuve d'achat numérique.</p>
+    </div>
+</body>
+</html>

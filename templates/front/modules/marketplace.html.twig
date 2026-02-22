@@ -2,138 +2,959 @@
 
 {% block title %}Lobby.gg • Marketplace{% endblock %}
 
-{% block content %}
-  <section class="page-head">
-    <div>
-      <h1 class="page-title">Marketplace</h1>
-      <p class="page-sub">Browse drops and gear. Save items, share deals, and flex your setup.</p>
-    </div>
-    <div class="page-actions">
-      <a class="btn btn-primary" href="{{ path('front_marketplace_cart') }}"><i class="fa-solid fa-bag-shopping"></i> Mon Panier</a>
-      <button class="btn btn-ghost" type="button"><i class="fa-solid fa-bookmark"></i> Saved</button>
-    </div>
-  </section>
+{% block stylesheets %}
+<style>
+    :root {
+        --card-bg: rgba(255, 255, 255, 0.03);
+        --card-border: rgba(139, 61, 255, 0.2);
+        --card-hover-bg: rgba(139, 61, 255, 0.08);
+        --card-hover-border: rgba(139, 61, 255, 0.5);
+    }
 
-  <div class="panel">
+    .market-header {
+        text-align: center;
+        padding: 60px 20px;
+        background: radial-gradient(circle at center, rgba(139, 61, 255, 0.15) 0%, transparent 70%);
+        margin-bottom: 40px;
+    }
+
+    .market-header .page-title {
+        font-size: 4rem;
+        font-family: 'Major Mono Display', monospace;
+        margin-bottom: 15px;
+        letter-spacing: -2px;
+        background: linear-gradient(to right, #fff, var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .market-header .page-sub {
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.6);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* Carousel Enhancements */
+    .market-carousel-panel {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--card-border);
+        border-radius: 25px;
+        padding: 30px;
+        margin-bottom: 50px;
+        overflow: hidden;
+    }
+
+    .carousel-item-custom {
+        min-width: 280px;
+        padding: 25px;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        margin-right: 20px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .carousel-item-custom:hover {
+        background: var(--card-hover-bg);
+        border-color: var(--card-hover-border);
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Product Grid Enhancements */
+    .product-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-card:hover {
+        border-color: var(--accent);
+        background: rgba(139, 61, 255, 0.05);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(139, 61, 255, 0.2);
+    }
+
+    .product-img-wrapper {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+    }
+
+    .product-img-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .product-card:hover .product-img-wrapper img {
+        transform: scale(1.1);
+    }
+
+    .product-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: rgba(139, 61, 255, 0.9);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: bold;
+        backdrop-filter: blur(5px);
+        z-index: 1;
+    }
+
+    .product-content {
+        padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-name {
+        font-family: 'Major Mono Display', monospace;
+        font-size: 16px;
+        color: white;
+        margin-bottom: 10px;
+    }
+
+    .product-price-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+    }
+
+    .price-tag {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--accent);
+    }
+
+    .price-currency {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+        margin-left: 4px;
+    }
+
+    .product-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    /* Comparison Bar */
+    .comparison-bar {
+        position: fixed;
+        bottom: -120px;
+        left: 0;
+        width: 100%;
+        background: rgba(20, 20, 30, 0.95);
+        border-top: 1px solid var(--accent);
+        padding: 15px 40px;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+        backdrop-filter: blur(10px);
+    }
+
+    .comparison-bar.active {
+        bottom: 0;
+    }
+
+    .comparison-items {
+        display: flex;
+        gap: 15px;
+    }
+
+    .comparison-item {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 2px solid rgba(255,255,255,0.1);
+        background: #000;
+        transition: transform 0.2s;
+    }
+    
+    .comparison-item:hover {
+        transform: scale(1.05);
+        border-color: var(--accent);
+    }
+
+    .comparison-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .comparison-item .remove-btn {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: rgba(255, 0, 85, 0.8);
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+        width: 20px;
+        height: 20px;
+    }
+
+    .comparison-item:hover .remove-btn {
+        opacity: 1;
+    }
+
+    /* AI Modal */
+    .ai-modal-content {
+        background: rgba(26, 26, 46, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(139, 61, 255, 0.3);
+        box-shadow: 0 0 50px rgba(139, 61, 255, 0.2);
+        color: white;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+    
+    .ai-modal-header {
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        background: linear-gradient(90deg, rgba(139,61,255,0.1) 0%, transparent 100%);
+        padding: 20px 30px;
+    }
+
+    .modal-title {
+        font-family: 'Major Mono Display', monospace; 
+        color: var(--accent);
+        font-weight: 900;
+        text-shadow: 0 0 10px rgba(139, 61, 255, 0.5);
+    }
+
+    .ai-loading {
+        text-align: center;
+        padding: 60px 40px;
+        display: none;
+    }
+    
+    .ai-loading i {
+        filter: drop-shadow(0 0 15px var(--accent));
+        margin-bottom: 20px;
+    }
+
+    .ai-result {
+        padding: 30px;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    
+    /* Better Table Styling */
+    .ai-result table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+        margin: 10px 0;
+        color: rgba(255,255,255,0.9);
+    }
+    
+    .ai-result th {
+        padding: 15px;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 1px;
+        color: rgba(255,255,255,0.5);
+        border: none;
+        background: transparent;
+        text-align: left;
+    }
+    
+    .ai-result td {
+        padding: 15px;
+        background: rgba(255,255,255,0.03);
+        border-top: 1px solid rgba(255,255,255,0.05);
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        transition: all 0.2s;
+    }
+
+    .ai-result td:first-child {
+        border-radius: 10px 0 0 10px;
+        border-left: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .ai-result td:last-child {
+        border-radius: 0 10px 10px 0;
+        border-right: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .ai-result tr:hover td {
+        background: rgba(139, 61, 255, 0.05);
+        border-color: rgba(139, 61, 255, 0.2);
+        color: white;
+    }
+
+    /* Checkbox Style */
+    .compare-checkbox {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 10;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: var(--accent);
+        opacity: 0;
+        transition: opacity 0.2s;
+        transform: scale(1.2);
+    }
+
+    .product-card:hover .compare-checkbox,
+    .compare-checkbox:checked {
+        opacity: 1;
+    }
+
+    /* Floating Icons */
+    .floating-chat-icon {
+        position: fixed;
+        bottom: 160px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #8b3dff, #ff0055);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white !important;
+        font-size: 24px;
+        box-shadow: 0 5px 20px rgba(139, 61, 255, 0.4);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 1000;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .floating-chat-icon:hover {
+        transform: scale(1.1) rotate(8deg);
+        box-shadow: 0 8px 30px rgba(255, 0, 85, 0.5);
+    }
+
+    /* Sidebar Panels */
+    .side-panel {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 25px;
+        height: fit-content;
+    }
+
+    .side-panel .panel-title {
+        font-family: 'Major Mono Display', monospace;
+        font-size: 14px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--accent);
+    }
+    
+    #compareBtn {
+        min-width: 200px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(139, 61, 255, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    // Comparison Logic
+    let selectedProducts = [];
+
+    window.toggleCompare = function(checkbox) {
+        const id = checkbox.getAttribute('data-id');
+        const name = checkbox.getAttribute('data-name');
+        const image = checkbox.getAttribute('data-image');
+
+        if (checkbox.checked) {
+            if (selectedProducts.length >= 3) {
+                alert("Vous ne pouvez comparer que 3 produits maximum.");
+                checkbox.checked = false;
+                return;
+            }
+            selectedProducts.push({ id, name, image });
+        } else {
+            selectedProducts = selectedProducts.filter(p => p.id !== id);
+        }
+
+        updateComparisonBar();
+    };
+
+    function updateComparisonBar() {
+        const bar = document.getElementById('comparisonBar');
+        const itemsContainer = document.getElementById('comparisonItems');
+        const countSpan = document.getElementById('compareCount');
+        const btn = document.getElementById('compareBtn');
+
+        if (!bar || !itemsContainer) return;
+
+        itemsContainer.innerHTML = '';
+        selectedProducts.forEach(p => {
+            itemsContainer.innerHTML += `
+                <div class="comparison-item">
+                    <img src="${p.image}" alt="${p.name}">
+                    <button class="remove-btn" onclick="removeProduct('${p.id}')">&times;</button>
+                </div>
+            `;
+        });
+
+        if (countSpan) countSpan.textContent = selectedProducts.length;
+        if (btn) btn.disabled = selectedProducts.length < 2;
+
+        if (selectedProducts.length > 0) {
+            bar.classList.add('active');
+        } else {
+            bar.classList.remove('active');
+        }
+    }
+
+    window.removeProduct = function(id) {
+        const checkbox = document.querySelector(`.compare-checkbox[data-id="${id}"]`);
+        if (checkbox) checkbox.checked = false;
+        selectedProducts = selectedProducts.filter(p => p.id !== id);
+        updateComparisonBar();
+    };
+
+    window.startComparison = async function() {
+        const modalEl = document.getElementById('aiModal');
+        let modal;
+        
+        // Try Bootstrap Modal
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        } else {
+            // Fallback manual modal
+            modalEl.classList.add('show');
+            modalEl.style.display = 'block';
+            modalEl.setAttribute('aria-modal', 'true');
+            modalEl.setAttribute('role', 'dialog');
+            
+            // Add close handler manually
+            const closeBtns = modalEl.querySelectorAll('[data-bs-dismiss="modal"]');
+            closeBtns.forEach(btn => {
+                btn.onclick = () => {
+                    modalEl.classList.remove('show');
+                    modalEl.style.display = 'none';
+                };
+            });
+        }
+
+        document.getElementById('aiLoading').style.display = 'block';
+        document.getElementById('aiResult').innerHTML = '';
+
+        try {
+            const response = await fetch("{{ path('front_marketplace_compare') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ productIds: selectedProducts.map(p => p.id) })
+            });
+
+            const data = await response.json();
+            
+            if (data.error) {
+                document.getElementById('aiResult').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            } else {
+                document.getElementById('aiResult').innerHTML = data.html;
+            }
+        } catch (error) {
+            console.error(error);
+            document.getElementById('aiResult').innerHTML = `<div class="alert alert-danger">Erreur de connexion.</div>`;
+        } finally {
+            document.getElementById('aiLoading').style.display = 'none';
+        }
+    };
+
+    // Search Logic
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('marketplaceSearch');
+        const grid = document.getElementById('marketplace-grid');
+        let debounceTimer;
+
+        if (!searchInput || !grid) return;
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const query = this.value.trim();
+
+            debounceTimer = setTimeout(() => {
+                fetch(`{{ path('front_marketplace_search_ajax') }}?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        grid.innerHTML = '';
+                        
+                        if (data.length > 0) {
+                            data.forEach(product => {
+                                const contactBtn = product.url_contact 
+                                    ? `<a class="btn btn-mini btn-ghost" href="${product.url_contact}" title="Contacter le vendeur"><i class="fa-solid fa-comment-dots"></i></a>` 
+                                    : '';
+                                
+                                const imageHtml = product.image 
+                                    ? `<img src="${product.image.startsWith('http') ? product.image : '/'+product.image}" alt="${product.name}">`
+                                    : `<div style="width:100%; height:100%; background: #1a1a2e; display: flex; align-items: center; justify-content: center; font-size: 40px; color: rgba(255,255,255,0.1);"><i class="fa-solid fa-image"></i></div>`;
+
+                                const card = document.createElement('div');
+                                card.className = 'product-card';
+                                card.setAttribute('data-tilt', '');
+                                card.innerHTML = `
+                                    <div class="product-img-wrapper">
+                                        <input type="checkbox" class="compare-checkbox" 
+                                            data-id="${product.id}" 
+                                            data-name="${product.name}"
+                                            data-image="${product.image && product.image.startsWith('http') ? product.image : (product.image ? '/'+product.image : '/assets/img/default-product.png')}"
+                                            onchange="toggleCompare(this)">
+                                        <div class="product-badge">${product.category}</div>
+                                        ${imageHtml}
+                                    </div>
+                                    <div class="product-content">
+                                        <div class="product-name">${product.name}</div>
+                                        <div style="font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 15px;">
+                                            Stock: <span style="color: ${product.stock > 0 ? 'var(--accent)' : '#ff0055'}">${product.stock}</span>
+                                        </div>
+                                        <div class="product-price-row">
+                                            <div class="price-tag">${product.price}<span class="price-currency">DT</span></div>
+                                            <div class="product-actions">
+                                                <a class="btn btn-mini btn-primary" href="${product.url_add}" title="Ajouter au panier">
+                                                    <i class="fa-solid fa-cart-plus"></i>
+                                                </a>
+                                                ${contactBtn}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                grid.appendChild(card);
+                                
+                                // Re-init tilt if library is available
+                                if (typeof VanillaTilt !== 'undefined') {
+                                    VanillaTilt.init(card);
+                                }
+                            });
+                        } else {
+                            grid.innerHTML = `
+                                <div class="empty-state" style="padding: 60px; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px dashed var(--card-border); grid-column: 1 / -1;">
+                                    <i class="fa-solid fa-box-archive" style="font-size: 50px; color: var(--card-border); margin-bottom: 20px; display: block;"></i>
+                                    <p>Aucun produit ne correspond à votre recherche.</p>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(err => console.error('Search error:', err));
+            }, 300);
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="market-header">
+    <h1 class="page-title">MARKETPLACE</h1>
+    <p class="page-sub">Équipez votre setup avec le meilleur du gear gaming et des skins exclusifs.</p>
+    <div style="margin-top: 30px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+        <a class="btn btn-primary btn-lg" href="{{ path('front_marketplace_cart') }}">
+            <i class="fa-solid fa-bag-shopping"></i> Mon Panier
+        </a>
+        <a class="btn btn-ghost btn-lg" href="{{ path('front_marketplace_sell') }}" style="border-color: #00f2ff; color: #00f2ff !important;">
+            <i class="fa-solid fa-tag"></i> Vendre un Produit
+        </a>
+        <a class="btn btn-ghost btn-lg" href="{{ path('front_marketplace_my_products') }}">
+            <i class="fa-solid fa-box-open"></i> Mes Produits
+        </a>
+        <button class="btn btn-ghost btn-lg" type="button">
+            <i class="fa-solid fa-bookmark"></i> Favoris
+        </button>
+    </div>
+</div>
+
+<div class="market-carousel-panel">
     <div class="panel-head">
-      <h2 class="panel-title"><i class="fa-solid fa-infinity"></i> Infinite Scroll Carousel</h2>
-      <button class="btn btn-mini btn-ghost" type="button" data-carousel-pause><i class="fa-solid fa-pause"></i> Pause</button>
+        <h2 class="panel-title"><i class="fa-solid fa-fire-flame-curved"></i> Tendances du moment</h2>
+        <button class="btn btn-mini btn-ghost" type="button" data-carousel-pause><i class="fa-solid fa-pause"></i> Pause</button>
     </div>
 
     <div class="market-carousel big" data-infinite-carousel>
-      <div class="market-track">
-        {% for item in [
-          {name:'Violet Rift Skin', price:'29.99', tag:'Epic'},
-          {name:'Neon Mousepad XL', price:'19.90', tag:'Drop'},
-          {name:'ARGB Keycaps', price:'39.00', tag:'Hot'},
-          {name:'Headset Stand', price:'24.50', tag:'New'},
-          {name:'Pro Controller', price:'69.00', tag:'Top'},
-          {name:'Streamer Mic Arm', price:'44.00', tag:'Pro'},
-          {name:'RGB Light Bars', price:'27.00', tag:'Glow'},
-        ] %}
-          <div class="market-item card" data-tilt>
-            <div class="market-badge">{{ item.tag }}</div>
-            <div class="market-name">{{ item.name }}</div>
-            <div class="market-price">
-              <span class="accent">{{ item.price }}</span> <span class="muted">DT</span>
-            </div>
-            <div class="row-actions">
-              <button class="btn btn-mini btn-primary" type="button"><i class="fa-solid fa-bag-shopping"></i> Add</button>
-              <button class="btn btn-mini btn-ghost" type="button"><i class="fa-solid fa-pen"></i> Edit</button>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
-    </div>
-  </div>
-
-  <section class="grid">
-    <div class="col span-8">
-      <div class="panel">
-        <div class="panel-head">
-          <h2 class="panel-title"><i class="fa-solid fa-box-open"></i> Produits</h2>
-        </div>
-
-        {% if products is defined and products|length > 0 %}
-          <div class="market-grid">
-            {% for product in products %}
-              <div class="market-item card" data-tilt>
-                {% if product.image %}
-                  <div class="market-image-container" style="height: 150px; overflow: hidden; border-radius: 4px; margin-bottom: 10px;">
-                    <img src="{{ product.image starts with 'http' ? product.image : asset(product.image) }}" alt="{{ product.name }}" style="width: 100%; height: 100%; object-fit: cover;">
-                  </div>
-                {% endif %}
-                <div class="market-badge">{{ product.category ? product.category.name : 'Général' }}</div>
-                <div class="market-name">{{ product.name }}</div>
-                <div class="market-price">
-                  <span class="accent">{{ product.price|number_format(2, '.', ' ') }}</span> <span class="muted">DT</span>
+        <div class="market-track">
+            {% for item in [
+                {name:'Violet Rift Skin', price:'29.99', tag:'Epic', icon:'fa-wand-magic-sparkles'},
+                {name:'Neon Mousepad XL', price:'19.90', tag:'Drop', icon:'fa-rug'},
+                {name:'ARGB Keycaps', price:'39.00', tag:'Hot', icon:'fa-keyboard'},
+                {name:'Headset Stand', price:'24.50', tag:'New', icon:'fa-headphones'},
+                {name:'Pro Controller', price:'69.00', tag:'Top', icon:'fa-gamepad'},
+                {name:'Streamer Mic Arm', price:'44.00', tag:'Pro', icon:'fa-microphone-lines'},
+                {name:'RGB Light Bars', price:'27.00', tag:'Glow', icon:'fa-lightbulb'},
+            ] %}
+                <div class="carousel-item-custom" data-tilt>
+                    <div style="font-size: 40px; color: var(--accent); margin-bottom: 20px; opacity: 0.8;">
+                        <i class="fa-solid {{ item.icon }}"></i>
+                    </div>
+                    <div class="market-badge" style="margin-bottom: 10px; display: inline-block;">{{ item.tag }}</div>
+                    <div class="market-name" style="font-family: 'Major Mono Display', monospace; margin-bottom: 10px;">{{ item.name }}</div>
+                    <div class="market-price">
+                        <span class="accent" style="font-size: 22px; font-weight: 800;">{{ item.price }}</span> <span class="muted">DT</span>
+                    </div>
                 </div>
-                <div class="market-stock">Stock: <span class="accent">{{ product.stock }}</span></div>
-                <div class="row-actions">
-                  <a class="btn btn-mini btn-primary" href="{{ path('front_marketplace_add', {id: product.id}) }}"><i class="fa-solid fa-bag-shopping"></i> Ajouter</a>
-                </div>
-              </div>
             {% endfor %}
-          </div>
+        </div>
+    </div>
+</div>
+
+<section class="grid">
+    <div class="col span-8">
+        {% if page == 'marketplace_sell' %}
+            <div class="panel">
+                <div class="panel-head">
+                    <h2 class="panel-title">
+                        <i class="fa-solid {{ is_edit is defined ? 'fa-pen-to-square' : 'fa-tag' }}"></i> 
+                        {{ is_edit is defined ? 'Modifier le produit' : 'Mettre un produit en vente' }}
+                    </h2>
+                </div>
+                <div style="padding: 30px;">
+                    {{ form_start(form) }}
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div class="form-group">
+                                <label style="color: rgba(255,255,255,0.6); display: block; margin-bottom: 8px;">Nom du produit</label>
+                                {{ form_widget(form.name, {'attr': {'style': 'width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); border-radius: 10px; padding: 12px; color: white;'}}) }}
+                            </div>
+                            <div class="form-group">
+                                <label style="color: rgba(255,255,255,0.6); display: block; margin-bottom: 8px;">Prix (DT)</label>
+                                {{ form_widget(form.price, {'attr': {'style': 'width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); border-radius: 10px; padding: 12px; color: white;'}}) }}
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="color: rgba(255,255,255,0.6); display: block; margin-bottom: 8px;">Description</label>
+                            {{ form_widget(form.description, {'attr': {'style': 'width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); border-radius: 10px; padding: 12px; color: white; min-height: 120px;'}}) }}
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                            <div class="form-group">
+                                <label style="color: rgba(255,255,255,0.6); display: block; margin-bottom: 8px;">Stock disponible</label>
+                                {{ form_widget(form.stock, {'attr': {'style': 'width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); border-radius: 10px; padding: 12px; color: white;'}}) }}
+                            </div>
+                            <div class="form-group">
+                                <label style="color: rgba(255,255,255,0.6); display: block; margin-bottom: 8px;">Catégorie</label>
+                                {{ form_widget(form.category, {'attr': {'style': 'width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); border-radius: 10px; padding: 12px; color: white;'}}) }}
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 30px;">
+                            <label style="color: rgba(255,255,255,0.6); display: block; margin-bottom: 8px;">URL de l'image (Optionnel)</label>
+                            {{ form_widget(form.image, {'attr': {'style': 'width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); border-radius: 10px; padding: 12px; color: white;'}}) }}
+                        </div>
+                        <div style="display: flex; gap: 15px;">
+                            <button type="submit" class="btn btn-primary btn-lg" style="flex: 1;">
+                                <i class="fa-solid fa-check"></i> {{ is_edit is defined ? 'Enregistrer les modifications' : 'Publier le produit' }}
+                            </button>
+                            <a href="{{ path('front_marketplace_my_products') }}" class="btn btn-ghost btn-lg" style="flex: 1;">
+                                Annuler
+                            </a>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        {% elseif page == 'marketplace_my_products' %}
+            <div class="panel">
+                <div class="panel-head">
+                    <h2 class="panel-title"><i class="fa-solid fa-box-open"></i> Mes produits en vente</h2>
+                </div>
+                {% if myProducts is defined and myProducts|length > 0 %}
+                    <div class="table">
+                        <div class="row head">
+                            <div>Produit</div>
+                            <div>Prix</div>
+                            <div>Stock</div>
+                            <div style="text-align: right;">Actions</div>
+                        </div>
+                        {% for product in myProducts %}
+                            <div class="row">
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <div style="width: 40px; height: 40px; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,0.05);">
+                                        {% if product.image %}
+                                            <img src="{{ product.image starts with 'http' ? product.image : asset(product.image) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <i class="fa-solid fa-image" style="display: flex; align-items: center; justify-content: center; height: 100%; color: rgba(255,255,255,0.2);"></i>
+                                        {% endif %}
+                                    </div>
+                                    <span style="font-weight: 600;">{{ product.name }}</span>
+                                </div>
+                                <div class="price">{{ product.price|number_format(2, '.', ' ') }} DT</div>
+                                <div style="color: {{ product.stock > 0 ? 'var(--accent)' : '#ff0055' }};">{{ product.stock }}</div>
+                                <div style="text-align: right;">
+                                    <a href="{{ path('front_marketplace_product_edit', {id: product.id}) }}" class="btn btn-mini btn-ghost">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <form method="post" action="{{ path('front_marketplace_product_delete', {id: product.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');" style="display: inline-block;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
+                                        <button class="btn btn-mini btn-ghost" style="color: #ff0055;">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state" style="padding: 40px; text-align: center;">
+                        <p>Vous n'avez aucun produit en vente pour le moment.</p>
+                        <a href="{{ path('front_marketplace_sell') }}" class="btn btn-primary" style="margin-top: 15px;">
+                            Vendre mon premier produit
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
         {% else %}
-          <div class="empty-state">
-            <p>Aucun produit disponible pour le moment.</p>
-          </div>
+            <div class="panel" style="background: transparent; border: none; padding: 0;">
+                <div class="panel-head" style="padding-left: 0; display: flex; justify-content: space-between; align-items: center;">
+                    <h2 class="panel-title" style="font-size: 24px;"><i class="fa-solid fa-box-open"></i> Nouveautés</h2>
+                    
+                    <div style="position: relative; width: 300px;">
+                        <input type="text" id="marketplaceSearch" placeholder="Rechercher un produit..." 
+                               style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); padding: 10px 15px; padding-left: 40px; border-radius: 20px; color: white; outline: none;">
+                        <i class="fa-solid fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.4);"></i>
+                    </div>
+                </div>
+
+                <div id="marketplace-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px;">
+                    {% if products is defined and products|length > 0 %}
+                    {% for product in products %}
+                        <div class="product-card" data-tilt>
+                            <div class="product-img-wrapper">
+                                <input type="checkbox" class="compare-checkbox" 
+                                       data-id="{{ product.id }}" 
+                                       data-name="{{ product.name }}"
+                                       data-image="{{ product.image starts with 'http' ? product.image : (product.image ? asset(product.image) : asset('assets/img/default-product.png')) }}"
+                                       onchange="toggleCompare(this)">
+                                <div class="product-badge">{{ product.category ? product.category.name : 'Général' }}</div>
+                                {% if product.image %}
+                                    <img src="{{ product.image starts with 'http' ? product.image : asset(product.image) }}" alt="{{ product.name }}">
+                                {% else %}
+                                    <div class="product-img-placeholder" style="width:100%; height:100%; background: #1a1a2e; display: flex; align-items: center; justify-content: center; font-size: 40px; color: rgba(255,255,255,0.1);">
+                                        <i class="fa-solid fa-image"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="product-content">
+                                <div class="product-name">{{ product.name }}</div>
+                                <div style="font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 15px;">
+                                    Stock: <span style="color: {{ product.stock > 0 ? 'var(--accent)' : '#ff0055' }}">{{ product.stock }}</span>
+                                </div>
+                                <div class="product-price-row">
+                                    <div class="price-tag">{{ product.price|number_format(2, '.', ' ') }}<span class="price-currency">DT</span></div>
+                                    <div class="product-actions">
+                                        <a class="btn btn-mini btn-primary" href="{{ path('front_marketplace_add', {id: product.id}) }}" title="Ajouter au panier">
+                                            <i class="fa-solid fa-cart-plus"></i>
+                                        </a>
+                                        {% if app.user and product.seller and product.seller != app.user %}
+                                            <a class="btn btn-mini btn-ghost" href="{{ path('app_messages_start', {id: product.id}) }}" title="Contacter le vendeur">
+                                                <i class="fa-solid fa-comment-dots"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% else %}
+                        <div class="empty-state" style="padding: 60px; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px dashed var(--card-border); grid-column: 1 / -1;">
+                            <i class="fa-solid fa-box-archive" style="font-size: 50px; color: var(--card-border); margin-bottom: 20px; display: block;"></i>
+                            <p>Aucun produit disponible pour le moment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if totalPages is defined and totalPages > 1 %}
+                    <div class="pagination" style="display: flex; justify-content: center; gap: 10px; margin-top: 30px;">
+                        {% if currentPage > 1 %}
+                            <a href="{{ path('front_marketplace', {page: currentPage - 1}) }}" class="btn btn-mini btn-ghost" style="color: white; border: 1px solid rgba(255,255,255,0.1);">&laquo;</a>
+                        {% endif %}
+                        
+                        {% for i in 1..totalPages %}
+                            <a href="{{ path('front_marketplace', {page: i}) }}" class="btn btn-mini {{ i == currentPage ? 'btn-primary' : 'btn-ghost' }}" style="{{ i != currentPage ? 'color: white; border: 1px solid rgba(255,255,255,0.1);' : '' }}">{{ i }}</a>
+                        {% endfor %}
+                        
+                        {% if currentPage < totalPages %}
+                            <a href="{{ path('front_marketplace', {page: currentPage + 1}) }}" class="btn btn-mini btn-ghost" style="color: white; border: 1px solid rgba(255,255,255,0.1);">&raquo;</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
         {% endif %}
-      </div>
+
+        {% if orders is defined and orders|length > 0 %}
+            <div class="panel" style="margin-top: 50px;">
+                <div class="panel-head">
+                    <h2 class="panel-title"><i class="fa-solid fa-receipt"></i> Mes Commandes & Retours</h2>
+                </div>
+                <div class="table">
+                    <div class="row head">
+                        <div>Produit</div>
+                        <div>Date</div>
+                        <div>Statut</div>
+                        <div style="text-align: right;">Action</div>
+                    </div>
+                    {% for order in orders %}
+                        <div class="row">
+                            <div class="brand" style="font-weight: 600;">{{ order.product.name }}</div>
+                            <div class="muted small">{{ order.orderDate|date('d/m/Y') }}</div>
+                            <div>
+                                {% if order.status == 'pending' %}
+                                    <span class="badge" style="background: rgba(255, 193, 7, 0.2); color: #ffc107; border: 1px solid #ffc107;">En attente</span>
+                                {% elseif order.status == 'shipped' %}
+                                    <span class="badge" style="background: rgba(13, 202, 240, 0.2); color: #0dcaf0; border: 1px solid #0dcaf0;">Expédiée</span>
+                                {% elseif order.status == 'delivered' %}
+                                    <span class="badge" style="background: rgba(25, 135, 84, 0.2); color: #198754; border: 1px solid #198754;">Livrée</span>
+                                {% elseif order.status == 'cancelled' %}
+                                    <span class="badge" style="background: rgba(220, 53, 69, 0.2); color: #dc3545; border: 1px solid #dc3545;">Annulée</span>
+                                {% elseif order.status == 'returned' %}
+                                    <span class="badge" style="background: rgba(108, 117, 125, 0.2); color: #adb5bd; border: 1px solid #adb5bd;">Retournée</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ order.status }}</span>
+                                {% endif %}
+                            </div>
+                            <div style="text-align: right;">
+                                <a href="{{ path('app_order_pdf', {id: order.id}) }}" class="btn btn-mini btn-ghost" style="color: #0dcaf0;" target="_blank">
+                                    <i class="fa-solid fa-file-pdf"></i> PDF
+                                </a>
+                                {% if order.status != 'cancelled' and order.status != 'returned' %}
+                                    <a href="{{ path('app_return_request', {id: order.id}) }}" class="btn btn-mini btn-ghost" style="color: #ff0055;">
+                                        <i class="fa-solid fa-undo"></i> Retour
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
     </div>
 
     <div class="col span-4">
-      <div class="panel">
-        <div class="panel-head">
-          {% if cartItems is defined %}
-            <h2 class="panel-title"><i class="fa-solid fa-bag-shopping"></i> Mon Panier</h2>
-          {% else %}
-            <h2 class="panel-title"><i class="fa-solid fa-wave-square"></i> Signals</h2>
-          {% endif %}
-        </div>
-        {% if cartItems is defined %}
-          <div class="table">
-            <div class="row head">
-              <div>Produit</div>
-              <div>Qté</div>
-              <div>Total</div>
-            </div>
-            {% for item in cartItems %}
-              <div class="row">
-                <div class="brand">{{ item.product.name }}</div>
-                <div class="accent">{{ item.qty }}</div>
-                <div>{{ item.lineTotal|number_format(2, '.', ' ') }} DT</div>
-              </div>
-            {% endfor %}
-            <div class="row">
-              <div class="brand">Total</div>
-              <div></div>
-              <div class="accent">{{ cartTotal|number_format(2, '.', ' ') }} DT</div>
-            </div>
-            <div class="row-actions" style="padding: 12px">
-              <a class="btn btn-primary" href="{{ path('front_marketplace_checkout') }}"><i class="fa-solid fa-credit-card"></i> Passer la commande</a>
-            </div>
-          </div>
-        {% else %}
-          <div class="mini-kpis">
-            <div class="kpi card">
-              <div class="kpi-label">Conversions</div>
-              <div class="kpi-value accent" data-countup data-to="931">0</div>
-            </div>
-            <div class="kpi card">
-              <div class="kpi-label">Refunds</div>
-              <div class="kpi-value" data-countup data-to="17">0</div>
-            </div>
-            <div class="kpi card">
-              <div class="kpi-label">Avg. order</div>
-              <div class="kpi-value" data-countup data-to="42">0</div>
-            </div>
-          </div>
+        <div class="side-panel">
+            {% if page == 'marketplace_sell' or page == 'marketplace_my_products' %}
+                <div class="panel-head">
+                    <h2 class="panel-title"><i class="fa-solid fa-circle-info"></i> Guide Vendeur</h2>
+                </div>
+                <div style="padding: 20px; font-size: 14px; color: rgba(255,255,255,0.7); line-height: 1.6;">
+                    <p style="margin-bottom: 15px;"><i class="fa-solid fa-check-circle" style="color: var(--accent);"></i> <strong>Visibilité :</strong> Votre produit sera visible par tous les joueurs dès sa publication.</p>
+                    <p style="margin-bottom: 15px;"><i class="fa-solid fa-check-circle" style="color: var(--accent);"></i> <strong>Communication :</strong> Les acheteurs peuvent vous contacter directement via la messagerie.</p>
+                    <p style="margin-bottom: 15px;"><i class="fa-solid fa-check-circle" style="color: var(--accent);"></i> <strong>Paiement :</strong> Les transactions sont sécurisées par Lobby.gg.</p>
+                    <div style="background: rgba(139, 61, 255, 0.1); border: 1px solid var(--card-border); padding: 15px; border-radius: 10px; margin-top: 20px;">
+                        <span style="display: block; font-weight: 700; color: white; margin-bottom: 5px;">Besoin d'aide ?</span>
+                        Contactez le support vendeur pour toute question technique.
+                    </div>
+                </div>
+            {% else %}
+                <div class="panel-head">
+                    {% if cartItems is defined and cartItems|length > 0 %}
+                        <h2 class="panel-title"><i class="fa-solid fa-bag-shopping"></i> Mon Panier</h2>
+                    {% else %}
+                        <h2 class="panel-title"><i class="fa-solid fa-chart-line"></i> Statistiques</h2>
+                    {% endif %}
+                </div>
+
+            {% if cartItems is defined and cartItems|length > 0 %}
+                <div class="table">
+                    {% for item in cartItems %}
+                        <div class="row" style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <div style="flex-grow: 1;">
+                                <div class="brand" style="font-size: 13px;">{{ item.product.name }}</div>
+                                <div class="muted small">Qté: {{ item.qty }}</div>
+                            </div>
+                            <div class="accent" style="font-weight: bold;">{{ item.lineTotal|number_format(2, '.', ' ') }} DT</div>
+                        </div>
+                    {% endfor %}
+                    <div class="row" style="margin-top: 15px; border-top: 2px solid var(--accent); padding-top: 15px;">
+                        <div class="brand" style="font-size: 16px;">TOTAL</div>
+                        <div class="accent" style="font-size: 20px; font-weight: 800;">{{ cartTotal|number_format(2, '.', ' ') }} DT</div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <a class="btn btn-primary btn-block" href="{{ path('front_marketplace_checkout') }}">
+                            <i class="fa-solid fa-credit-card"></i> Checkout
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="mini-kpis" style="display: grid; gap: 15px;">
+                    <div class="kpi card" style="background: rgba(139, 61, 255, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(139, 61, 255, 0.1);">
+                        <div class="kpi-label" style="font-size: 11px; color: rgba(255,255,255,0.5);">Articles vendus</div>
+                        <div class="kpi-value accent" style="font-size: 24px; font-weight: 800;" data-countup data-to="931">0</div>
+                    </div>
+                    <div class="kpi card" style="background: rgba(255, 0, 85, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 0, 85, 0.1);">
+                        <div class="kpi-label" style="font-size: 11px; color: rgba(255,255,255,0.5);">Satisfaction</div>
+                        <div class="kpi-value" style="font-size: 24px; font-weight: 800; color: #ff0055;" data-countup data-to="98">0%</div>
+                    </div>
+                    <div class="kpi card" style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                        <div class="kpi-label" style="font-size: 11px; color: rgba(255,255,255,0.5);">Gear drops</div>
+                        <div class="kpi-value" style="font-size: 24px; font-weight: 800; color: white;" data-countup data-to="42">0</div>
+                    </div>
+                </div>
+            {% endif %}
         {% endif %}
-      </div>
     </div>
-  </section>
+</div>
+
+{% include 'front/partials/_chatbot.html.twig' %}
+
+<!-- Comparison Bar -->
+<div class="comparison-bar" id="comparisonBar">
+    <div class="d-flex align-items-center gap-3">
+        <div class="comparison-items" id="comparisonItems"></div>
+        <div class="text-white">
+            <span id="compareCount">0</span>/3 produits sélectionnés
+        </div>
+    </div>
+    <button class="btn btn-primary" onclick="startComparison()" id="compareBtn" disabled>
+        <i class="fa-solid fa-robot me-2"></i> Comparer avec IA
+    </button>
+</div>
+
+<!-- AI Comparison Modal -->
+<div class="modal fade" id="aiModal" tabindex="-1" aria-hidden="true" style="z-index: 10000;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content ai-modal-content">
+            <div class="modal-header ai-modal-header">
+                <h5 class="modal-title" style="font-family: 'Major Mono Display', monospace; color: var(--accent);">
+                    <i class="fa-solid fa-robot"></i> LOBBY.GG AI
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="aiLoading" class="ai-loading">
+                    <i class="fa-solid fa-circle-notch fa-spin fa-3x" style="color: var(--accent);"></i>
+                    <p style="margin-top: 15px; color: rgba(255,255,255,0.7);">Analyse des produits en cours...</p>
+                </div>
+                <div id="aiResult" class="ai-result"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Icône de messagerie flottante -->
+<a href="{{ path('app_messages') }}" class="floating-chat-icon" title="Ma Messagerie">
+    <i class="fa-solid fa-comments"></i>
+</a>
+
+</section>
 {% endblock %}
-
-

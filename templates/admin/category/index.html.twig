@@ -12,7 +12,7 @@
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Catégories du Marketplace</h3>
-        <div class="card-tools">
+        <div class="card-tools d-flex align-items-center gap-2">
             <a href="{{ path('app_admin_category_new') }}" class="btn btn-primary btn-sm">
                 <i class="bi bi-plus-circle"></i> Nouvelle Catégorie
             </a>
@@ -22,8 +22,30 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Nom</th>
+                    <th>
+                        <a href="{{ path('app_admin_category_index', {
+                            'q': searchQuery,
+                            'sort': 'id',
+                            'direction': currentSort == 'id' and currentDirection == 'ASC' ? 'DESC' : 'ASC'
+                        }) }}" class="text-dark text-decoration-none">
+                            ID 
+                            {% if currentSort == 'id' %}
+                                <i class="bi bi-arrow-{{ currentDirection == 'ASC' ? 'up' : 'down' }}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ path('app_admin_category_index', {
+                            'q': searchQuery,
+                            'sort': 'name',
+                            'direction': currentSort == 'name' and currentDirection == 'ASC' ? 'DESC' : 'ASC'
+                        }) }}" class="text-dark text-decoration-none">
+                            Nom
+                            {% if currentSort == 'name' %}
+                                <i class="bi bi-arrow-{{ currentDirection == 'ASC' ? 'up' : 'down' }}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
                     <th>Description</th>
                     <th>Actions</th>
                 </tr>
@@ -42,6 +64,12 @@
                             <a href="{{ path('app_admin_category_edit', {'id': category.id}) }}" class="btn btn-warning btn-sm">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            <form method="post" action="{{ path('app_admin_category_delete', {'id': category.id}) }}" style="display:inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category.id) }}">
+                                <button class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
                         </div>
                     </td>
                 </tr>

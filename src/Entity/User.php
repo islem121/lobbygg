@@ -22,17 +22,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public const ROLE_CLIENT = 'client';
     public const ROLE_ADMIN = 'admin';
     public const ROLE_SPONSOR = 'sponsor';
+    public const ROLE_SELLER = 'seller';
     
     public const AVAILABLE_ROLES = [
         self::ROLE_CLIENT,
         self::ROLE_ADMIN,
         self::ROLE_SPONSOR,
+        self::ROLE_SELLER,
     ];
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\OneToMany(mappedBy: 'seller', targetEntity: Product::class)]
+    private Collection $products;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le nom d\'utilisateur est obligatoire.')]
@@ -86,6 +91,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->createdAt = new \DateTimeImmutable();
         $this->role = self::ROLE_CLIENT;
         $this->notifications = new ArrayCollection();
+        $this->products = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, Product>
+     */
+    public function getProducts(): Collection
+    {
+        return $this->products;
+    }
+
+    public function addProduct(Product $product): static
+    {
+        if (!$this->products->contains($product)) {
+            $this->products->add($product);
+            $product->setSeller($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProduct(Product $product): static
+    {
+        if ($this->products->removeElement($product)) {
+            // set the owning side to null (unless already changed)
+            if ($product->getSeller() === $this) {
+                $product->setSeller(null);
+            }
+        }
+
+        return $this;
     }
 
     /**

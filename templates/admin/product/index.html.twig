@@ -12,7 +12,7 @@
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Produits du Marketplace</h3>
-        <div class="card-tools">
+        <div class="card-tools d-flex align-items-center gap-2">
             <a href="{{ path('app_admin_product_new') }}" class="btn btn-primary btn-sm">
                 <i class="bi bi-plus-circle"></i> Nouveau Produit
             </a>
@@ -22,13 +22,68 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>
+                        <a href="{{ path('app_admin_product_index', {
+                            'q': searchQuery,
+                            'sort': 'id',
+                            'direction': currentSort == 'id' and currentDirection == 'ASC' ? 'DESC' : 'ASC'
+                        }) }}" class="text-dark text-decoration-none">
+                            ID 
+                            {% if currentSort == 'id' %}
+                                <i class="bi bi-arrow-{{ currentDirection == 'ASC' ? 'up' : 'down' }}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
                     <th>Image</th>
-                    <th>Nom</th>
+                    <th>
+                        <a href="{{ path('app_admin_product_index', {
+                            'q': searchQuery,
+                            'sort': 'name',
+                            'direction': currentSort == 'name' and currentDirection == 'ASC' ? 'DESC' : 'ASC'
+                        }) }}" class="text-dark text-decoration-none">
+                            Nom
+                            {% if currentSort == 'name' %}
+                                <i class="bi bi-arrow-{{ currentDirection == 'ASC' ? 'up' : 'down' }}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
                     <th>Catégorie</th>
-                    <th>Prix</th>
-                    <th>Stock</th>
-                    <th>Date Création</th>
+                    <th>
+                        <a href="{{ path('app_admin_product_index', {
+                            'q': searchQuery,
+                            'sort': 'price',
+                            'direction': currentSort == 'price' and currentDirection == 'ASC' ? 'DESC' : 'ASC'
+                        }) }}" class="text-dark text-decoration-none">
+                            Prix
+                            {% if currentSort == 'price' %}
+                                <i class="bi bi-arrow-{{ currentDirection == 'ASC' ? 'up' : 'down' }}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ path('app_admin_product_index', {
+                            'q': searchQuery,
+                            'sort': 'stock',
+                            'direction': currentSort == 'stock' and currentDirection == 'ASC' ? 'DESC' : 'ASC'
+                        }) }}" class="text-dark text-decoration-none">
+                            Stock
+                            {% if currentSort == 'stock' %}
+                                <i class="bi bi-arrow-{{ currentDirection == 'ASC' ? 'up' : 'down' }}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ path('app_admin_product_index', {
+                            'q': searchQuery,
+                            'sort': 'createdAt',
+                            'direction': currentSort == 'createdAt' and currentDirection == 'ASC' ? 'DESC' : 'ASC'
+                        }) }}" class="text-dark text-decoration-none">
+                            Date Création
+                            {% if currentSort == 'createdAt' %}
+                                <i class="bi bi-arrow-{{ currentDirection == 'ASC' ? 'up' : 'down' }}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -56,6 +111,12 @@
                             <a href="{{ path('app_admin_product_edit', {'id': product.id}) }}" class="btn btn-warning btn-sm">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            <form method="post" action="{{ path('app_admin_product_delete', {'id': product.id}) }}" style="display:inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
+                                <button class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
                         </div>
                     </td>
                 </tr>

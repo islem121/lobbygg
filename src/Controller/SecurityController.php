@@ -49,7 +49,8 @@ class SecurityController extends AbstractController
 
             $user = new User();
             $user->setEmail($email);
-            $user->setUsername($prenom . ' ' . $nom);
+            // Utiliser le prénom et le nom pour le username s'ils existent
+            $user->setUsername(($prenom && $nom) ? ($prenom . ' ' . $nom) : $email);
             $user->setNom($nom);
             $user->setPrenom($prenom);
             if ($dateNaissance) {
@@ -59,25 +60,30 @@ class SecurityController extends AbstractController
             }
             $user->setTelephone($telephone);
             $user->setRole($role);
-            $user->setPassword($password); // Temporairement pour la validation
+            $user->setPassword($password);
 
-            // Validation Symfony
-            $violations = $validator->validate($user, null, ['Default', 'registration']);
+            // Validation Symfony simplifiée
+            $violations = $validator->validate($user);
             
             if (count($violations) > 0) {
                 foreach ($violations as $violation) {
                     $errors[$violation->getPropertyPath()] = $violation->getMessage();
                 }
             } else {
-                // Hachage du mot de passe
-                $hashedPassword = $passwordHasher->hashPassword($user, $password);
-                $user->setPassword($hashedPassword);
+                try {
+                    // Hachage du mot de passe
+                    $user->setPassword(
+                        $passwordHasher->hashPassword($user, $password)
+                    );
 
-                $entityManager->persist($user);
-                $entityManager->flush();
+                    $entityManager->persist($user);
+                    $entityManager->flush();
 
-                $this->addFlash('success', 'Inscription réussie ! Veuillez vous connecter.');
-                return $this->redirectToRoute('app_login');
+                    $this->addFlash('success', 'Inscription réussie ! Vous pouvez maintenant vous connecter.');
+                    return $this->redirectToRoute('app_login');
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Erreur base de données : ' . $e->getMessage());
+                }
             }
         }
 
