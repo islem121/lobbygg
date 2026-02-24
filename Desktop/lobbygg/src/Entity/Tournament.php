@@ -17,26 +17,26 @@ class Tournament
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'name', length: 100)]
+    #[ORM\Column(name: 'title', length: 255)]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $description = null;
 
-    #[ORM\Column(name: 'start_datetime', type: Types::DATETIME_IMMUTABLE)]
-    private ?\DateTimeImmutable $startDate = null;
+    #[ORM\Column(name: 'start_date', type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $startDate = null;
 
-    #[ORM\Column(name: 'end_datetime', type: Types::DATETIME_IMMUTABLE, nullable: true)]
-    private ?\DateTimeImmutable $endDate = null;
+    #[ORM\Column(name: 'end_date', type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $endDate = null;
 
-    #[ORM\Column(name: 'max_teams')]
+    #[ORM\Column(name: 'max_players')]
     private ?int $maxPlayers = null;
 
     #[ORM\Column(length: 20)]
     private ?string $status = null;
 
-    #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]
-    private ?\DateTimeImmutable $createdAt = null;
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $createdAt = null;
 
     /**
      * @var Collection<int, TournamentParticipation>
@@ -47,7 +47,7 @@ class Tournament
     public function __construct()
     {
         $this->participations = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = new \DateTime();
         $this->status = 'upcoming';
     }
 
@@ -80,24 +80,24 @@ class Tournament
         return $this;
     }
 
-    public function getStartDate(): ?\DateTimeImmutable
+    public function getStartDate(): ?\DateTimeInterface
     {
         return $this->startDate;
     }
 
-    public function setStartDate(\DateTimeImmutable $startDate): static
+    public function setStartDate(\DateTimeInterface $startDate): static
     {
         $this->startDate = $startDate;
 
         return $this;
     }
 
-    public function getEndDate(): ?\DateTimeImmutable
+    public function getEndDate(): ?\DateTimeInterface
     {
         return $this->endDate;
     }
 
-    public function setEndDate(?\DateTimeImmutable $endDate): static
+    public function setEndDate(?\DateTimeInterface $endDate): static
     {
         $this->endDate = $endDate;
 
@@ -128,12 +128,12 @@ class Tournament
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(\DateTimeInterface $createdAt): static
     {
         $this->createdAt = $createdAt;
 

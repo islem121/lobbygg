@@ -13,10 +13,56 @@
     <div class="card-header">
         <h3 class="card-title">Tournaments List</h3>
         <div class="card-tools">
+            <a href="{{ path('app_admin_tournament_export_pdf', app.request.query.all) }}" class="btn btn-outline-secondary btn-sm me-2">
+                <i class="bi bi-file-earmark-pdf"></i> Export PDF
+            </a>
             <a href="{{ path('app_admin_tournament_new') }}" class="btn btn-primary btn-sm">
                 <i class="bi bi-plus-circle"></i> New Tournament
             </a>
         </div>
+    </div>
+    <div class="card-body border-bottom">
+        <form method="get" class="row g-2">
+            <div class="col-md-3">
+                <input type="text" class="form-control" name="q" placeholder="Search title/description" value="{{ filters.q ?? '' }}">
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" name="status">
+                    <option value="">All statuses</option>
+                    {% for value in ['upcoming', 'live', 'finished', 'cancelled'] %}
+                        <option value="{{ value }}" {{ (filters.status ?? '') == value ? 'selected' : '' }}>{{ value|upper }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" class="form-control" name="date_from" value="{{ filters.dateFrom ?? '' }}">
+            </div>
+            <div class="col-md-2">
+                <input type="date" class="form-control" name="date_to" value="{{ filters.dateTo ?? '' }}">
+            </div>
+            <div class="col-md-1">
+                <select class="form-select" name="sort_by">
+                    <option value="startDate" {{ sort.by == 'startDate' ? 'selected' : '' }}>Start</option>
+                    <option value="endDate" {{ sort.by == 'endDate' ? 'selected' : '' }}>End</option>
+                    <option value="title" {{ sort.by == 'title' ? 'selected' : '' }}>Title</option>
+                    <option value="status" {{ sort.by == 'status' ? 'selected' : '' }}>Status</option>
+                    <option value="maxPlayers" {{ sort.by == 'maxPlayers' ? 'selected' : '' }}>Slots</option>
+                    <option value="participantsCount" {{ sort.by == 'participantsCount' ? 'selected' : '' }}>Participants</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <select class="form-select" name="sort_dir">
+                    <option value="asc" {{ sort.dir == 'asc' ? 'selected' : '' }}>ASC</option>
+                    <option value="desc" {{ sort.dir == 'desc' ? 'selected' : '' }}>DESC</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button class="btn btn-primary w-100" type="submit">Apply</button>
+            </div>
+            <div class="col-md-12">
+                <a href="{{ path('app_admin_tournament_index') }}" class="btn btn-link btn-sm p-0">Reset filters</a>
+            </div>
+        </form>
     </div>
     <div class="card-body p-0">
         <table class="table table-striped">
@@ -28,18 +74,21 @@
                     <th>Start</th>
                     <th>End</th>
                     <th>Max Players</th>
+                    <th>Participants</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-            {% for tournament in tournaments %}
+            {% for row in rows %}
+                {% set tournament = row[0] %}
                 <tr>
                     <td>{{ tournament.id }}</td>
                     <td>{{ tournament.title }}</td>
                     <td><span class="badge bg-info">{{ tournament.status }}</span></td>
                     <td>{{ tournament.startDate ? tournament.startDate|date('d/m/Y H:i') : '-' }}</td>
-                    <td>{{ tournament.endDate ? tournament.endDate|date('d/m/Y H:i') : '-' }}</td>
+                    <td>{{ tournament.endDate ? tournament.endDate|date('d/m/Y') : '-' }}</td>
                     <td>{{ tournament.maxPlayers }}</td>
+                    <td>{{ row.participantsCount }}</td>
                     <td>
                         <div class="btn-group">
                             <a href="{{ path('app_admin_tournament_show', {'id': tournament.id}) }}" class="btn btn-info btn-sm">
@@ -53,7 +102,7 @@
                 </tr>
             {% else %}
                 <tr>
-                    <td colspan="7" class="text-center">No tournaments found</td>
+                    <td colspan="8" class="text-center">No tournaments found</td>
                 </tr>
             {% endfor %}
             </tbody>

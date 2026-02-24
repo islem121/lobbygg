@@ -20,6 +20,59 @@
   <section class="grid">
     <div class="col span-12">
       <div class="panel">
+        <form method="get" style="display:grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap:10px; align-items:end;">
+          <div style="grid-column: span 2;">
+            <label>Search</label>
+            <input class="form-control" type="text" name="q" placeholder="Title or description" value="{{ filters.q ?? '' }}">
+          </div>
+          <div>
+            <label>Status</label>
+            <select class="form-control" name="status">
+              <option value="">All</option>
+              {% for value in ['upcoming', 'live', 'finished', 'cancelled'] %}
+                <option value="{{ value }}" {{ (filters.status ?? '') == value ? 'selected' : '' }}>{{ value|upper }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label>From</label>
+            <input class="form-control" type="date" name="date_from" value="{{ filters.dateFrom ?? '' }}">
+          </div>
+          <div>
+            <label>To</label>
+            <input class="form-control" type="date" name="date_to" value="{{ filters.dateTo ?? '' }}">
+          </div>
+          <div>
+            <label>Sort</label>
+            <select class="form-control" name="sort_by">
+              <option value="startDate" {{ sort.by == 'startDate' ? 'selected' : '' }}>Start</option>
+              <option value="endDate" {{ sort.by == 'endDate' ? 'selected' : '' }}>End</option>
+              <option value="title" {{ sort.by == 'title' ? 'selected' : '' }}>Title</option>
+              <option value="status" {{ sort.by == 'status' ? 'selected' : '' }}>Status</option>
+              <option value="maxPlayers" {{ sort.by == 'maxPlayers' ? 'selected' : '' }}>Slots</option>
+              <option value="participantsCount" {{ sort.by == 'participantsCount' ? 'selected' : '' }}>Participants</option>
+            </select>
+          </div>
+          <div>
+            <label>Dir</label>
+            <select class="form-control" name="sort_dir">
+              <option value="asc" {{ sort.dir == 'asc' ? 'selected' : '' }}>ASC</option>
+              <option value="desc" {{ sort.dir == 'desc' ? 'selected' : '' }}>DESC</option>
+            </select>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-filter"></i> Apply</button>
+            <a class="btn btn-ghost" href="{{ path('front_tournaments') }}">Reset</a>
+            <a class="btn btn-ghost" href="{{ path('front_tournaments_export_pdf', app.request.query.all) }}"><i class="fa-solid fa-file-pdf"></i> PDF</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="col span-12">
+      <div class="panel">
         <div class="panel-head">
           <h2 class="panel-title"><i class="fa-solid fa-trophy"></i> All Tournaments</h2>
         </div>

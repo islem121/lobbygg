@@ -7,6 +7,8 @@ use App\Entity\TournamentParticipation;
 use App\Form\TournamentType;
 use App\Repository\TournamentParticipationRepository;
 use App\Repository\TournamentRepository;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,14 +19,19 @@ class TournamentController extends AbstractController
 {
     #[Route('/tournaments', name: 'front_tournaments', methods: ['GET'])]
     public function index(
+        Request $request,
         TournamentRepository $tournamentRepository,
         TournamentParticipationRepository $participationRepository
     ): Response {
-        if ($this->isGranted('ROLE_ADMIN')) {
-            return $this->redirectToRoute('app_admin_tournament_index');
-        }
-
-        $rows = $tournamentRepository->findWithParticipantsCount();
+        [$filters, $sort] = $this->extractListParams($request);
+        $rows = $tournamentRepository->findWithParticipantsCountFiltered(
+            $filters['q'],
+            $filters['status'],
+            $filters['dateFrom'],
+            $filters['dateTo'],
+            $sort['by'],
+            $sort['dir']
+        );
         $tournaments = [];
         $user = $this->getUser();
 
@@ -48,7 +55,59 @@ class TournamentController extends AbstractController
         return $this->render('front/modules/tournaments.html.twig', [
             'page' => 'tournaments',
             'tournaments' => $tournaments,
+            'filters' => [
+                'q' => $filters['q'],
+                'status' => $filters['status'],
+                'dateFrom' => $filters['dateFromRaw'],
+                'dateTo' => $filters['dateToRaw'],
+            ],
+            'sort' => $sort,
         ]);
+    }
+
+    #[Route('/tournaments/export/pdf', name: 'front_tournaments_export_pdf', methods: ['GET'])]
+    public function exportPdf(Request $request, TournamentRepository $tournamentRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        [$filters, $sort] = $this->extractListParams($request);
+        $rows = $tournamentRepository->findWithParticipantsCountFiltered(
+            $filters['q'],
+            $filters['status'],
+            $filters['dateFrom'],
+            $filters['dateTo'],
+            $sort['by'],
+            $sort['dir']
+        );
+
+        $html = $this->renderView('tournament/list_pdf.html.twig', [
+            'title' => 'Frontoffice Tournaments',
+            'rows' => $rows,
+            'filters' => [
+                'q' => $filters['q'],
+                'status' => $filters['status'],
+                'dateFrom' => $filters['dateFromRaw'],
+                'dateTo' => $filters['dateToRaw'],
+            ],
+            'sort' => $sort,
+            'generatedAt' => new \DateTimeImmutable(),
+        ]);
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', false);
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="front-tournaments.pdf"',
+            ]
+        );
     }
 
     #[Route('/tournaments/new', name: 'front_tournaments_new', methods: ['GET', 'POST'])]
@@ -243,5 +302,66 @@ class TournamentController extends AbstractController
         $this->addFlash('success', 'Participation status updated.');
 
         return $this->redirectToRoute('front_tournaments_show', ['id' => $participation->getTournament()?->getId()]);
+    }
+
+    /**
+     * @return array{
+     *     0: array{
+     *         q: ?string,
+     *         status: ?string,
+     *         dateFrom: ?\DateTimeInterface,
+     *         dateTo: ?\DateTimeInterface,
+     *         dateFromRaw: ?string,
+     *         dateToRaw: ?string
+     *     },
+     *     1: array{by: string, dir: string}
+     * }
+     */
+    private function extractListParams(Request $request): array
+    {
+        $q = trim((string) $request->query->get('q', ''));
+        $status = trim((string) $request->query->get('status', ''));
+        $dateFromRaw = trim((string) $request->query->get('date_from', ''));
+        $dateToRaw = trim((string) $request->query->get('date_to', ''));
+        $sortBy = (string) $request->query->get('sort_by', 'startDate');
+        $sortDir = strtolower((string) $request->query->get('sort_dir', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        $dateFrom = $this->parseDate($dateFromRaw, false);
+        $dateTo = $this->parseDate($dateToRaw, true);
+
+        $allowedSortBy = ['title', 'status', 'startDate', 'endDate', 'maxPlayers', 'participantsCount'];
+        if (!in_array($sortBy, $allowedSortBy, true)) {
+            $sortBy = 'startDate';
+        }
+
+        return [[
+            'q' => $q !== '' ? $q : null,
+            'status' => $status !== '' ? $status : null,
+            'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo,
+            'dateFromRaw' => $dateFromRaw !== '' ? $dateFromRaw : null,
+            'dateToRaw' => $dateToRaw !== '' ? $dateToRaw : null,
+        ], [
+            'by' => $sortBy,
+            'dir' => $sortDir,
+        ]];
+    }
+
+    private function parseDate(string $value, bool $endOfDay): ?\DateTimeInterface
+    {
+        if ($value === '') {
+            return null;
+        }
+
+        try {
+            $date = new \DateTimeImmutable($value);
+            if ($endOfDay) {
+                return $date->setTime(23, 59, 59);
+            }
+
+            return $date->setTime(0, 0, 0);
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Tournament;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -26,12 +27,12 @@ class TournamentType extends AbstractType
             ->add('startDate', DateTimeType::class, [
                 'label' => 'Start date',
                 'widget' => 'single_text',
-                'input' => 'datetime_immutable',
+                'input' => 'datetime',
             ])
-            ->add('endDate', DateTimeType::class, [
+            ->add('endDate', DateType::class, [
                 'label' => 'End date',
                 'widget' => 'single_text',
-                'input' => 'datetime_immutable',
+                'input' => 'datetime',
                 'required' => false,
             ])
             ->add('maxPlayers', IntegerType::class, [

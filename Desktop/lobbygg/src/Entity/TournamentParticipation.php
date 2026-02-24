@@ -12,11 +12,11 @@ class TournamentParticipation
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: 'participation_id')]
+    #[ORM\Column(name: 'id')]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'joined_at')]
-    private ?\DateTimeImmutable $registrationDate = null;
+    #[ORM\Column(name: 'registration_date', type: 'datetime')]
+    private ?\DateTimeInterface $registrationDate = null;
 
     #[ORM\Column(length: 50)]
     private ?string $status = null;
@@ -31,7 +31,7 @@ class TournamentParticipation
 
     public function __construct()
     {
-        $this->registrationDate = new \DateTimeImmutable();
+        $this->registrationDate = new \DateTime();
         $this->status = 'registered';
     }
 
@@ -40,12 +40,12 @@ class TournamentParticipation
         return $this->id;
     }
 
-    public function getRegistrationDate(): ?\DateTimeImmutable
+    public function getRegistrationDate(): ?\DateTimeInterface
     {
         return $this->registrationDate;
     }
 
-    public function setRegistrationDate(\DateTimeImmutable $registrationDate): static
+    public function setRegistrationDate(\DateTimeInterface $registrationDate): static
     {
         $this->registrationDate = $registrationDate;
 
