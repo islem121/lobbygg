@@ -41,8 +41,11 @@ class TournamentRepository extends ServiceEntityRepository
         ?string $status = null,
         ?\DateTimeInterface $dateFrom = null,
         ?\DateTimeInterface $dateTo = null,
+        ?string $mode = null,
         string $sortBy = 'startDate',
-        string $sortDir = 'asc'
+        string $sortDir = 'asc',
+        ?int $limit = null,
+        int $offset = 0
     ): array {
         $qb = $this->createQueryBuilder('t')
             ->leftJoin('t.participations', 'tp')
@@ -59,6 +62,11 @@ class TournamentRepository extends ServiceEntityRepository
                 ->setParameter('status', $status);
         }
 
+        if ($mode !== null && $mode !== '') {
+            $qb->andWhere('t.mode = :mode')
+                ->setParameter('mode', $mode);
+        }
+
         if ($dateFrom !== null) {
             $qb->andWhere('t.startDate >= :dateFrom')
                 ->setParameter('dateFrom', $dateFrom);
@@ -73,7 +81,49 @@ class TournamentRepository extends ServiceEntityRepository
         $direction = strtolower($sortDir) === 'desc' ? 'DESC' : 'ASC';
         $qb->orderBy($sortExpr, $direction);
 
+        if ($limit !== null) {
+            $qb->setMaxResults($limit)->setFirstResult($offset);
+        }
+
         return $qb->getQuery()->getResult();
+    }
+
+    public function countFiltered(
+        ?string $query = null,
+        ?string $status = null,
+        ?\DateTimeInterface $dateFrom = null,
+        ?\DateTimeInterface $dateTo = null,
+        ?string $mode = null
+    ): int {
+        $qb = $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)');
+
+        if ($query !== null && $query !== '') {
+            $qb->andWhere('t.title LIKE :query OR t.description LIKE :query')
+                ->setParameter('query', '%'.$query.'%');
+        }
+
+        if ($status !== null && $status !== '') {
+            $qb->andWhere('t.status = :status')
+                ->setParameter('status', $status);
+        }
+
+        if ($mode !== null && $mode !== '') {
+            $qb->andWhere('t.mode = :mode')
+                ->setParameter('mode', $mode);
+        }
+
+        if ($dateFrom !== null) {
+            $qb->andWhere('t.startDate >= :dateFrom')
+                ->setParameter('dateFrom', $dateFrom);
+        }
+
+        if ($dateTo !== null) {
+            $qb->andWhere('t.startDate <= :dateTo')
+                ->setParameter('dateTo', $dateTo);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     public function findOneWithParticipations(int $id): ?Tournament

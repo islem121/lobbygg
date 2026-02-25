@@ -28,6 +28,9 @@
         </div>
         <ul style="display:grid; gap:8px; list-style:none; padding:0; margin:0;">
           <li><strong>Status:</strong> {{ tournament.status }}</li>
+          <li><strong>Mode:</strong> {{ tournament.mode|upper }}</li>
+          <li><strong>Entry Fee:</strong> {{ tournament.entryFee > 0 ? tournament.entryFee|number_format(2, '.', ',') : 'FREE' }}</li>
+          <li><strong>Prize Pool:</strong> {{ tournament.prizePool is not null ? tournament.prizePool|number_format(2, '.', ',') : 'N/A' }}</li>
           <li><strong>Start:</strong> {{ tournament.startDate ? tournament.startDate|date('Y-m-d H:i') : 'N/A' }}</li>
           <li><strong>End:</strong> {{ tournament.endDate ? tournament.endDate|date('Y-m-d H:i') : 'N/A' }}</li>
           <li><strong>Slots:</strong> {{ participantsCount }} / {{ tournament.maxPlayers }}</li>
@@ -49,7 +52,20 @@
                   <i class="fa-solid fa-bolt"></i> Join
                 </button>
               </form>
+              {% if tournament.entryFee > 0 %}
+                <a class="btn btn-ghost" href="{{ path('front_marketplace_voucher_buy', {id: tournament.id}) }}">
+                  <i class="fa-solid fa-ticket"></i> Buy Voucher
+                </a>
+              {% endif %}
             {% endif %}
+          {% endif %}
+          {% if is_granted('ROLE_USER') %}
+            <form method="post" action="{{ path('front_tournaments_share_feed', {id: tournament.id}) }}">
+              <input type="hidden" name="_token" value="{{ csrf_token('share_tournament_feed_' ~ tournament.id) }}">
+              <button class="btn btn-ghost" type="submit"><i class="fa-solid fa-share-nodes"></i> Share to Feed</button>
+            </form>
+            <a class="btn btn-ghost" target="_blank" href="{{ path('front_tournaments_share_external', {id: tournament.id, platform: 'facebook'}) }}"><i class="fa-brands fa-facebook"></i></a>
+            <a class="btn btn-ghost" href="{{ path('front_tournaments_share_external', {id: tournament.id, platform: 'instagram'}) }}"><i class="fa-brands fa-instagram"></i></a>
           {% endif %}
         </div>
       </div>
@@ -88,5 +104,42 @@
       </div>
     </div>
   </section>
+
+  <section class="grid">
+    <div class="col span-12">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-robot"></i> Tournament AI Chatbot</h2>
+        </div>
+        <div style="display:grid; gap:10px;">
+          <textarea id="tournament-chat-question" class="form-control" rows="3" placeholder="Ask about this tournament..."></textarea>
+          <div class="row-actions">
+            <button class="btn btn-primary" id="tournament-chat-send" type="button">Ask</button>
+          </div>
+          <div id="tournament-chat-answer" class="card" style="padding:10px;">Answer will appear here.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <script>
+    (function () {
+      const sendBtn = document.getElementById('tournament-chat-send');
+      if (!sendBtn) return;
+      sendBtn.addEventListener('click', async function () {
+        const qEl = document.getElementById('tournament-chat-question');
+        const aEl = document.getElementById('tournament-chat-answer');
+        const question = qEl.value.trim();
+        if (!question) return;
+        aEl.textContent = 'Thinking...';
+        const res = await fetch('/api/chatbot/tournament', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({question: question, tournamentId: {{ tournament.id }}})
+        });
+        const data = await res.json();
+        aEl.textContent = data.answer || 'No answer returned.';
+      });
+    })();
+  </script>
 {% endblock %}
 

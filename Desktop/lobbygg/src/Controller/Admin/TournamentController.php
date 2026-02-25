@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Tournament;
 use App\Form\TournamentType;
 use App\Repository\TournamentRepository;
+use App\Service\TournamentAiGeneratorService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
@@ -22,13 +23,28 @@ class TournamentController extends AbstractController
     public function index(Request $request, TournamentRepository $tournamentRepository): Response
     {
         [$filters, $sort] = $this->extractListParams($request);
+        $page = max(1, (int) $request->query->get('page', 1));
+        $perPage = 10;
+        $totalItems = $tournamentRepository->countFiltered(
+            $filters['q'],
+            $filters['status'],
+            $filters['dateFrom'],
+            $filters['dateTo'],
+            $filters['mode']
+        );
+        $totalPages = max(1, (int) ceil($totalItems / $perPage));
+        $page = min($page, $totalPages);
+
         $rows = $tournamentRepository->findWithParticipantsCountFiltered(
             $filters['q'],
             $filters['status'],
             $filters['dateFrom'],
             $filters['dateTo'],
+            $filters['mode'],
             $sort['by'],
-            $sort['dir']
+            $sort['dir'],
+            $perPage,
+            ($page - 1) * $perPage
         );
 
         return $this->render('admin/tournament/index.html.twig', [
@@ -36,10 +52,17 @@ class TournamentController extends AbstractController
             'filters' => [
                 'q' => $filters['q'],
                 'status' => $filters['status'],
+                'mode' => $filters['mode'],
                 'dateFrom' => $filters['dateFromRaw'],
                 'dateTo' => $filters['dateToRaw'],
             ],
             'sort' => $sort,
+            'pagination' => [
+                'page' => $page,
+                'perPage' => $perPage,
+                'totalItems' => $totalItems,
+                'totalPages' => $totalPages,
+            ],
         ]);
     }
 
@@ -52,6 +75,7 @@ class TournamentController extends AbstractController
             $filters['status'],
             $filters['dateFrom'],
             $filters['dateTo'],
+            $filters['mode'],
             $sort['by'],
             $sort['dir']
         );
@@ -62,6 +86,7 @@ class TournamentController extends AbstractController
             'filters' => [
                 'q' => $filters['q'],
                 'status' => $filters['status'],
+                'mode' => $filters['mode'],
                 'dateFrom' => $filters['dateFromRaw'],
                 'dateTo' => $filters['dateToRaw'],
             ],
@@ -87,9 +112,27 @@ class TournamentController extends AbstractController
     }
 
     #[Route('/new', name: 'app_admin_tournament_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        TournamentAiGeneratorService $aiGeneratorService
+    ): Response
     {
         $tournament = new Tournament();
+        if ($request->isMethod('GET') && (string) $request->query->get('ai') === '1') {
+            // AI-assisted tournament draft generation.
+            $generated = $aiGeneratorService->generate();
+            $tournament->setTitle($generated['title']);
+            $tournament->setDescription($generated['description']);
+            $tournament->setMode($generated['mode']);
+            $tournament->setStartDate($generated['startDate']);
+            $tournament->setEndDate($generated['endDate']);
+            $tournament->setMaxPlayers($generated['maxPlayers']);
+            $tournament->setStatus($generated['status']);
+            $tournament->setEntryFee($generated['entryFee']);
+            $tournament->setIsAiGenerated(true);
+        }
+
         $form = $this->createForm(TournamentType::class, $tournament);
         $form->handleRequest($request);
 
@@ -105,6 +148,7 @@ class TournamentController extends AbstractController
         return $this->render('admin/tournament/new.html.twig', [
             'tournament' => $tournament,
             'form' => $form,
+            'isAiDraft' => $tournament->isAiGenerated(),
         ]);
     }
 
@@ -153,6 +197,7 @@ class TournamentController extends AbstractController
      *     0: array{
      *         q: ?string,
      *         status: ?string,
+     *         mode: ?string,
      *         dateFrom: ?\DateTimeInterface,
      *         dateTo: ?\DateTimeInterface,
      *         dateFromRaw: ?string,
@@ -165,6 +210,7 @@ class TournamentController extends AbstractController
     {
         $q = trim((string) $request->query->get('q', ''));
         $status = trim((string) $request->query->get('status', ''));
+        $mode = trim((string) $request->query->get('mode', ''));
         $dateFromRaw = trim((string) $request->query->get('date_from', ''));
         $dateToRaw = trim((string) $request->query->get('date_to', ''));
         $sortBy = (string) $request->query->get('sort_by', 'startDate');
@@ -181,6 +227,7 @@ class TournamentController extends AbstractController
         return [[
             'q' => $q !== '' ? $q : null,
             'status' => $status !== '' ? $status : null,
+            'mode' => $mode !== '' ? $mode : null,
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
             'dateFromRaw' => $dateFromRaw !== '' ? $dateFromRaw : null,

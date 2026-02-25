@@ -8,6 +8,13 @@
       <h1 class="page-title">{{ mode == 'edit' ? 'Edit Tournament' : 'Create Tournament' }}</h1>
       <p class="page-sub">Manage tournament settings and schedule.</p>
     </div>
+    {% if mode == 'create' and is_granted('ROLE_ADMIN') %}
+      <div class="page-actions">
+        <a class="btn btn-ghost" href="{{ path('front_tournaments_new', {ai: 1}) }}">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> AI Draft
+        </a>
+      </div>
+    {% endif %}
   </section>
 
   <section class="grid">
@@ -24,6 +31,9 @@
             {{ form_row(form.startDate) }}
             {{ form_row(form.endDate) }}
             {{ form_row(form.maxPlayers) }}
+            {{ form_row(form.mode) }}
+            {{ form_row(form.entryFee) }}
+            {{ form_row(form.isAiGenerated) }}
             {{ form_row(form.status) }}
           </div>
           <div class="row-actions" style="margin-top:20px;">

@@ -10,132 +10,566 @@
     </div>
     <div class="page-actions">
       {% if is_granted('ROLE_ADMIN') %}
-        <a class="btn btn-primary" href="{{ path('front_tournaments_new') }}">
-          <i class="fa-solid fa-plus"></i> New Tournament
-        </a>
+        <a class="btn btn-primary" href="{{ path('front_tournaments_new') }}"><i class="fa-solid fa-plus"></i> New Tournament</a>
+        <a class="btn btn-ghost" href="{{ path('front_tournaments_new', {ai: 1}) }}"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Tournament</a>
       {% endif %}
     </div>
   </section>
 
   <section class="grid">
     <div class="col span-12">
-      <div class="panel">
-        <form method="get" style="display:grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap:10px; align-items:end;">
-          <div style="grid-column: span 2;">
-            <label>Search</label>
-            <input class="form-control" type="text" name="q" placeholder="Title or description" value="{{ filters.q ?? '' }}">
-          </div>
-          <div>
-            <label>Status</label>
-            <select class="form-control" name="status">
-              <option value="">All</option>
-              {% for value in ['upcoming', 'live', 'finished', 'cancelled'] %}
-                <option value="{{ value }}" {{ (filters.status ?? '') == value ? 'selected' : '' }}>{{ value|upper }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div>
-            <label>From</label>
-            <input class="form-control" type="date" name="date_from" value="{{ filters.dateFrom ?? '' }}">
-          </div>
-          <div>
-            <label>To</label>
-            <input class="form-control" type="date" name="date_to" value="{{ filters.dateTo ?? '' }}">
-          </div>
-          <div>
-            <label>Sort</label>
-            <select class="form-control" name="sort_by">
-              <option value="startDate" {{ sort.by == 'startDate' ? 'selected' : '' }}>Start</option>
-              <option value="endDate" {{ sort.by == 'endDate' ? 'selected' : '' }}>End</option>
-              <option value="title" {{ sort.by == 'title' ? 'selected' : '' }}>Title</option>
-              <option value="status" {{ sort.by == 'status' ? 'selected' : '' }}>Status</option>
-              <option value="maxPlayers" {{ sort.by == 'maxPlayers' ? 'selected' : '' }}>Slots</option>
-              <option value="participantsCount" {{ sort.by == 'participantsCount' ? 'selected' : '' }}>Participants</option>
-            </select>
-          </div>
-          <div>
-            <label>Dir</label>
-            <select class="form-control" name="sort_dir">
-              <option value="asc" {{ sort.dir == 'asc' ? 'selected' : '' }}>ASC</option>
-              <option value="desc" {{ sort.dir == 'desc' ? 'selected' : '' }}>DESC</option>
-            </select>
-          </div>
-          <div style="display:flex; gap:8px;">
-            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-filter"></i> Apply</button>
-            <a class="btn btn-ghost" href="{{ path('front_tournaments') }}">Reset</a>
-            <a class="btn btn-ghost" href="{{ path('front_tournaments_export_pdf', app.request.query.all) }}"><i class="fa-solid fa-file-pdf"></i> PDF</a>
-          </div>
-        </form>
+      <div class="tour-center">
+        <div class="panel">
+          <form method="get" class="tour-filters">
+            <div class="tour-filters-row">
+              <div class="tour-field tour-field-search">
+                <label>Search</label>
+                <input class="form-control" type="text" name="q" placeholder="Title or description" value="{{ filters.q ?? '' }}">
+              </div>
+              <div class="tour-field">
+                <label>Status</label>
+                <select class="form-control" name="status">
+                  <option value="">All</option>
+                  {% for value in ['upcoming', 'live', 'finished', 'cancelled'] %}
+                    <option value="{{ value }}" {{ (filters.status ?? '') == value ? 'selected' : '' }}>{{ value|upper }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="tour-field">
+                <label>Mode</label>
+                <select class="form-control" name="mode">
+                  <option value="">All</option>
+                  {% for value in ['solo', 'duo', 'squad'] %}
+                    <option value="{{ value }}" {{ (filters.mode ?? '') == value ? 'selected' : '' }}>{{ value|upper }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="tour-field">
+                <label>From</label>
+                <input class="form-control" type="date" name="date_from" value="{{ filters.dateFrom ?? '' }}">
+              </div>
+              <div class="tour-field">
+                <label>To</label>
+                <input class="form-control" type="date" name="date_to" value="{{ filters.dateTo ?? '' }}">
+              </div>
+            </div>
+            <div class="tour-filters-row">
+              <div class="tour-field">
+                <label>Sort</label>
+                <select class="form-control" name="sort_by">
+                  <option value="startDate" {{ sort.by == 'startDate' ? 'selected' : '' }}>Start</option>
+                  <option value="endDate" {{ sort.by == 'endDate' ? 'selected' : '' }}>End</option>
+                  <option value="title" {{ sort.by == 'title' ? 'selected' : '' }}>Title</option>
+                  <option value="status" {{ sort.by == 'status' ? 'selected' : '' }}>Status</option>
+                  <option value="maxPlayers" {{ sort.by == 'maxPlayers' ? 'selected' : '' }}>Slots</option>
+                  <option value="participantsCount" {{ sort.by == 'participantsCount' ? 'selected' : '' }}>Participants</option>
+                </select>
+              </div>
+              <div class="tour-field">
+                <label>Direction</label>
+                <select class="form-control" name="sort_dir">
+                  <option value="asc" {{ sort.dir == 'asc' ? 'selected' : '' }}>ASC</option>
+                  <option value="desc" {{ sort.dir == 'desc' ? 'selected' : '' }}>DESC</option>
+                </select>
+              </div>
+              <div class="tour-filter-actions">
+                <button class="btn btn-primary" type="submit"><i class="fa-solid fa-filter"></i> Apply</button>
+                <a class="btn btn-ghost" href="{{ path('front_tournaments') }}">Reset</a>
+                <a class="btn btn-ghost" href="{{ path('front_tournaments_export_pdf', app.request.query.all) }}"><i class="fa-solid fa-file-pdf"></i> PDF</a>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </section>
 
   <section class="grid">
     <div class="col span-12">
-      <div class="panel">
-        <div class="panel-head">
-          <h2 class="panel-title"><i class="fa-solid fa-trophy"></i> All Tournaments</h2>
-        </div>
-
-        {% if tournaments is empty %}
-          <p>No tournaments found.</p>
-        {% else %}
-          <div class="tour-grid">
-            {% for row in tournaments %}
-              {% set t = row.entity %}
-              <div class="card tour-card big">
-                <div class="tour-top">
-                  <div class="tour-name">{{ t.title }}</div>
-                  <div class="pill">{{ t.status|upper }}</div>
-                </div>
-                <div class="tour-meta">
-                  <span><i class="fa-solid fa-users"></i> {{ row.participantsCount }} / {{ t.maxPlayers }}</span>
-                  <span><i class="fa-solid fa-calendar"></i> {{ t.startDate ? t.startDate|date('Y-m-d H:i') : 'N/A' }}</span>
-                  <span><i class="fa-solid fa-clock"></i> {{ t.endDate ? t.endDate|date('Y-m-d H:i') : 'N/A' }}</span>
-                </div>
-                <p style="margin-top:8px;">{{ t.description|default('No description') }}</p>
-
-                <div class="row-actions">
-                  <a class="btn btn-mini btn-ghost" href="{{ path('front_tournaments_show', {id: t.id}) }}">
-                    <i class="fa-solid fa-eye"></i> View
-                  </a>
-
-                  {% if is_granted('ROLE_USER') %}
-                    {% if row.isJoined %}
-                      <form method="post" action="{{ path('front_tournaments_leave', {id: t.id}) }}">
-                        <input type="hidden" name="_token" value="{{ csrf_token('leave_tournament_' ~ t.id) }}">
-                        <button class="btn btn-mini btn-ghost" type="submit">
-                          <i class="fa-solid fa-right-from-bracket"></i> Leave
-                        </button>
-                      </form>
-                    {% else %}
-                      <form method="post" action="{{ path('front_tournaments_join', {id: t.id}) }}">
-                        <input type="hidden" name="_token" value="{{ csrf_token('join_tournament_' ~ t.id) }}">
-                        <button class="btn btn-mini btn-primary" type="submit">
-                          <i class="fa-solid fa-bolt"></i> Join
-                        </button>
-                      </form>
-                    {% endif %}
-                  {% endif %}
-
-                  {% if is_granted('ROLE_ADMIN') %}
-                    <a class="btn btn-mini btn-ghost" href="{{ path('front_tournaments_edit', {id: t.id}) }}">
-                      <i class="fa-solid fa-pen"></i> Edit
-                    </a>
-                    <form method="post" action="{{ path('front_tournaments_delete', {id: t.id}) }}" onsubmit="return confirm('Delete tournament?');">
-                      <input type="hidden" name="_token" value="{{ csrf_token('delete_tournament_' ~ t.id) }}">
-                      <button class="btn btn-mini btn-ghost" type="submit">
-                        <i class="fa-solid fa-trash"></i> Delete
-                      </button>
-                    </form>
-                  {% endif %}
-                </div>
-              </div>
-            {% endfor %}
+      <div class="tour-center">
+        <div class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title"><i class="fa-solid fa-trophy"></i> All Tournaments</h2>
           </div>
-        {% endif %}
+          {% if tournaments is empty %}
+            <p>No tournaments found.</p>
+          {% else %}
+            <div class="tour-grid-wrap">
+              <div class="tour-grid">
+                {% for row in tournaments %}
+                  {% set t = row.entity %}
+                  <div class="card tour-card tour-card-3d">
+                    <div class="tour-top">
+                      <div class="tour-name">{{ t.title }}</div>
+                      <div class="pill pill-{{ t.status }}">{{ t.status|upper }}</div>
+                    </div>
+                    
+                    <div class="tour-meta">
+                      <div class="tour-meta-item">
+                        <i class="fa-solid fa-gamepad"></i>
+                        <span>{{ t.mode|upper }}</span>
+                      </div>
+                      <div class="tour-meta-item">
+                        <i class="fa-solid fa-users"></i>
+                        <span>{{ row.participantsCount }}/{{ t.maxPlayers }}</span>
+                      </div>
+                      <div class="tour-meta-item">
+                        <i class="fa-solid fa-coins"></i>
+                        <span>{{ t.entryFee > 0 ? t.entryFee ~ '€' : 'FREE' }}</span>
+                      </div>
+                      <div class="tour-meta-item">
+                        <i class="fa-solid fa-calendar"></i>
+                        <span>{{ t.startDate ? t.startDate|date('d/m H:i') : 'N/A' }}</span>
+                      </div>
+                    </div>
+
+                    <p class="tour-description">{{ t.description|default('No description')|slice(0, 80) ~ '...' }}</p>
+
+                    <div class="tour-footer">
+                      <div class="tour-countdown countdown" data-start="{{ t.startDate ? t.startDate|date('c') : '' }}"></div>
+                      
+                      <div class="tour-actions">
+                        <a class="btn btn-mini btn-ghost" href="{{ path('front_tournaments_show', {id: t.id}) }}" title="View">
+                          <i class="fa-solid fa-eye"></i>
+                        </a>
+                        
+                        {% if is_granted('ROLE_USER') %}
+                          {% if row.isJoined %}
+                            <form method="post" action="{{ path('front_tournaments_leave', {id: t.id}) }}" class="inline-form">
+                              <input type="hidden" name="_token" value="{{ csrf_token('leave_tournament_' ~ t.id) }}">
+                              <button class="btn btn-mini btn-ghost" type="submit" title="Leave">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                              </button>
+                            </form>
+                          {% else %}
+                            <form method="post" action="{{ path('front_tournaments_join', {id: t.id}) }}" class="inline-form">
+                              <input type="hidden" name="_token" value="{{ csrf_token('join_tournament_' ~ t.id) }}">
+                              <button class="btn btn-mini btn-primary" type="submit" title="Join">
+                                <i class="fa-solid fa-bolt"></i>
+                              </button>
+                            </form>
+                          {% endif %}
+                        {% endif %}
+                        
+                        <button class="btn btn-mini btn-ghost share-toggle" title="Share" data-id="{{ t.id }}">
+                          <i class="fa-solid fa-share-nodes"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+
+          {% if pagination.totalPages > 1 %}
+            <div class="tour-pagination">
+              {% set prevPage = pagination.page - 1 %}
+              {% set nextPage = pagination.page + 1 %}
+              {% if pagination.page > 1 %}
+                <a class="btn btn-mini btn-ghost" href="{{ path('front_tournaments', app.request.query.all|merge({page: prevPage})) }}">← Prev</a>
+              {% endif %}
+              <span class="tour-page-info">Page {{ pagination.page }} / {{ pagination.totalPages }}</span>
+              {% if pagination.page < pagination.totalPages %}
+                <a class="btn btn-mini btn-ghost" href="{{ path('front_tournaments', app.request.query.all|merge({page: nextPage})) }}">Next →</a>
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
       </div>
     </div>
   </section>
-{% endblock %}
 
+  <div class="floating-chatbot" id="floating-chatbot">
+    <button class="floating-chatbot-toggle" id="floating-chatbot-toggle" type="button" aria-label="Open tournament chatbot">
+      <i class="fa-solid fa-robot"></i>
+    </button>
+    <div class="floating-chatbot-panel" id="floating-chatbot-panel" hidden>
+      <div class="floating-chatbot-head">
+        <strong><i class="fa-solid fa-robot"></i> Tournament AI</strong>
+        <button type="button" id="floating-chatbot-close" aria-label="Close chatbot">✕</button>
+      </div>
+      <div class="floating-chatbot-body">
+        <textarea id="tournament-chat-question" class="form-control" rows="2" placeholder="Ask about tournaments..."></textarea>
+        <button class="btn btn-primary" id="tournament-chat-send" type="button">Ask</button>
+        <div id="tournament-chat-answer" class="chat-answer">Answer will appear here.</div>
+      </div>
+    </div>
+  </div>
+
+<style>
+  /* Container */
+  .tour-center { 
+    width: 100%; 
+    max-width: 1400px;
+    margin: 0 auto; 
+    padding: 0 20px;
+  }
+
+  /* Filters */
+  .tour-filters { display: grid; gap: 12px; }
+  .tour-filters-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; justify-content: flex-start; }
+  .tour-field { min-width: 150px; flex: 1 1 180px; }
+  .tour-field-search { flex: 2 1 300px; }
+  .tour-filter-actions { display: flex; gap: 8px; margin-left: auto; }
+
+  /* Tournament Grid - Fixed centering */
+  .tour-grid-wrap { 
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .tour-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(260px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+    width: 100%;
+  }
+
+  /* Tournament Card */
+  .tour-card {
+    background: rgba(20, 20, 35, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.2s ease;
+    height: 100%;
+    min-height: 240px;
+    backdrop-filter: blur(10px);
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .tour-card-3d:hover {
+    transform: translateY(-4px);
+    border-color: #8b5cf6;
+    box-shadow: 0 10px 30px -10px #8b5cf6;
+  }
+
+  /* Card Header */
+  .tour-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .tour-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    line-height: 1.3;
+    flex: 1;
+    word-break: break-word;
+  }
+
+  /* Status Pills */
+  .pill {
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .pill-upcoming { background: #3b82f6; color: white; }
+  .pill-live { background: #ef4444; color: white; animation: pulse 2s infinite; }
+  .pill-finished { background: #6b7280; color: white; }
+  .pill-cancelled { background: #9ca3af; color: white; }
+
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+  }
+
+  /* Meta Information */
+  .tour-meta {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .tour-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+  }
+
+  .tour-meta-item i {
+    width: 16px;
+    color: #8b5cf6;
+  }
+
+  /* Description */
+  .tour-description {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 12px;
+    flex: 1;
+  }
+
+  /* Card Footer */
+  .tour-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .tour-countdown {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  .tour-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .tour-actions .btn-mini {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+  }
+
+  .inline-form {
+    display: inline;
+  }
+
+  /* Pagination */
+  .tour-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .tour-page-info {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  /* Chatbot */
+  .floating-chatbot {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+  }
+
+  .floating-chatbot-toggle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    color: white;
+    box-shadow: 0 10px 28px rgba(139, 92, 246, 0.3);
+    cursor: pointer;
+    font-size: 20px;
+    transition: transform 0.2s ease;
+  }
+
+  .floating-chatbot-toggle:hover {
+    transform: scale(1.1);
+  }
+
+  .floating-chatbot-panel {
+    width: 300px;
+    background: rgba(20, 20, 35, 0.98);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+
+  .floating-chatbot-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: rgba(139, 92, 246, 0.1);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+  }
+
+  .floating-chatbot-head button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    opacity: 0.7;
+  }
+
+  .floating-chatbot-head button:hover {
+    opacity: 1;
+  }
+
+  .floating-chatbot-body {
+    padding: 12px;
+    display: grid;
+    gap: 10px;
+  }
+
+  .chat-answer {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    min-height: 50px;
+  }
+
+  /* Responsive Breakpoints - FIXED */
+  @media (max-width: 1200px) {
+    .tour-grid {
+      grid-template-columns: repeat(3, minmax(240px, 1fr));
+    }
+  }
+
+  @media (max-width: 900px) {
+    .tour-grid {
+      grid-template-columns: repeat(2, minmax(220px, 1fr));
+    }
+  }
+
+  @media (max-width: 768px) {
+    .tour-center { padding: 0 12px; }
+    
+    .tour-filters-row { 
+      flex-direction: column; 
+      align-items: stretch; 
+    }
+    
+    .tour-field { max-width: 100%; }
+    .tour-filter-actions { margin-left: 0; }
+    
+    .tour-meta {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .tour-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .floating-chatbot {
+      right: 12px;
+      bottom: 12px;
+    }
+    
+    .floating-chatbot-panel {
+      width: calc(100vw - 24px);
+    }
+  }
+</style>
+
+  <script>
+  (function() {
+    // Countdown timer
+    function updateCountdowns() {
+      document.querySelectorAll('.tour-countdown').forEach(function(el) {
+        const startDate = el.dataset.start;
+        if (!startDate) return;
+        
+        const start = new Date(startDate).getTime();
+        const now = Date.now();
+        const diff = start - now;
+        
+        if (diff <= 0) {
+          el.textContent = 'LIVE NOW';
+          el.style.color = '#ef4444';
+          return;
+        }
+        
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        
+        if (days > 0) {
+          el.textContent = `Starts in ${days}d ${hours}h`;
+        } else {
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          el.textContent = `Starts in ${hours}h ${minutes}m`;
+        }
+      });
+    }
+    
+    updateCountdowns();
+    setInterval(updateCountdowns, 60000);
+
+    // Chatbot
+    const sendBtn = document.getElementById('tournament-chat-send');
+    if (sendBtn) {
+      sendBtn.addEventListener('click', async function() {
+        const question = document.getElementById('tournament-chat-question').value.trim();
+        const answerEl = document.getElementById('tournament-chat-answer');
+        
+        if (!question) return;
+        
+        answerEl.textContent = 'Thinking...';
+        
+        try {
+          const res = await fetch('/api/chatbot/tournament', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question })
+          });
+          
+          if (!res.ok) throw new Error('Network error');
+          
+          const data = await res.json();
+          answerEl.textContent = data.answer || 'No answer available.';
+        } catch (error) {
+          answerEl.textContent = 'Error: Could not get answer.';
+        }
+      });
+    }
+
+    // Chatbot toggle
+    const toggle = document.getElementById('floating-chatbot-toggle');
+    const panel = document.getElementById('floating-chatbot-panel');
+    const close = document.getElementById('floating-chatbot-close');
+    
+    if (toggle && panel && close) {
+      toggle.addEventListener('click', () => {
+        panel.hidden = !panel.hidden;
+      });
+      
+      close.addEventListener('click', () => {
+        panel.hidden = true;
+      });
+    }
+  })();
+  </script>
+{% endblock %}

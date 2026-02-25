@@ -19,11 +19,14 @@
             <a href="{{ path('app_admin_tournament_new') }}" class="btn btn-primary btn-sm">
                 <i class="bi bi-plus-circle"></i> New Tournament
             </a>
+            <a href="{{ path('app_admin_tournament_new', {ai: 1}) }}" class="btn btn-info btn-sm">
+                <i class="bi bi-stars"></i> AI Tournament
+            </a>
         </div>
     </div>
     <div class="card-body border-bottom">
         <form method="get" class="row g-2">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <input type="text" class="form-control" name="q" placeholder="Search title/description" value="{{ filters.q ?? '' }}">
             </div>
             <div class="col-md-2">
@@ -31,6 +34,14 @@
                     <option value="">All statuses</option>
                     {% for value in ['upcoming', 'live', 'finished', 'cancelled'] %}
                         <option value="{{ value }}" {{ (filters.status ?? '') == value ? 'selected' : '' }}>{{ value|upper }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-1">
+                <select class="form-select" name="mode">
+                    <option value="">All modes</option>
+                    {% for value in ['solo', 'duo', 'squad'] %}
+                        <option value="{{ value }}" {{ (filters.mode ?? '') == value ? 'selected' : '' }}>{{ value|upper }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -71,6 +82,9 @@
                     <th>ID</th>
                     <th>Title</th>
                     <th>Status</th>
+                    <th>Mode</th>
+                    <th>Entry Fee</th>
+                    <th>Prize Pool</th>
                     <th>Start</th>
                     <th>End</th>
                     <th>Max Players</th>
@@ -85,6 +99,9 @@
                     <td>{{ tournament.id }}</td>
                     <td>{{ tournament.title }}</td>
                     <td><span class="badge bg-info">{{ tournament.status }}</span></td>
+                    <td>{{ tournament.mode|upper }}</td>
+                    <td>{{ tournament.entryFee|number_format(2, '.', ',') }}</td>
+                    <td>{{ tournament.entryFee > 0 ? (tournament.entryFee * row.participantsCount)|number_format(2, '.', ',') : '-' }}</td>
                     <td>{{ tournament.startDate ? tournament.startDate|date('d/m/Y H:i') : '-' }}</td>
                     <td>{{ tournament.endDate ? tournament.endDate|date('d/m/Y') : '-' }}</td>
                     <td>{{ tournament.maxPlayers }}</td>
@@ -102,12 +119,24 @@
                 </tr>
             {% else %}
                 <tr>
-                    <td colspan="8" class="text-center">No tournaments found</td>
+                    <td colspan="11" class="text-center">No tournaments found</td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
+        {% if pagination.totalPages > 1 %}
+            <div class="p-3 d-flex gap-2 align-items-center">
+                {% set prevPage = pagination.page - 1 %}
+                {% set nextPage = pagination.page + 1 %}
+                {% if pagination.page > 1 %}
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_admin_tournament_index', app.request.query.all|merge({page: prevPage})) }}">Prev</a>
+                {% endif %}
+                <span>Page {{ pagination.page }} / {{ pagination.totalPages }}</span>
+                {% if pagination.page < pagination.totalPages %}
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_admin_tournament_index', app.request.query.all|merge({page: nextPage})) }}">Next</a>
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
-

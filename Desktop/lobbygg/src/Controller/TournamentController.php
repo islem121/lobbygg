@@ -2,11 +2,14 @@
 
 namespace App\Controller;
 
+use App\Entity\Post;
 use App\Entity\Tournament;
 use App\Entity\TournamentParticipation;
 use App\Form\TournamentType;
 use App\Repository\TournamentParticipationRepository;
 use App\Repository\TournamentRepository;
+use App\Repository\VoucherRepository;
+use App\Service\TournamentAiGeneratorService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,6 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class TournamentController extends AbstractController
 {
@@ -24,13 +28,28 @@ class TournamentController extends AbstractController
         TournamentParticipationRepository $participationRepository
     ): Response {
         [$filters, $sort] = $this->extractListParams($request);
+        $page = max(1, (int) $request->query->get('page', 1));
+        $perPage = 6;
+        $totalItems = $tournamentRepository->countFiltered(
+            $filters['q'],
+            $filters['status'],
+            $filters['dateFrom'],
+            $filters['dateTo'],
+            $filters['mode']
+        );
+        $totalPages = max(1, (int) ceil($totalItems / $perPage));
+        $page = min($page, $totalPages);
+
         $rows = $tournamentRepository->findWithParticipantsCountFiltered(
             $filters['q'],
             $filters['status'],
             $filters['dateFrom'],
             $filters['dateTo'],
+            $filters['mode'],
             $sort['by'],
-            $sort['dir']
+            $sort['dir'],
+            $perPage,
+            ($page - 1) * $perPage
         );
         $tournaments = [];
         $user = $this->getUser();
@@ -58,10 +77,17 @@ class TournamentController extends AbstractController
             'filters' => [
                 'q' => $filters['q'],
                 'status' => $filters['status'],
+                'mode' => $filters['mode'],
                 'dateFrom' => $filters['dateFromRaw'],
                 'dateTo' => $filters['dateToRaw'],
             ],
             'sort' => $sort,
+            'pagination' => [
+                'page' => $page,
+                'perPage' => $perPage,
+                'totalItems' => $totalItems,
+                'totalPages' => $totalPages,
+            ],
         ]);
     }
 
@@ -76,6 +102,7 @@ class TournamentController extends AbstractController
             $filters['status'],
             $filters['dateFrom'],
             $filters['dateTo'],
+            $filters['mode'],
             $sort['by'],
             $sort['dir']
         );
@@ -86,6 +113,7 @@ class TournamentController extends AbstractController
             'filters' => [
                 'q' => $filters['q'],
                 'status' => $filters['status'],
+                'mode' => $filters['mode'],
                 'dateFrom' => $filters['dateFromRaw'],
                 'dateTo' => $filters['dateToRaw'],
             ],
@@ -111,11 +139,29 @@ class TournamentController extends AbstractController
     }
 
     #[Route('/tournaments/new', name: 'front_tournaments_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        TournamentAiGeneratorService $aiGeneratorService
+    ): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $tournament = new Tournament();
+        if ($request->isMethod('GET') && (string) $request->query->get('ai') === '1') {
+            // AI-assisted tournament draft generation.
+            $generated = $aiGeneratorService->generate();
+            $tournament->setTitle($generated['title']);
+            $tournament->setDescription($generated['description']);
+            $tournament->setMode($generated['mode']);
+            $tournament->setStartDate($generated['startDate']);
+            $tournament->setEndDate($generated['endDate']);
+            $tournament->setMaxPlayers($generated['maxPlayers']);
+            $tournament->setStatus($generated['status']);
+            $tournament->setEntryFee($generated['entryFee']);
+            $tournament->setIsAiGenerated(true);
+        }
+
         $form = $this->createForm(TournamentType::class, $tournament);
         $form->handleRequest($request);
 
@@ -133,6 +179,7 @@ class TournamentController extends AbstractController
             'form' => $form->createView(),
             'tournament' => $tournament,
             'mode' => 'create',
+            'isAiDraft' => $tournament->isAiGenerated(),
         ]);
     }
 
@@ -205,6 +252,7 @@ class TournamentController extends AbstractController
         Request $request,
         Tournament $tournament,
         TournamentParticipationRepository $participationRepository,
+        VoucherRepository $voucherRepository,
         EntityManagerInterface $entityManager
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_USER');
@@ -230,6 +278,23 @@ class TournamentController extends AbstractController
             return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
         }
 
+        if ($tournament->isPaid()) {
+            $voucher = $voucherRepository->findValidForUserAndTournament($user, $tournament);
+            if ($voucher === null) {
+                $this->addFlash(
+                    'error',
+                    sprintf(
+                        'This is a paid tournament (%.2f). Please buy a voucher from marketplace before joining.',
+                        $tournament->getEntryFee()
+                    )
+                );
+
+                return $this->redirectToRoute('front_marketplace_voucher_buy', ['id' => $tournament->getId()]);
+            }
+
+            $voucher->setUsedAt(new \DateTimeImmutable());
+        }
+
         $participation = new TournamentParticipation();
         $participation->setUser($user);
         $participation->setTournament($tournament);
@@ -240,6 +305,65 @@ class TournamentController extends AbstractController
 
         $this->addFlash('success', 'You joined the tournament.');
 
+        return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
+    }
+
+    #[Route('/tournaments/{id}/share/feed', name: 'front_tournaments_share_feed', methods: ['POST'])]
+    public function shareToFeed(
+        Request $request,
+        Tournament $tournament,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        if (!$this->isCsrfTokenValid('share_tournament_feed_'.$tournament->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid CSRF token.');
+            return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
+        }
+
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $post = new Post();
+        $post->setUser($user);
+        $post->setType('tournament_share');
+        $post->setTitle('Tournament shared: '.$tournament->getTitle());
+        $post->setContent(sprintf(
+            'I shared this %s tournament: %s. Start %s. %s',
+            $tournament->isPaid() ? 'paid' : 'free',
+            $tournament->getTitle(),
+            $tournament->getStartDate()?->format('Y-m-d H:i') ?? 'N/A',
+            $this->generateUrl('front_tournaments_show', ['id' => $tournament->getId()])
+        ));
+        $entityManager->persist($post);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Tournament shared on your feed.');
+        return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
+    }
+
+    #[Route('/tournaments/{id}/share/{platform}', name: 'front_tournaments_share_external', methods: ['GET'])]
+    public function shareExternal(Tournament $tournament, string $platform): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        $platform = strtolower($platform);
+        $absoluteUrl = $this->generateUrl('front_tournaments_show', ['id' => $tournament->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $message = sprintf(
+            '%s tournament: %s (%s, fee %.2f)',
+            strtoupper($platform),
+            $tournament->getTitle(),
+            strtoupper((string) $tournament->getMode()),
+            $tournament->getEntryFee()
+        );
+
+        if ($platform === 'facebook') {
+            return $this->redirect('https://www.facebook.com/sharer/sharer.php?u='.rawurlencode($absoluteUrl));
+        }
+
+        if ($platform === 'instagram') {
+            $this->addFlash('success', 'Instagram sharing simulated: '.$message.' | URL: '.$absoluteUrl);
+            return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
+        }
+
+        $this->addFlash('error', 'Unsupported sharing platform.');
         return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
     }
 
@@ -309,6 +433,7 @@ class TournamentController extends AbstractController
      *     0: array{
      *         q: ?string,
      *         status: ?string,
+     *         mode: ?string,
      *         dateFrom: ?\DateTimeInterface,
      *         dateTo: ?\DateTimeInterface,
      *         dateFromRaw: ?string,
@@ -321,6 +446,7 @@ class TournamentController extends AbstractController
     {
         $q = trim((string) $request->query->get('q', ''));
         $status = trim((string) $request->query->get('status', ''));
+        $mode = trim((string) $request->query->get('mode', ''));
         $dateFromRaw = trim((string) $request->query->get('date_from', ''));
         $dateToRaw = trim((string) $request->query->get('date_to', ''));
         $sortBy = (string) $request->query->get('sort_by', 'startDate');
@@ -337,6 +463,7 @@ class TournamentController extends AbstractController
         return [[
             'q' => $q !== '' ? $q : null,
             'status' => $status !== '' ? $status : null,
+            'mode' => $mode !== '' ? $mode : null,
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
             'dateFromRaw' => $dateFromRaw !== '' ? $dateFromRaw : null,

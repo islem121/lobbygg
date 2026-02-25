@@ -31,6 +31,9 @@
                 <th>ID</th>
                 <th>Title</th>
                 <th>Status</th>
+                <th>Mode</th>
+                <th>Entry Fee</th>
+                <th>Prize Pool</th>
                 <th>Start</th>
                 <th>End</th>
                 <th>Max Players</th>
@@ -45,6 +48,9 @@
                 <td>{{ tournament.id }}</td>
                 <td>{{ tournament.title }}</td>
                 <td>{{ tournament.status }}</td>
+                <td>{{ tournament.mode|upper }}</td>
+                <td>{{ tournament.entryFee|number_format(2, '.', ',') }}</td>
+                <td>{{ tournament.entryFee > 0 ? (tournament.entryFee * row.participantsCount)|number_format(2, '.', ',') : '-' }}</td>
                 <td>{{ tournament.startDate ? tournament.startDate|date('Y-m-d H:i') : '-' }}</td>
                 <td>{{ tournament.endDate ? tournament.endDate|date('Y-m-d') : '-' }}</td>
                 <td>{{ tournament.maxPlayers }}</td>
@@ -53,7 +59,7 @@
             </tr>
         {% else %}
             <tr>
-                <td colspan="8">No tournaments found.</td>
+                <td colspan="11">No tournaments found.</td>
             </tr>
         {% endfor %}
         </tbody>

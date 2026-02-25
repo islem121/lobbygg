@@ -12,6 +12,16 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'tournament')]
 class Tournament
 {
+    public const MODE_SOLO = 'solo';
+    public const MODE_DUO = 'duo';
+    public const MODE_SQUAD = 'squad';
+
+    public const MODES = [
+        self::MODE_SOLO,
+        self::MODE_DUO,
+        self::MODE_SQUAD,
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -33,6 +43,15 @@ class Tournament
     private ?int $maxPlayers = null;
 
     #[ORM\Column(length: 20)]
+    private ?string $mode = self::MODE_SOLO;
+
+    #[ORM\Column(name: 'entry_fee', type: Types::DECIMAL, precision: 10, scale: 2)]
+    private string $entryFee = '0.00';
+
+    #[ORM\Column(name: 'is_ai_generated', options: ['default' => 0])]
+    private bool $isAiGenerated = false;
+
+    #[ORM\Column(length: 20)]
     private ?string $status = null;
 
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
@@ -49,6 +68,7 @@ class Tournament
         $this->participations = new ArrayCollection();
         $this->createdAt = new \DateTime();
         $this->status = 'upcoming';
+        $this->mode = self::MODE_SOLO;
     }
 
     public function getId(): ?int
@@ -112,6 +132,65 @@ class Tournament
     public function setMaxPlayers(int $maxPlayers): static
     {
         $this->maxPlayers = $maxPlayers;
+
+        return $this;
+    }
+
+    public function getMode(): ?string
+    {
+        return $this->mode;
+    }
+
+    public function setMode(string $mode): static
+    {
+        if (!in_array($mode, self::MODES, true)) {
+            throw new \InvalidArgumentException('Invalid tournament mode.');
+        }
+
+        $this->mode = $mode;
+
+        return $this;
+    }
+
+    public function getEntryFee(): float
+    {
+        return (float) $this->entryFee;
+    }
+
+    public function setEntryFee(float $entryFee): static
+    {
+        $entryFee = max(0.0, $entryFee);
+        $this->entryFee = number_format($entryFee, 2, '.', '');
+
+        return $this;
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->getEntryFee() > 0.0;
+    }
+
+    /**
+     * Dynamic prize pool calculation:
+     * PrizePool = entryFee * numberOfParticipants
+     */
+    public function getPrizePool(): ?float
+    {
+        if (!$this->isPaid()) {
+            return null;
+        }
+
+        return round($this->getEntryFee() * $this->participations->count(), 2);
+    }
+
+    public function isAiGenerated(): bool
+    {
+        return $this->isAiGenerated;
+    }
+
+    public function setIsAiGenerated(bool $isAiGenerated): static
+    {
+        $this->isAiGenerated = $isAiGenerated;
 
         return $this;
     }

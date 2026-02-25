@@ -12,6 +12,9 @@
 {% block content %}
 <div class="card">
     <div class="card-body">
+        <a class="btn btn-info mb-3" href="{{ path('app_admin_tournament_new', {ai: 1}) }}">
+            <i class="bi bi-stars"></i> Generate AI Draft
+        </a>
         {{ include('admin/tournament/_form.html.twig', {'button_label': 'Create'}) }}
         <a class="btn btn-secondary mt-3" href="{{ path('app_admin_tournament_index') }}">Back to list</a>
     </div>
