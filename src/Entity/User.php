@@ -86,17 +86,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Notification::class, orphanRemoval: true)]
     private Collection $notifications;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Comment::class, orphanRemoval: true)]
+    private Collection $comments;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: CommentReaction::class, orphanRemoval: true)]
+    private Collection $commentReactions;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Post::class, orphanRemoval: true)]
+    private Collection $posts;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: PostReaction::class, orphanRemoval: true)]
+    private Collection $postReactions;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->role = self::ROLE_CLIENT;
         $this->notifications = new ArrayCollection();
         $this->products = new ArrayCollection();
+        $this->comments = new ArrayCollection();
+        $this->commentReactions = new ArrayCollection();
+        $this->posts = new ArrayCollection();
+        $this->postReactions = new ArrayCollection();
     }
 
-    /**
-     * @return Collection<int, Product>
-     */
     public function getProducts(): Collection
     {
         return $this->products;
@@ -122,6 +135,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    /**
+     * @return Collection<int, Post>
+     */
+    public function getPosts(): Collection
+    {
+        return $this->posts;
     }
 
     /**
