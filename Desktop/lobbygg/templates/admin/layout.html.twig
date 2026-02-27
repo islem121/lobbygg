@@ -112,6 +112,12 @@
                             <p>Vouchers</p>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ path('app_admin_analytics_dashboard') }}" class="nav-link {{ app.request.attributes.get('_route') starts with 'app_admin_analytics' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-graph-up-arrow"></i>
+                            <p>Analytics</p>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </div>

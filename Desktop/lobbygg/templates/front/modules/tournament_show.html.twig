@@ -122,6 +122,77 @@
         {% endif %}
       </div>
     </div>
+
+    <div class="col span-12">
+      <div class="panel show-panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-ranking-star"></i> Leaderboard</h2>
+        </div>
+        {% if leaderboardRows is empty %}
+          <p>No leaderboard generated yet. It is generated automatically once tournament is finished.</p>
+        {% else %}
+          <div style="overflow:auto;">
+            <table style="width:100%; border-collapse: collapse;">
+              <thead>
+              <tr>
+                <th style="text-align:left; padding:8px;">Rank</th>
+                <th style="text-align:left; padding:8px;">Player</th>
+                <th style="text-align:left; padding:8px;">Wins</th>
+                <th style="text-align:left; padding:8px;">Losses</th>
+                <th style="text-align:left; padding:8px;">Points</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for row in leaderboardRows %}
+                {% set medalStyle = row.rank == 1 ? 'background:rgba(255,215,0,.16);' : (row.rank == 2 ? 'background:rgba(192,192,192,.15);' : (row.rank == 3 ? 'background:rgba(205,127,50,.16);' : '')) %}
+                <tr style="{{ medalStyle }}">
+                  <td style="padding:8px;">#{{ row.rank }}</td>
+                  <td style="padding:8px;">{{ row.username }}</td>
+                  <td style="padding:8px;">{{ row.wins }}</td>
+                  <td style="padding:8px;">{{ row.losses }}</td>
+                  <td style="padding:8px;">{{ row.points }}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if is_granted('ROLE_ADMIN') %}
+      <div class="col span-12">
+        <div class="panel show-panel">
+          <div class="panel-head">
+            <h2 class="panel-title"><i class="fa-solid fa-list-ol"></i> Waiting List (Admin)</h2>
+          </div>
+          {% if waitingListRows is empty %}
+            <p>No users in waiting list.</p>
+          {% else %}
+            <div style="overflow:auto;">
+              <table style="width:100%; border-collapse: collapse;">
+                <thead>
+                <tr>
+                  <th style="text-align:left; padding:8px;">Position</th>
+                  <th style="text-align:left; padding:8px;">User</th>
+                  <th style="text-align:left; padding:8px;">Created</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for row in waitingListRows %}
+                  <tr>
+                    <td style="padding:8px;">{{ row.position }}</td>
+                    <td style="padding:8px;">{{ row.username }}</td>
+                    <td style="padding:8px;">{{ row.createdAt|date('Y-m-d H:i') }}</td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
   </section>
 
   {% include 'front/partials/_tournament_chatbot.html.twig' with { chatbot_tournament_id: tournament.id } %}

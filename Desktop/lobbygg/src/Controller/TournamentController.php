@@ -11,6 +11,8 @@ use App\Repository\TournamentRepository;
 use App\Repository\VoucherRepository;
 use App\Service\TournamentAiGeneratorService;
 use App\Service\TournamentVoucherService;
+use App\Service\LeaderboardService;
+use App\Service\WaitingListService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
@@ -190,7 +192,9 @@ class TournamentController extends AbstractController
         Tournament $tournament,
         TournamentParticipationRepository $participationRepository,
         VoucherRepository $voucherRepository,
-        TournamentVoucherService $voucherService
+        TournamentVoucherService $voucherService,
+        LeaderboardService $leaderboardService,
+        WaitingListService $waitingListService
     ): Response {
         $user = $this->getUser();
         $isJoined = false;
@@ -203,6 +207,15 @@ class TournamentController extends AbstractController
 
         $prizePoolSnapshot = $voucherService->getPrizePoolSnapshot($tournament);
 
+        $leaderboardRows = [];
+        $waitingListRows = [];
+        try {
+            $leaderboardRows = $leaderboardService->getTournamentLeaderboard($tournament);
+            $waitingListRows = $waitingListService->getWaitingList($tournament);
+        } catch (\Throwable) {
+            // Backward compatibility while advanced tables are not migrated yet.
+        }
+
         return $this->render('front/modules/tournament_show.html.twig', [
             'page' => 'tournaments',
             'tournament' => $tournament,
@@ -211,6 +224,8 @@ class TournamentController extends AbstractController
             'hasVoucher' => $hasVoucher,
             'prizePoolSnapshot' => $prizePoolSnapshot,
             'participations' => $tournament->getParticipations(),
+            'leaderboardRows' => $leaderboardRows,
+            'waitingListRows' => $waitingListRows,
         ]);
     }
 
@@ -263,7 +278,8 @@ class TournamentController extends AbstractController
         Tournament $tournament,
         TournamentParticipationRepository $participationRepository,
         VoucherRepository $voucherRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        WaitingListService $waitingListService
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -283,7 +299,14 @@ class TournamentController extends AbstractController
 
         $currentCount = $participationRepository->countByTournament($tournament);
         if ($currentCount >= (int) $tournament->getMaxPlayers()) {
-            $this->addFlash('error', 'Tournament is full.');
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
+            try {
+                $waitingResult = $waitingListService->addUser($tournament, $user);
+                $this->addFlash($waitingResult['added'] ? 'info' : 'error', $waitingResult['message']);
+            } catch (\Throwable) {
+                $this->addFlash('error', 'Tournament is full.');
+            }
 
             return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
         }
@@ -419,7 +442,8 @@ class TournamentController extends AbstractController
         Request $request,
         Tournament $tournament,
         TournamentParticipationRepository $participationRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        WaitingListService $waitingListService
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -439,6 +463,15 @@ class TournamentController extends AbstractController
 
         $entityManager->remove($participation);
         $entityManager->flush();
+
+        try {
+            $promoted = $waitingListService->promoteNextUser($tournament);
+            if ($promoted !== null) {
+                $this->addFlash('info', sprintf('Waiting list promotion: %s is now an active participant.', $promoted->getUsername()));
+            }
+        } catch (\Throwable) {
+            // Backward compatibility while waiting-list tables are not migrated yet.
+        }
 
         $this->addFlash('success', 'You left the tournament.');
 

@@ -6,6 +6,7 @@ use App\Entity\Tournament;
 use App\Form\TournamentType;
 use App\Repository\TournamentRepository;
 use App\Service\TournamentAiGeneratorService;
+use App\Service\LeaderboardService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
@@ -115,7 +116,8 @@ class TournamentController extends AbstractController
     public function new(
         Request $request,
         EntityManagerInterface $entityManager,
-        TournamentAiGeneratorService $aiGeneratorService
+        TournamentAiGeneratorService $aiGeneratorService,
+        LeaderboardService $leaderboardService
     ): Response
     {
         $tournament = new Tournament();
@@ -139,6 +141,11 @@ class TournamentController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($tournament);
             $entityManager->flush();
+            try {
+                $leaderboardService->generateForTournament($tournament);
+            } catch (\Throwable) {
+                // Ignore until advanced leaderboard tables are migrated.
+            }
 
             $this->addFlash('success', 'Tournament created.');
 
@@ -161,13 +168,23 @@ class TournamentController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_admin_tournament_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Tournament $tournament, EntityManagerInterface $entityManager): Response
+    public function edit(
+        Request $request,
+        Tournament $tournament,
+        EntityManagerInterface $entityManager,
+        LeaderboardService $leaderboardService
+    ): Response
     {
         $form = $this->createForm(TournamentType::class, $tournament);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
+            try {
+                $leaderboardService->generateForTournament($tournament);
+            } catch (\Throwable) {
+                // Ignore until advanced leaderboard tables are migrated.
+            }
 
             $this->addFlash('success', 'Tournament updated.');
 
