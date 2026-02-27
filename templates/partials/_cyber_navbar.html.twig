@@ -129,7 +129,18 @@
         z-index: 1001;
         margin-top: 10px;
         border-radius: 4px;
-        overflow: hidden;
+        overflow: visible; /* Changed from hidden to visible for ::before */
+    }
+
+    /* Bridge the gap so hover isn't lost */
+    .dropdown-content::before {
+        content: "";
+        position: absolute;
+        top: -15px;
+        left: 0;
+        width: 100%;
+        height: 15px;
+        background: transparent;
     }
 
     .dropdown-content a {
@@ -144,8 +155,15 @@
         border-bottom: 1px solid rgba(139, 61, 255, 0.1);
     }
 
+    .dropdown-content a:first-child {
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
     .dropdown-content a:last-child {
         border-bottom: none;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
     }
 
     .dropdown-content a:hover {
@@ -188,6 +206,84 @@
     .lobby-content {
         padding-top: 100px !important;
     }
+
+    /* SEARCH BAR STYLES */
+    .cyber-search-container {
+        position: relative;
+        margin-right: 20px;
+        margin-left: 50px;
+    }
+
+    #user-search-input {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(139, 61, 255, 0.3);
+        color: #fff;
+        padding: 8px 15px;
+        font-family: 'Courier New', monospace;
+        font-size: 11px;
+        border-radius: 4px;
+        width: 150px;
+        transition: all 0.3s ease;
+    }
+
+    #user-search-input:focus {
+        width: 200px;
+        border-color: #00f0ff;
+        box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+        outline: none;
+    }
+
+    .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: rgba(10, 10, 15, 0.95);
+        border: 1px solid rgba(139, 61, 255, 0.5);
+        border-top: none;
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+        z-index: 1002;
+    }
+
+    .search-result-item {
+        padding: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .search-result-item:hover {
+        background: rgba(139, 61, 255, 0.2);
+    }
+
+    .search-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid #8B3DFF;
+    }
+
+    .search-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .search-name {
+        font-size: 12px;
+        color: #fff;
+        font-weight: bold;
+    }
+
+    .search-role {
+        font-size: 9px;
+        color: rgba(255, 255, 255, 0.5);
+    }
 </style>
 
 <header class="cyber-header">
@@ -207,10 +303,28 @@
         <a href="{{ path('app_home') }}" class="nav-link {{ app.request.get('_route') == 'app_home' ? 'active' : '' }}">HOME</a>
         <a href="{{ path('front_marketplace') }}" class="nav-link {{ app.request.get('_route') == 'front_marketplace' ? 'active' : '' }}">MARKET</a>
         <a href="{{ path('front_tournaments') }}" class="nav-link {{ app.request.get('_route') == 'front_tournaments' ? 'active' : '' }}">TOURNOI</a>
-        <a href="{{ path('front_blog') }}" class="nav-link {{ app.request.get('_route') == 'front_blog' ? 'active' : '' }}">COMMUNITY</a>
+            
+            {% if is_granted('ROLE_SPONSOR') %}
+                <a href="{{ path('front_sponsoring_my_offers') }}" class="nav-link {{ app.request.get('_route') == 'front_sponsoring_my_offers' ? 'active' : '' }}">MES OFFRES</a>
+                <a href="{{ path('front_sponsor_requests') }}" class="nav-link {{ app.request.get('_route') == 'front_sponsor_requests' ? 'active' : '' }}">DEMANDES</a>
+                <a href="{{ path('front_contracts') }}" class="nav-link {{ app.request.get('_route') == 'front_contracts' ? 'active' : '' }}">CONTRATS</a>
+            {% elseif is_granted('ROLE_CLIENT') %}
+                <a href="{{ path('front_sponsoring') }}" class="nav-link {{ app.request.get('_route') == 'front_sponsoring' ? 'active' : '' }}">SPONSORING</a>
+                <a href="{{ path('front_client_requests') }}" class="nav-link {{ app.request.get('_route') == 'front_client_requests' ? 'active' : '' }}">MES DEMANDES</a>
+                <a href="{{ path('front_contracts') }}" class="nav-link {{ app.request.get('_route') == 'front_contracts' ? 'active' : '' }}">CONTRATS</a>
+            {% endif %}
+            
+            <a href="{{ path('front_blog') }}" class="nav-link {{ app.request.get('_route') == 'front_blog' ? 'active' : '' }}">COMMUNITY</a>
+            <a href="{{ path('app_chat_index') }}" class="nav-link {{ app.request.get('_route') starts with 'app_chat' ? 'active' : '' }}">MESSAGERIE</a>
     </nav>
 
     <div class="header-user-nav">
+        <!-- Search Bar -->
+        <div class="cyber-search-container">
+            <input type="text" id="user-search-input" placeholder="SEARCH AGENT..." autocomplete="off">
+            <div id="search-results" class="search-results"></div>
+        </div>
+
         <div class="profile-dropdown">
             <span class="btn-profile-nav">PROFILE</span>
             <div class="dropdown-content">
@@ -221,3 +335,58 @@
         <a href="{{ path('app_logout') }}" class="btn-dissoudre-nav">DÉCONNEXION</a>
     </div>
 </header>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('user-search-input');
+        const searchResults = document.getElementById('search-results');
+        let timeout = null;
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+            const query = this.value;
+
+            if (query.length < 2) {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            timeout = setTimeout(() => {
+                fetch(`/user/search?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        searchResults.innerHTML = '';
+                        if (data.length > 0) {
+                            data.forEach(user => {
+                                const item = document.createElement('div');
+                                item.className = 'search-result-item';
+                                const avatarUrl = user.image ? `/uploads/profiles/${user.image}` : `https://ui-avatars.com/api/?name=${user.name}&background=random`;
+                                
+                                item.innerHTML = `
+                                    <img src="${avatarUrl}" class="search-avatar" alt="${user.name}">
+                                    <div class="search-info">
+                                        <span class="search-name">${user.name}</span>
+                                        <span class="search-role">${user.role.replace('ROLE_', '')}</span>
+                                    </div>
+                                `;
+                                item.onclick = () => {
+                                    window.location.href = `/user/public/${user.id}`;
+                                };
+                                searchResults.appendChild(item);
+                            });
+                            searchResults.style.display = 'block';
+                        } else {
+                            searchResults.style.display = 'none';
+                        }
+                    });
+            }, 300);
+        });
+
+        // Close search when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+    });
+</script>
