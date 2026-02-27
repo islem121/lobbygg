@@ -137,4 +137,43 @@ class TournamentRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function countAllTournaments(): int
+    {
+        return (int) $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countOngoingTournaments(): int
+    {
+        $now = new \DateTimeImmutable();
+
+        return (int) $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->andWhere('t.startDate <= :now')
+            ->andWhere('t.endDate IS NULL OR t.endDate >= :now')
+            ->setParameter('now', $now)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countPaidTournaments(): int
+    {
+        return (int) $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->andWhere('t.entryFee > 0')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countFreeTournaments(): int
+    {
+        return (int) $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->andWhere('t.entryFee <= 0')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

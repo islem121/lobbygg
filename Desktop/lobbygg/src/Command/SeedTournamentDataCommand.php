@@ -65,57 +65,68 @@ class SeedTournamentDataCommand extends Command
         $this->entityManager->flush();
 
         $voucherCount = 0;
+        $voucherPairs = [];
         foreach ($tournaments as $tournament) {
             if (!$tournament->isPaid()) {
                 continue;
             }
-            for ($i = 0; $i < 4; $i++) {
-                $user = $users[array_rand($users)];
-                $voucher = new Voucher();
-                $voucher->setTournament($tournament);
-                $voucher->setUser($user);
-                $voucher->setAmount($tournament->getEntryFee());
-                $voucher->setCode('SEED-'.strtoupper(bin2hex(random_bytes(3))).'-'.$tournament->getId());
-                if ($i < 2) {
-                    $voucher->setUsedAt(new \DateTime('-'.random_int(1, 6).' day'));
-                }
-                $this->entityManager->persist($voucher);
-                $voucherCount++;
-            }
+
+            $maxForTournament = min((int) $tournament->getMaxPlayers(), count($users));
+            $voucherTarget = random_int(2, max(2, min(6, $maxForTournament)));
+            $voucherCount += $this->createVouchersForTournament(
+                $tournament,
+                $users,
+                $voucherTarget,
+                $voucherPairs,
+                false
+            );
         }
 
-        while ($voucherCount < 20) {
-            $tournament = $tournaments[array_rand($tournaments)];
-            $user = $users[array_rand($users)];
-            $voucher = new Voucher();
-            $voucher->setTournament($tournament);
-            $voucher->setUser($user);
-            $voucher->setAmount($tournament->getEntryFee());
-            $voucher->setCode('SEED-'.strtoupper(bin2hex(random_bytes(3))).'-'.$tournament->getId());
-            $this->entityManager->persist($voucher);
-            $voucherCount++;
+        $paidTournaments = array_values(array_filter($tournaments, static fn (Tournament $t): bool => $t->isPaid()));
+        while ($voucherCount < 20 && count($paidTournaments) > 0) {
+            $tournament = $paidTournaments[array_rand($paidTournaments)];
+            $added = $this->createVouchersForTournament($tournament, $users, 1, $voucherPairs, false);
+            if ($added === 0) {
+                break;
+            }
+            $voucherCount += $added;
         }
 
         foreach ($tournaments as $tournament) {
             $targetParticipants = random_int(2, min(12, $tournament->getMaxPlayers() ?? 12));
             $pickedIds = [];
+
+            $paidVoucherHolders = [];
+            if ($tournament->isPaid()) {
+                foreach ($voucherPairs as $pairKey => $enabled) {
+                    if (!$enabled) {
+                        continue;
+                    }
+                    $parts = explode(':', $pairKey);
+                    if ((int) ($parts[0] ?? 0) === (int) $tournament->getId()) {
+                        $paidVoucherHolders[] = (int) ($parts[1] ?? 0);
+                    }
+                }
+                shuffle($paidVoucherHolders);
+            }
+
             for ($i = 0; $i < $targetParticipants; $i++) {
-                $user = $users[array_rand($users)];
+                if ($tournament->isPaid()) {
+                    $holderId = array_shift($paidVoucherHolders);
+                    if ($holderId === null) {
+                        break;
+                    }
+                    $user = $this->findUserById($users, $holderId);
+                    if ($user === null) {
+                        continue;
+                    }
+                } else {
+                    $user = $users[array_rand($users)];
+                }
                 if (isset($pickedIds[$user->getId()])) {
                     continue;
                 }
                 $pickedIds[$user->getId()] = true;
-
-                if ($tournament->isPaid()) {
-                    $voucher = new Voucher();
-                    $voucher->setTournament($tournament);
-                    $voucher->setUser($user);
-                    $voucher->setAmount($tournament->getEntryFee());
-                    $voucher->setCode('SEED-JOIN-'.strtoupper(bin2hex(random_bytes(2))).'-'.$tournament->getId());
-                    $voucher->setUsedAt(new \DateTime('-'.random_int(1, 10).' hours'));
-                    $this->entityManager->persist($voucher);
-                    $voucherCount++;
-                }
 
                 $participation = new TournamentParticipation();
                 $participation->setTournament($tournament);
@@ -129,6 +140,82 @@ class SeedTournamentDataCommand extends Command
         $io->success(sprintf('Seed completed: %d tournaments created, at least %d vouchers created.', count($tournaments), $voucherCount));
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * @param User[] $users
+     * @param array<string, bool> $voucherPairs
+     */
+    private function createVouchersForTournament(
+        Tournament $tournament,
+        array $users,
+        int $target,
+        array &$voucherPairs,
+        bool $markUsed
+    ): int {
+        $created = 0;
+        $maxPlayers = max(0, (int) $tournament->getMaxPlayers());
+
+        foreach ($users as $user) {
+            if ($created >= $target) {
+                break;
+            }
+
+            $pairKey = $tournament->getId().':'.$user->getId();
+            if (isset($voucherPairs[$pairKey])) {
+                continue;
+            }
+
+            if ($this->countPairsForTournament($voucherPairs, (int) $tournament->getId()) >= $maxPlayers) {
+                break;
+            }
+
+            $voucher = new Voucher();
+            $voucher->setTournament($tournament);
+            $voucher->setUser($user);
+            $voucher->setAmount($tournament->getEntryFee());
+            $voucher->setCode('SEED-'.strtoupper(bin2hex(random_bytes(4))).'-'.$tournament->getId());
+            if ($markUsed) {
+                $voucher->setUsedAt(new \DateTimeImmutable('-'.random_int(1, 12).' hours'));
+            }
+            $this->entityManager->persist($voucher);
+            $voucherPairs[$pairKey] = true;
+            $created++;
+        }
+
+        return $created;
+    }
+
+    /**
+     * @param array<string, bool> $voucherPairs
+     */
+    private function countPairsForTournament(array $voucherPairs, int $tournamentId): int
+    {
+        $count = 0;
+        foreach ($voucherPairs as $key => $enabled) {
+            if (!$enabled) {
+                continue;
+            }
+            if (str_starts_with($key, $tournamentId.':')) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
+    /**
+     * @param User[] $users
+     */
+    private function findUserById(array $users, int $id): ?User
+    {
+        foreach ($users as $user) {
+            if ((int) $user->getId() === $id) {
+                return $user;
+            }
+        }
+
+        return null;
     }
 
     private function randomStartDate(): \DateTime

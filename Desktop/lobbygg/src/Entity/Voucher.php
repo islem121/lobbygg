@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: VoucherRepository::class)]
 #[ORM\Table(name: 'voucher')]
 #[ORM\UniqueConstraint(name: 'uniq_voucher_code', columns: ['code'])]
+#[ORM\UniqueConstraint(name: 'uniq_voucher_user_tournament', columns: ['user_id', 'tournament_id'])]
 class Voucher
 {
     #[ORM\Id]

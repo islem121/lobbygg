@@ -10,10 +10,12 @@ use App\Repository\TournamentParticipationRepository;
 use App\Repository\TournamentRepository;
 use App\Repository\VoucherRepository;
 use App\Service\TournamentAiGeneratorService;
+use App\Service\TournamentVoucherService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -186,20 +188,28 @@ class TournamentController extends AbstractController
     #[Route('/tournaments/{id}', name: 'front_tournaments_show', methods: ['GET'])]
     public function show(
         Tournament $tournament,
-        TournamentParticipationRepository $participationRepository
+        TournamentParticipationRepository $participationRepository,
+        VoucherRepository $voucherRepository,
+        TournamentVoucherService $voucherService
     ): Response {
         $user = $this->getUser();
         $isJoined = false;
+        $hasVoucher = false;
 
         if ($user) {
             $isJoined = null !== $participationRepository->findOneByUserAndTournament($user, $tournament);
+            $hasVoucher = null !== $voucherRepository->findAnyForUserAndTournament($user, $tournament);
         }
+
+        $prizePoolSnapshot = $voucherService->getPrizePoolSnapshot($tournament);
 
         return $this->render('front/modules/tournament_show.html.twig', [
             'page' => 'tournaments',
             'tournament' => $tournament,
             'participantsCount' => $participationRepository->countByTournament($tournament),
             'isJoined' => $isJoined,
+            'hasVoucher' => $hasVoucher,
+            'prizePoolSnapshot' => $prizePoolSnapshot,
             'participations' => $tournament->getParticipations(),
         ]);
     }
@@ -279,7 +289,7 @@ class TournamentController extends AbstractController
         }
 
         if ($tournament->isPaid()) {
-            $voucher = $voucherRepository->findValidForUserAndTournament($user, $tournament);
+            $voucher = $voucherRepository->findAnyForUserAndTournament($user, $tournament);
             if ($voucher === null) {
                 $this->addFlash(
                     'error',
@@ -289,10 +299,8 @@ class TournamentController extends AbstractController
                     )
                 );
 
-                return $this->redirectToRoute('front_marketplace_voucher_buy', ['id' => $tournament->getId()]);
+                return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
             }
-
-            $voucher->setUsedAt(new \DateTimeImmutable());
         }
 
         $participation = new TournamentParticipation();
@@ -306,6 +314,45 @@ class TournamentController extends AbstractController
         $this->addFlash('success', 'You joined the tournament.');
 
         return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
+    }
+
+    #[Route('/tournaments/{id}/purchase-voucher', name: 'front_tournaments_purchase_voucher', methods: ['POST'])]
+    public function purchaseVoucher(
+        Request $request,
+        Tournament $tournament,
+        TournamentVoucherService $voucherService
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        if (!$this->isCsrfTokenValid('purchase_voucher_'.$tournament->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid CSRF token.');
+
+            return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
+        }
+
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $result = $voucherService->purchaseVoucher($user, $tournament);
+        $this->addFlash($result['success'] ? 'success' : 'error', $result['message']);
+
+        return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
+    }
+
+    #[Route('/tournaments/{id}/prize-pool', name: 'front_tournaments_prize_pool', methods: ['GET'])]
+    public function prizePool(Tournament $tournament, TournamentVoucherService $voucherService): JsonResponse
+    {
+        $snapshot = $voucherService->getPrizePoolSnapshot($tournament);
+
+        return $this->json([
+            'entryFee' => $snapshot['entryFee'],
+            'soldVouchers' => $snapshot['soldVouchers'],
+            'maxPlayers' => $snapshot['maxPlayers'],
+            'prizePool' => $snapshot['prizePool'] ?? 0.0,
+            'progressPercentage' => $snapshot['progressPercentage'],
+            'remainingVouchers' => $snapshot['remainingVouchers'],
+            'isPaid' => $snapshot['isPaid'],
+            'isSoldOut' => $snapshot['isSoldOut'],
+        ]);
     }
 
     #[Route('/tournaments/{id}/share/feed', name: 'front_tournaments_share_feed', methods: ['POST'])]

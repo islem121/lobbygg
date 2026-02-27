@@ -15,21 +15,33 @@ class TournamentApiController extends AbstractController
     #[Route('/api/chatbot/tournament', name: 'api_tournament_chatbot', methods: ['POST'])]
     public function chatbot(
         Request $request,
-        TournamentRepository $tournamentRepository,
         TournamentChatbotService $chatbotService
     ): JsonResponse {
-        $payload = json_decode($request->getContent(), true);
+        try {
+            $payload = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            return $this->json(['success' => false, 'error' => 'Malformed JSON body.'], 400);
+        }
+
         if (!is_array($payload)) {
-            $payload = [];
+            return $this->json(['success' => false, 'error' => 'Invalid payload.'], 400);
         }
 
         $question = trim((string) ($payload['question'] ?? ''));
         $tournamentId = isset($payload['tournamentId']) ? (int) $payload['tournamentId'] : null;
-        $tournament = $tournamentId ? $tournamentRepository->find($tournamentId) : null;
 
-        return $this->json([
-            'answer' => $chatbotService->answer($question, $tournament),
-        ]);
+        try {
+            $result = $chatbotService->ask($question, $tournamentId);
+        } catch (\Throwable $e) {
+            return $this->json(['success' => false, 'error' => 'Unexpected chatbot error.'], 500);
+        }
+
+        $statusCode = 200;
+        if (($result['success'] ?? false) === false && isset($result['error'])) {
+            $statusCode = 400;
+        }
+
+        return $this->json($result, $statusCode);
     }
 
     #[Route('/api/tournaments/{id}/voucher/check', name: 'api_tournament_voucher_check', methods: ['GET'])]
@@ -46,7 +58,7 @@ class TournamentApiController extends AbstractController
 
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $voucher = $voucherRepository->findValidForUserAndTournament($user, $tournament);
+        $voucher = $voucherRepository->findAnyForUserAndTournament($user, $tournament);
 
         return $this->json([
             'tournamentId' => $tournament->getId(),

@@ -1,0 +1,102 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Voucher Management{% endblock %}
+{% block content_title %}Vouchers{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item active">Vouchers</li>
+{% endblock %}
+
+{% block content %}
+<div class="card mb-3">
+    <div class="card-header">
+        <h3 class="card-title">Filter</h3>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-4">
+                <select class="form-select" name="tournament">
+                    <option value="">All tournaments</option>
+                    {% for t in tournaments %}
+                        <option value="{{ t.id }}" {{ selectedTournamentId == t.id ? 'selected' : '' }}>{{ t.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" type="submit">Apply</button>
+            </div>
+            <div class="col-md-2">
+                <a class="btn btn-outline-secondary w-100" href="{{ path('app_admin_voucher_index') }}">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3 class="card-title">Sales Summary by Tournament</h3>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>Tournament</th>
+                    <th>Entry Fee</th>
+                    <th>Sold Vouchers</th>
+                    <th>Max Players</th>
+                    <th>Current PrizePool</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in summaryRows %}
+                    <tr>
+                        <td>{{ row.tournamentTitle }}</td>
+                        <td>{{ row.entryFee|number_format(2, '.', ',') }}</td>
+                        <td>{{ row.soldVouchers }}</td>
+                        <td>{{ row.maxPlayers }}</td>
+                        <td>{{ (row.entryFee * row.soldVouchers)|number_format(2, '.', ',') }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-center">No voucher sales found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Voucher List</h3>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Code</th>
+                    <th>User</th>
+                    <th>Tournament</th>
+                    <th>Amount</th>
+                    <th>Purchased</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for voucher in vouchers %}
+                    <tr>
+                        <td>{{ voucher.id }}</td>
+                        <td><code>{{ voucher.code }}</code></td>
+                        <td>{{ voucher.user ? voucher.user.email : 'Unknown' }}</td>
+                        <td>{{ voucher.tournament ? voucher.tournament.title : 'Unknown' }}</td>
+                        <td>{{ voucher.amount|number_format(2, '.', ',') }}</td>
+                        <td>{{ voucher.purchasedAt ? voucher.purchasedAt|date('Y-m-d H:i') : '-' }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="text-center">No vouchers found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

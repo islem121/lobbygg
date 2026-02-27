@@ -6,7 +6,7 @@
   <section class="page-head">
     <div>
       <h1 class="page-title">{{ tournament.title }}</h1>
-      <p class="page-sub">{{ tournament.description|default('No description') }}</p>
+      <p class="page-sub show-desc">{{ tournament.description|default('No description') }}</p>
     </div>
     <div class="page-actions">
       <a class="btn btn-ghost" href="{{ path('front_tournaments') }}">
@@ -20,23 +20,38 @@
     </div>
   </section>
 
-  <section class="grid">
+  <section class="grid show-layout">
     <div class="col span-7">
-      <div class="panel">
+      <div class="panel show-panel">
         <div class="panel-head">
           <h2 class="panel-title"><i class="fa-solid fa-circle-info"></i> Tournament Info</h2>
         </div>
-        <ul style="display:grid; gap:8px; list-style:none; padding:0; margin:0;">
-          <li><strong>Status:</strong> {{ tournament.status }}</li>
-          <li><strong>Mode:</strong> {{ tournament.mode|upper }}</li>
-          <li><strong>Entry Fee:</strong> {{ tournament.entryFee > 0 ? tournament.entryFee|number_format(2, '.', ',') : 'FREE' }}</li>
-          <li><strong>Prize Pool:</strong> {{ tournament.prizePool is not null ? tournament.prizePool|number_format(2, '.', ',') : 'N/A' }}</li>
-          <li><strong>Start:</strong> {{ tournament.startDate ? tournament.startDate|date('Y-m-d H:i') : 'N/A' }}</li>
-          <li><strong>End:</strong> {{ tournament.endDate ? tournament.endDate|date('Y-m-d H:i') : 'N/A' }}</li>
-          <li><strong>Slots:</strong> {{ participantsCount }} / {{ tournament.maxPlayers }}</li>
+        <ul class="show-stats">
+          <li><span>Status</span><strong>{{ prizePoolSnapshot.isPaid and prizePoolSnapshot.isSoldOut ? 'FULL' : tournament.status|upper }}</strong></li>
+          <li><span>Mode</span><strong>{{ tournament.mode|upper }}</strong></li>
+          <li><span>Type</span><strong>{{ tournament.type }}</strong></li>
+          <li><span>Entry Fee</span><strong>{{ tournament.entryFee > 0 ? tournament.entryFee|number_format(2, '.', ',') ~ ' DT' : 'FREE' }}</strong></li>
+          <li><span>Vouchers Sold</span><strong><span id="sold-vouchers">{{ prizePoolSnapshot.soldVouchers }}</span> / <span id="max-players">{{ prizePoolSnapshot.maxPlayers }}</span></strong></li>
+          <li><span>Remaining</span><strong id="remaining-vouchers">{{ prizePoolSnapshot.remainingVouchers }}</strong></li>
+          <li><span>Prize Pool</span><strong><span id="prize-pool-amount">{{ (prizePoolSnapshot.prizePool ?? 0)|number_format(2, '.', ',') }}</span>{% if prizePoolSnapshot.isPaid %} DT{% endif %}</strong></li>
+          <li><span>Start</span><strong>{{ tournament.startDate ? tournament.startDate|date('Y-m-d H:i') : 'N/A' }}</strong></li>
+          <li><span>End</span><strong>{{ tournament.endDate ? tournament.endDate|date('Y-m-d H:i') : 'N/A' }}</strong></li>
+          <li><span>Slots</span><strong>{{ participantsCount }} / {{ tournament.maxPlayers }}</strong></li>
         </ul>
 
-        <div class="row-actions" style="margin-top:16px;">
+        {% if prizePoolSnapshot.isPaid %}
+          <div class="show-progress-wrap">
+            <div class="show-progress-head">
+              <span>PrizePool Progress</span>
+              <span id="prize-progress-value">{{ prizePoolSnapshot.progressPercentage|number_format(0, '.', ',') }}%</span>
+            </div>
+            <div class="show-progress-track">
+              <div id="prize-progress-bar" style="height:100%; width:{{ prizePoolSnapshot.progressPercentage }}%; background:linear-gradient(90deg,#19d3ff,#8b3dff,#f24bff); transition:width .3s ease;"></div>
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="row-actions show-actions">
           {% if is_granted('ROLE_USER') %}
             {% if isJoined %}
               <form method="post" action="{{ path('front_tournaments_leave', {id: tournament.id}) }}">
@@ -53,9 +68,13 @@
                 </button>
               </form>
               {% if tournament.entryFee > 0 %}
-                <a class="btn btn-ghost" href="{{ path('front_marketplace_voucher_buy', {id: tournament.id}) }}">
-                  <i class="fa-solid fa-ticket"></i> Buy Voucher
-                </a>
+                <form method="post" action="{{ path('front_tournaments_purchase_voucher', {id: tournament.id}) }}">
+                  <input type="hidden" name="_token" value="{{ csrf_token('purchase_voucher_' ~ tournament.id) }}">
+                  <button id="purchase-voucher-btn" class="btn btn-ghost" type="submit" {{ prizePoolSnapshot.isSoldOut or hasVoucher ? 'disabled' : '' }}>
+                    <i class="fa-solid fa-ticket"></i>
+                    {{ hasVoucher ? 'Voucher Purchased' : (prizePoolSnapshot.isSoldOut ? 'Sold Out' : 'Purchase Voucher') }}
+                  </button>
+                </form>
               {% endif %}
             {% endif %}
           {% endif %}
@@ -72,7 +91,7 @@
     </div>
 
     <div class="col span-5">
-      <div class="panel">
+      <div class="panel show-panel">
         <div class="panel-head">
           <h2 class="panel-title"><i class="fa-solid fa-users"></i> Participants</h2>
         </div>
@@ -80,15 +99,15 @@
         {% if participations is empty %}
           <p>No participants yet.</p>
         {% else %}
-          <div style="display:grid; gap:10px;">
+          <div class="show-participants-list">
             {% for p in participations %}
-              <div class="card" style="padding:10px;">
+              <div class="card show-participant-card">
                 <div><strong>{{ p.user ? p.user.email : 'Unknown user' }}</strong></div>
                 <div>Status: {{ p.status }}</div>
                 <div>Joined: {{ p.registrationDate ? p.registrationDate|date('Y-m-d H:i') : 'N/A' }}</div>
 
                 {% if is_granted('ROLE_ADMIN') %}
-                  <div class="row-actions" style="margin-top:8px;">
+                  <div class="row-actions show-participant-actions">
                     {% for nextStatus in ['confirmed', 'eliminated', 'winner'] %}
                       <form method="post" action="{{ path('front_tournaments_participation_status', {id: p.id, status: nextStatus}) }}">
                         <input type="hidden" name="_token" value="{{ csrf_token('participation_status_' ~ p.id) }}">
@@ -105,41 +124,114 @@
     </div>
   </section>
 
-  <section class="grid">
-    <div class="col span-12">
-      <div class="panel">
-        <div class="panel-head">
-          <h2 class="panel-title"><i class="fa-solid fa-robot"></i> Tournament AI Chatbot</h2>
-        </div>
-        <div style="display:grid; gap:10px;">
-          <textarea id="tournament-chat-question" class="form-control" rows="3" placeholder="Ask about this tournament..."></textarea>
-          <div class="row-actions">
-            <button class="btn btn-primary" id="tournament-chat-send" type="button">Ask</button>
-          </div>
-          <div id="tournament-chat-answer" class="card" style="padding:10px;">Answer will appear here.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <script>
-    (function () {
-      const sendBtn = document.getElementById('tournament-chat-send');
-      if (!sendBtn) return;
-      sendBtn.addEventListener('click', async function () {
-        const qEl = document.getElementById('tournament-chat-question');
-        const aEl = document.getElementById('tournament-chat-answer');
-        const question = qEl.value.trim();
-        if (!question) return;
-        aEl.textContent = 'Thinking...';
-        const res = await fetch('/api/chatbot/tournament', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({question: question, tournamentId: {{ tournament.id }}})
-        });
-        const data = await res.json();
-        aEl.textContent = data.answer || 'No answer returned.';
-      });
-    })();
-  </script>
+  {% include 'front/partials/_tournament_chatbot.html.twig' with { chatbot_tournament_id: tournament.id } %}
+  <style>
+    .show-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      gap: 24px;
+      align-items: start;
+    }
+    .show-layout .span-7,
+    .show-layout .span-5 {
+      grid-column: auto;
+      width: 100%;
+    }
+    .show-desc {
+      max-width: 75ch;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .show-panel {
+      padding: 14px;
+      height: 100%;
+    }
+    .show-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .show-stats li {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: grid;
+      grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+      align-items: start;
+      gap: 10px;
+      font-size: 13px;
+    }
+    .show-stats li span { color: rgba(255,255,255,.72); min-width: 0; }
+    .show-stats li strong {
+      text-align: right;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .show-progress-wrap { margin-top: 12px; }
+    .show-progress-head { display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; }
+    .show-progress-track { height: 8px; border-radius: 999px; background: rgba(255,255,255,.12); overflow:hidden; }
+    .show-actions { margin-top: 12px; gap: 8px; }
+    .show-participants-list {
+      display: grid;
+      gap: 8px;
+      max-height: 520px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+    .show-participant-card { padding: 10px; font-size: 13px; }
+    .show-participant-actions { margin-top: 8px; gap: 6px; }
+    @media (max-width: 1100px) {
+      .show-layout {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+    }
+    @media (max-width: 980px) {
+      .show-stats { grid-template-columns: 1fr; }
+      .show-participants-list { max-height: none; }
+    }
+  </style>
+  {% if prizePoolSnapshot.isPaid %}
+    <script>
+      (function () {
+        const url = '{{ path('front_tournaments_prize_pool', {id: tournament.id}) }}';
+        const soldNode = document.getElementById('sold-vouchers');
+        const maxNode = document.getElementById('max-players');
+        const remainingNode = document.getElementById('remaining-vouchers');
+        const prizeNode = document.getElementById('prize-pool-amount');
+        const progressNode = document.getElementById('prize-progress-value');
+        const progressBar = document.getElementById('prize-progress-bar');
+        const purchaseBtn = document.getElementById('purchase-voucher-btn');
+
+        const refresh = function () {
+          fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              soldNode.textContent = data.soldVouchers;
+              maxNode.textContent = data.maxPlayers;
+              remainingNode.textContent = data.remainingVouchers;
+              prizeNode.textContent = Number(data.prizePool || 0).toFixed(2);
+              progressNode.textContent = Math.round(Number(data.progressPercentage || 0)) + '%';
+              progressBar.style.width = Number(data.progressPercentage || 0) + '%';
+
+              if (purchaseBtn && data.isSoldOut) {
+                purchaseBtn.disabled = true;
+                purchaseBtn.innerHTML = '<i class="fa-solid fa-ticket"></i> Sold Out';
+              }
+            })
+            .catch(function () {});
+        };
+
+        setInterval(refresh, 20000);
+      })();
+    </script>
+  {% endif %}
 {% endblock %}
 

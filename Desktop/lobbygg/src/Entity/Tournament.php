@@ -12,6 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'tournament')]
 class Tournament
 {
+    public const TYPE_FREE = 'FREE';
+    public const TYPE_PAID = 'PAID';
+
     public const MODE_SOLO = 'solo';
     public const MODE_DUO = 'duo';
     public const MODE_SQUAD = 'squad';
@@ -136,6 +139,19 @@ class Tournament
         return $this;
     }
 
+    /**
+     * Backward compatible alias for systems expecting "name".
+     */
+    public function getName(): ?string
+    {
+        return $this->getTitle();
+    }
+
+    public function setName(string $name): static
+    {
+        return $this->setTitle($name);
+    }
+
     public function getMode(): ?string
     {
         return $this->mode;
@@ -168,6 +184,29 @@ class Tournament
     public function isPaid(): bool
     {
         return $this->getEntryFee() > 0.0;
+    }
+
+    public function getType(): string
+    {
+        return $this->isPaid() ? self::TYPE_PAID : self::TYPE_FREE;
+    }
+
+    public function setType(string $type): static
+    {
+        $normalized = strtoupper(trim($type));
+        if ($normalized === self::TYPE_FREE) {
+            return $this->setEntryFee(0.0);
+        }
+
+        if ($normalized === self::TYPE_PAID) {
+            if ($this->getEntryFee() <= 0.0) {
+                $this->setEntryFee(1.0);
+            }
+
+            return $this;
+        }
+
+        throw new \InvalidArgumentException('Invalid tournament type.');
     }
 
     /**

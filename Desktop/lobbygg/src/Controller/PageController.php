@@ -10,13 +10,12 @@ use App\Entity\Document;
 use App\Form\SponsorType;
 use App\Form\DocumentType;
 use App\Entity\Contract;
-use App\Entity\Voucher;
 use App\Repository\ProductRepository;
 use App\Repository\ContractRepository;
 use App\Repository\SponsorRepository;
 use App\Repository\DocumentRepository;
 use App\Repository\TournamentRepository;
-use App\Repository\VoucherRepository;
+use App\Service\TournamentVoucherService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -172,8 +171,7 @@ class PageController extends AbstractController
     public function buyTournamentVoucher(
         int $id,
         TournamentRepository $tournamentRepository,
-        VoucherRepository $voucherRepository,
-        EntityManagerInterface $entityManager
+        TournamentVoucherService $voucherService
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -182,31 +180,10 @@ class PageController extends AbstractController
             throw $this->createNotFoundException('Tournament not found.');
         }
 
-        if (!$tournament->isPaid()) {
-            $this->addFlash('info', 'This tournament is free. No voucher needed.');
-            return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
-        }
-
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $existingVoucher = $voucherRepository->findValidForUserAndTournament($user, $tournament);
-        if ($existingVoucher) {
-            $this->addFlash('info', 'You already have a valid voucher: '.$existingVoucher->getCode());
-            return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
-        }
-
-        $voucher = new Voucher();
-        $voucher->setUser($user);
-        $voucher->setTournament($tournament);
-        $voucher->setAmount($tournament->getEntryFee());
-        $voucher->setCode(strtoupper(bin2hex(random_bytes(4))).'-'.$tournament->getId().'-'.$user->getId());
-        $entityManager->persist($voucher);
-        $entityManager->flush();
-
-        $this->addFlash(
-            'success',
-            sprintf('Voucher purchased (%s) for %.2f. You can now join the tournament.', $voucher->getCode(), $voucher->getAmount())
-        );
+        $result = $voucherService->purchaseVoucher($user, $tournament);
+        $this->addFlash($result['success'] ? 'success' : 'error', $result['message']);
 
         return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
     }

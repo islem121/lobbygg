@@ -106,6 +106,12 @@
                             <p>Tournaments</p>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ path('app_admin_voucher_index') }}" class="nav-link {{ app.request.attributes.get('_route') starts with 'app_admin_voucher' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-ticket-perforated-fill"></i>
+                            <p>Vouchers</p>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </div>
