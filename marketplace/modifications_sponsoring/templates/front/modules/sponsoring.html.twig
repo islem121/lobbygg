@@ -1,0 +1,337 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg • Sponsoring{% endblock %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">Sponsoring</h1>
+      <p class="page-sub">Discover partners, spotlight brands, and track performance — social-first sponsorship space.</p>
+    </div>
+    <div class="page-actions">
+      {% if is_granted('ROLE_SPONSOR') %}
+        <a href="{{ path('front_sponsoring_my_offers') }}" class="btn btn-primary"><i class="fa-solid fa-list-check"></i> Mes Offres</a>
+      {% endif %}
+      <button class="btn btn-ghost" type="button"><i class="fa-solid fa-bullhorn"></i> Spotlight</button>
+    </div>
+  </section>
+
+  <style>
+    .sponsor-table .table .row {
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr 0.5fr;
+    }
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+
+    /* Modal Styles */
+    .cyber-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(5px);
+    }
+
+    .cyber-modal-content {
+      background: #1a1a2e;
+      margin: 2vh auto;
+      padding: 30px;
+      border: 1px solid #8B3DFF;
+      width: 500px;
+      max-height: 95vh;
+      overflow-y: auto;
+      box-shadow: 0 0 20px rgba(139, 61, 255, 0.3);
+      border-radius: 10px;
+      position: relative;
+    }
+
+    /* Scrollbar Styling for Modal */
+    .cyber-modal-content::-webkit-scrollbar {
+      width: 6px;
+    }
+    .cyber-modal-content::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .cyber-modal-content::-webkit-scrollbar-thumb {
+      background: #8B3DFF;
+      border-radius: 10px;
+    }
+
+    .cyber-modal-header {
+      border-bottom: 1px solid rgba(139, 61, 255, 0.2);
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .cyber-modal-header h2 {
+      margin: 0;
+      color: #fff;
+      font-size: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .close-modal {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close-modal:hover {
+      color: #fff;
+    }
+
+    .cyber-field {
+      margin-bottom: 20px;
+    }
+
+    .cyber-label {
+      display: block;
+      margin-bottom: 8px;
+      color: #8B3DFF;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+    }
+
+    .cyber-input-field {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(139, 61, 255, 0.3);
+      color: #fff;
+      padding: 12px;
+      border-radius: 5px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .cyber-input-field:focus {
+      border-color: #8B3DFF;
+      box-shadow: 0 0 10px rgba(139, 61, 255, 0.2);
+    }
+
+    .cyber-input-field:disabled {
+      background: rgba(255, 255, 255, 0.02);
+      color: #888;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-cyber-submit {
+      flex: 1;
+      background: #8B3DFF;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 5px;
+      font-weight: bold;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-cyber-submit:hover {
+      background: #7a2ee6;
+      box-shadow: 0 0 15px rgba(139, 61, 255, 0.5);
+    }
+
+    .btn-cyber-cancel {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px;
+      border-radius: 5px;
+      font-weight: bold;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .btn-cyber-cancel:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+      padding-bottom: 10px;
+    }
+  </style>
+
+  <section class="grid">
+    <div class="col span-8">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-handshake-angle"></i> Sponsors</h2>
+        </div>
+
+        <div class="sponsor-table" data-sponsor-table>
+          <div class="sponsor-filters">
+            <button class="chip chip-filter active" type="button" data-tier="all">All</button>
+            <button class="chip chip-filter" type="button" data-tier="platinum">Platinum</button>
+            <button class="chip chip-filter" type="button" data-tier="gold">Gold</button>
+            <button class="chip chip-filter" type="button" data-tier="silver">Silver</button>
+          </div>
+
+          <div class="table">
+            <div class="row head">
+              <div>Brand</div>
+              <div>Tier</div>
+              <div>Target</div>
+              <div>CTR</div>
+              <div>Budget</div>
+              <div>Dossier</div>
+            </div>
+
+            {% for offer in offers %}
+            <div class="row" data-tier-row="platinum">
+              <div class="brand"><span class="brand-dot"></span> {{ offer.nomSociete }}</div>
+              <div><span class="pill">Platinum</span></div>
+              <div>
+                <span class="pill" style="background: {{ offer.targetType == 'client' ? 'rgba(0, 255, 128, 0.1)' : 'rgba(139, 61, 255, 0.1)' }}; color: {{ offer.targetType == 'client' ? '#00ff80' : '#8B3DFF' }}; border: 1px solid {{ offer.targetType == 'client' ? 'rgba(0, 255, 128, 0.2)' : 'rgba(139, 61, 255, 0.2)' }};">
+                  {{ offer.targetType|capitalize }}
+                </span>
+              </div>
+              <div class="accent">--%</div>
+              <div>{{ offer.amount|number_format(0, '.', ',') }} DT</div>
+              <div>
+                <button class="btn btn-ghost btn-sm open-request-modal" 
+                        data-offer-id="{{ offer.id }}" 
+                        data-offer-name="{{ offer.nomSociete }}"
+                        title="Envoyer une demande">
+                  <i class="fa-solid fa-file-pdf"></i>
+                </button>
+              </div>
+            </div>
+            {% else %}
+            <div class="row">
+              <div colspan="6" style="text-align: center; padding: 20px; color: #888;">
+                Aucune offre de sponsoring disponible pour le moment.
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col span-4">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-chart-pie"></i> Performance</h2>
+        </div>
+        <div class="mini-kpis">
+          <div class="kpi card">
+            <div class="kpi-label">Impressions</div>
+            <div class="kpi-value accent" data-countup data-to="912300">0</div>
+          </div>
+          <div class="kpi card">
+            <div class="kpi-label">Clicks</div>
+            <div class="kpi-value" data-countup data-to="28419">0</div>
+          </div>
+          <div class="kpi card">
+            <div class="kpi-label">Leads</div>
+            <div class="kpi-value" data-countup data-to="421">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal Demande de Sponsoring -->
+  <div id="requestModal" class="cyber-modal">
+    <div class="cyber-modal-content">
+      <span class="close-modal">&times;</span>
+      <div class="cyber-modal-header">
+        <h2>Demande pour <span id="modalOfferName"></span></h2>
+      </div>
+
+      {{ form_start(form, {'attr': {'id': 'sponsoringRequestForm', 'novalidate': 'novalidate'}}) }}
+        <div class="cyber-field">
+          <label class="cyber-label">Nom Complet</label>
+          <input type="text" class="cyber-input-field" value="{{ app.user.nom }} {{ app.user.prenom }}" disabled>
+        </div>
+
+        <div class="cyber-field">
+          <label class="cyber-label">Email</label>
+          <input type="text" class="cyber-input-field" value="{{ app.user.email }}" disabled>
+        </div>
+
+        <div class="cyber-field">
+          {{ form_label(form.message, null, {'label_attr': {'class': 'cyber-label'}}) }}
+          {{ form_widget(form.message) }}
+          <div class="invalid-feedback d-block" style="color: #ff4b4b; font-size: 0.8rem; margin-top: 5px;">
+              {{ form_errors(form.message) }}
+          </div>
+        </div>
+
+        <div class="cyber-field">
+          {{ form_label(form.motivation, null, {'label_attr': {'class': 'cyber-label'}}) }}
+          {{ form_widget(form.motivation) }}
+          <div class="invalid-feedback d-block" style="color: #ff4b4b; font-size: 0.8rem; margin-top: 5px;">
+              {{ form_errors(form.motivation) }}
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cyber-cancel close-modal-btn">Annuler</button>
+          <button type="submit" class="btn-cyber-submit">Valider</button>
+        </div>
+        {# Empêcher l'affichage automatique des champs restants par Symfony #}
+        {% do form.nomClient.setRendered %}
+        {% do form.emailClient.setRendered %}
+      {{ form_end(form) }}
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const modal = document.getElementById('requestModal');
+      const closeBtn = document.querySelector('.close-modal');
+      const modalOfferName = document.getElementById('modalOfferName');
+      const form = document.getElementById('sponsoringRequestForm');
+
+      // Ouvrir la modale
+      document.querySelectorAll('.open-request-modal').forEach(button => {
+        button.addEventListener('click', function() {
+          form.reset();
+          const offerId = this.getAttribute('data-offer-id');
+          const offerName = this.getAttribute('data-offer-name');
+          
+          modalOfferName.textContent = offerName;
+          form.action = `/sponsoring/request/${offerId}`;
+          modal.style.display = 'block';
+        });
+      });
+
+      // Fermer la modale
+      closeBtn.onclick = function() {
+        modal.style.display = 'none';
+      }
+
+      document.querySelector('.close-modal-btn').onclick = function() {
+        modal.style.display = 'none';
+      }
+
+      window.onclick = function(event) {
+        if (event.target == modal) {
+          modal.style.display = 'none';
+        }
+      }
+    });
+  </script>
+{% endblock %}
+
+

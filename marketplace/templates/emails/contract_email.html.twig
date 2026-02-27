@@ -1,0 +1,18 @@
+<div style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#222; line-height:1.6;">
+  <h2 style="margin:0 0 8px 0;">Contrat de Sponsoring</h2>
+  <p style="margin:0 0 16px 0;">Numéro: CTR-{{ contract.id|format('%04d') }} • Date: {{ contract.createdAt|date('d/m/Y') }}</p>
+
+  <h3 style="margin:16px 0 6px;">Parties</h3>
+  <p><strong>Sponsor:</strong> {{ contract.sponsor.nom }} {{ contract.sponsor.prenom }} ({{ contract.request.offer.nomSociete }})</p>
+  <p><strong>Client:</strong> {{ contract.client.nom }} {{ contract.client.prenom }}</p>
+
+  <h3 style="margin:16px 0 6px;">Objet du contrat</h3>
+  <p>{{ contract.content }}</p>
+
+  <h3 style="margin:16px 0 6px;">Détails de l’offre</h3>
+  <p><strong>Montant:</strong> {{ contract.request.offer.amount|number_format(0, '.', ' ') }} DT</p>
+
+  <div style="margin-top:18px;">
+    <a href="{{ printUrl }}" style="display:inline-block; background:#8B3DFF; color:#fff; padding:10px 14px; border-radius:6px; text-decoration:none;">Voir / Télécharger en PDF</a>
+  </div>
+</div>

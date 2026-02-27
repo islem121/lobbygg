@@ -1,0 +1,130 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg • Mes Demandes de Sponsoring{% endblock %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">Mes Demandes</h1>
+      <p class="page-sub">Suivez l'état de vos demandes de sponsoring envoyées aux partenaires.</p>
+    </div>
+    <div class="page-actions">
+      <a href="{{ path('front_sponsoring') }}" class="btn btn-primary"><i class="fa-solid fa-search"></i> Explorer les offres</a>
+    </div>
+  </section>
+
+  <style>
+    .request-table .table .row {
+      grid-template-columns: 1.5fr 1fr 2fr 1fr;
+      align-items: center;
+    }
+    .motivation-text {
+      font-size: 0.85em;
+      color: #aaa;
+    }
+    .status-badge {
+      font-size: 0.7rem;
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-weight: bold;
+      text-transform: uppercase;
+      display: inline-block;
+      text-align: center;
+      min-width: 100px;
+    }
+    .status-pending {
+      background: rgba(255, 193, 7, 0.1);
+      color: #ffc107;
+      border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+    .status-accepted {
+      background: rgba(0, 255, 128, 0.1);
+      color: #00ff80;
+      border: 1px solid rgba(0, 255, 128, 0.3);
+    }
+    .status-rejected {
+      background: rgba(255, 0, 80, 0.1);
+      color: #ff0050;
+      border: 1px solid rgba(255, 0, 80, 0.3);
+    }
+    .sponsor-name {
+      font-weight: 700;
+      color: #fff;
+    }
+  </style>
+
+  <section class="grid">
+    <div class="col span-8">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-paper-plane"></i> Demandes Envoyées</h2>
+        </div>
+
+        <div class="request-table">
+          <div class="table">
+            <div class="row head">
+              <div>Sponsor / Offre</div>
+              <div>Date d'envoi</div>
+              <div>Ma Motivation</div>
+              <div>Statut actuel</div>
+            </div>
+
+            {% for request in requests %}
+            <div class="row">
+              <div class="brand">
+                <span class="brand-dot" style="background: #8B3DFF;"></span> 
+                <div class="sponsor-info">
+                  <span class="sponsor-name">{{ request.offer.nomSociete }}</span>
+                  <br>
+                  <small style="color: #666; font-size: 0.8em;">Sponsorisé par {{ request.offer.sponsor.nom }}</small>
+                </div>
+              </div>
+              <div class="muted" style="font-size: 0.85em;">{{ request.createdAt|date('d/m/Y H:i') }}</div>
+              <div class="motivation-text">
+                {{ request.motivation|slice(0, 80) }}{{ request.motivation|length > 80 ? '...' : '' }}
+              </div>
+              <div>
+                {% if request.status == 'accepté' %}
+                  <span class="status-badge status-accepted">Acceptée</span>
+                {% elseif request.status == 'refusé' %}
+                  <span class="status-badge status-rejected">Refusée</span>
+                {% else %}
+                  <span class="status-badge status-pending">En attente</span>
+                {% endif %}
+              </div>
+            </div>
+            {% else %}
+            <div class="row" style="display: block; text-align: center; padding: 60px; color: #888;">
+              <i class="fa-solid fa-folder-open" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.3;"></i>
+              <p>Vous n'avez envoyé aucune demande de sponsoring pour le moment.</p>
+              <a href="{{ path('front_sponsoring') }}" class="btn btn-ghost btn-sm" style="margin-top: 15px;">Voir les offres disponibles</a>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col span-4">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-chart-pie"></i> Vue d'ensemble</h2>
+        </div>
+        <div class="mini-kpis">
+          <div class="kpi card">
+            <div class="kpi-label">Total Envoyé</div>
+            <div class="kpi-value">{{ stats.total }}</div>
+          </div>
+          <div class="kpi card">
+            <div class="kpi-label">Acceptées</div>
+            <div class="kpi-value" style="color: #00ff80;">{{ stats.accepted }}</div>
+          </div>
+          <div class="kpi card">
+            <div class="kpi-label">En attente</div>
+            <div class="kpi-value" style="color: #ffc107;">{{ stats.pending }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

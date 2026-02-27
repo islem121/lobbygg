@@ -1,0 +1,205 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg • {{ page == 'edit_offre' ? 'Modifier' : 'Créer' }} une Offre{% endblock %}
+
+{% block content %}
+<style>
+    .cyber-form-card {
+        background: rgba(20, 20, 20, 0.4);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(139, 61, 255, 0.2);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+        margin-top: 20px;
+    }
+
+    .cyber-form-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 3px;
+        height: 100%;
+        background: var(--accent);
+        box-shadow: 0 0 15px var(--accent);
+    }
+
+    .cyber-field {
+        margin-bottom: 20px;
+    }
+
+    .cyber-label {
+        display: block;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 8px;
+    }
+
+    .cyber-input-field {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(139, 61, 255, 0.2);
+        padding: 12px 15px;
+        color: #fff;
+        border-radius: 6px;
+        font-family: 'Space Grotesk', sans-serif;
+        transition: all 0.3s ease;
+        outline: none;
+    }
+
+    .cyber-input-field:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 10px rgba(139, 61, 255, 0.1);
+        background: rgba(139, 61, 255, 0.05);
+    }
+
+    .cyber-input-field:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .cyber-file-input {
+        color: rgba(255, 255, 255, 0.6);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 13px;
+        padding: 10px;
+        border: 1px dashed rgba(139, 61, 255, 0.3);
+        border-radius: 6px;
+        width: 100%;
+        cursor: pointer;
+    }
+
+    .submit-container {
+        margin-top: 30px;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .cyber-submit-btn {
+        background: var(--accent);
+        border: none;
+        color: #fff;
+        padding: 12px 30px;
+        border-radius: 6px;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .cyber-submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(139, 61, 255, 0.4);
+        filter: brightness(1.1);
+    }
+
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .alert-success {
+        background: rgba(0, 255, 128, 0.1);
+        color: #00ff80;
+        border: 1px solid rgba(0, 255, 128, 0.2);
+    }
+
+    .alert-error {
+        background: rgba(255, 0, 80, 0.1);
+        color: #ff0050;
+        border: 1px solid rgba(255, 0, 80, 0.2);
+    }
+</style>
+
+<section class="page-head">
+    <div>
+        <h1 class="page-title">{{ page == 'edit_offre' ? 'Modifier l\'offre' : 'Créer une Offre' }}</h1>
+        <p class="page-sub">{{ page == 'edit_offre' ? 'Mettez à jour votre campagne de sponsoring.' : 'Lancez votre campagne de sponsoring et atteignez la communauté.' }}</p>
+    </div>
+</section>
+
+<div class="grid">
+    <div class="col span-8">
+        <div class="cyber-form-card">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    <i class="fa-solid fa-check-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-error">
+                    <i class="fa-solid fa-triangle-exclamation"></i> {{ message }}
+                </div>
+            {% endfor %}
+
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                <div class="cyber-field">
+                    <label class="cyber-label">Nom de la Société</label>
+                    {{ form_widget(form.nomSociete, {'attr': {'class': 'cyber-input-field'}}) }}
+                    <div class="invalid-feedback d-block" style="color: #ff4b4b; font-size: 0.8rem; margin-top: 5px;">
+                        {{ form_errors(form.nomSociete) }}
+                    </div>
+                </div>
+
+                <div class="cyber-field">
+                    <label class="cyber-label">Cible du Sponsoring</label>
+                    {{ form_widget(form.targetType, {'attr': {'class': 'cyber-input-field'}}) }}
+                    <div class="invalid-feedback d-block" style="color: #ff4b4b; font-size: 0.8rem; margin-top: 5px;">
+                        {{ form_errors(form.targetType) }}
+                    </div>
+                </div>
+
+                <div class="cyber-field">
+                    <label class="cyber-label">Montant du Sponsoring (DT)</label>
+                    {{ form_widget(form.amount, {'attr': {'class': 'cyber-input-field'}}) }}
+                    <div class="invalid-feedback d-block" style="color: #ff4b4b; font-size: 0.8rem; margin-top: 5px;">
+                        {{ form_errors(form.amount) }}
+                    </div>
+                </div>
+
+                <div class="cyber-field">
+                    <label class="cyber-label">Description de l'offre</label>
+                    {{ form_widget(form.description, {'attr': {'class': 'cyber-input-field', 'rows': 5}}) }}
+                    <div class="invalid-feedback d-block" style="color: #ff4b4b; font-size: 0.8rem; margin-top: 5px;">
+                        {{ form_errors(form.description) }}
+                    </div>
+                </div>
+
+                <div class="submit-container">
+                    <a href="{{ path('front_sponsoring') }}" class="btn btn-ghost" style="margin-right: 15px;">Annuler</a>
+                    <button type="submit" class="cyber-submit-btn">
+                        {{ page == 'edit_offre' ? 'Mettre à jour' : 'Créer la campagne' }}
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    <div class="col span-4">
+        <div class="panel">
+            <div class="panel-head">
+                <h2 class="panel-title"><i class="fa-solid fa-circle-info"></i> Guidelines</h2>
+            </div>
+            <div class="panel-body" style="padding: 20px; color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.6;">
+                 <p>To ensure your offer is accepted quickly:</p>
+                 <ul style="margin-top: 10px; padding-left: 20px;">
+                     <li>Provide a detailed description of your brand.</li>
+                     <li>Specify your target audience and goals.</li>
+                 </ul>
+             </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
