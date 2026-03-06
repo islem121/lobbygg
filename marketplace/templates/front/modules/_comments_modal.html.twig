@@ -1,0 +1,255 @@
+<!-- Comments Modal -->
+<div id="comments-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content comments-modal">
+      <div id="comments-container">
+          <!-- Comments loaded via AJAX -->
+          <div class="loader-orb"></div>
+      </div>
+  </div>
+</div>
+
+<style>
+  .post-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      outline: none;
+      resize: none;
+      font-family: inherit;
+  }
+  .chip-active {
+      background: rgba(var(--accent-rgb), 0.2);
+      color: var(--accent);
+      border-color: var(--accent);
+  }
+  
+  /* Modal Styles */
+  .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+  }
+  .comments-modal {
+      background: rgba(20, 22, 38, 0.96);
+      width: 900px;
+      max-width: 95%;
+      height: 80vh;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+  }
+  #comments-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+  }
+  .comments-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(22, 33, 62, 0.9);
+  }
+  .comments-footer {
+      padding: 14px 20px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(22, 33, 62, 0.9);
+  }
+  .comments-body {
+      padding: 18px 20px;
+      overflow-y: auto;
+      flex: 1;
+  }
+  .empty-state {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 24px 0;
+  }
+  .comment-item {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      align-items: flex-start;
+  }
+  .comment-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 12px;
+      flex-shrink: 0;
+  }
+  .comment-content {
+      flex-grow: 1;
+  }
+  .comment-bubble {
+      background: rgba(255,255,255,0.04);
+      padding: 10px 12px;
+      border-radius: 12px;
+      display: inline-block;
+      border: 1px solid rgba(255,255,255,0.06);
+  }
+  .comment-author {
+      font-weight: bold;
+      font-size: 13px;
+      margin-bottom: 2px;
+  }
+  .comment-text {
+      font-size: 14px;
+      line-height: 1.4;
+  }
+  .comment-actions {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--text-muted);
+  }
+  .action-link {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0;
+      margin-right: 8px;
+      font-weight: 600;
+  }
+  .action-link:hover {
+      text-decoration: underline;
+  }
+  .comment-replies {
+      margin-top: 8px;
+      padding-left: 12px;
+      border-left: 2px solid var(--border);
+  }
+  .comment-input-wrapper {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+  }
+  .comment-input-wrapper .form-control {
+      flex: 1;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      border-radius: 10px;
+      padding: 10px 12px;
+  }
+  .comment-input-wrapper .form-control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
+  }
+  .btn-send {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      padding: 8px;
+  }
+  .btn-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 18px;
+  }
+</style>
+
+<script>
+  function reactToPost(postId, type, btn) {
+      fetch(`/blog/post/${postId}/react/${type}`, {
+          method: 'POST'
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.action === 'added') {
+              btn.classList.add('chip-active');
+          } else if (data.action === 'removed') {
+              btn.classList.remove('chip-active');
+          }
+          document.getElementById(`react-count-${postId}`).innerHTML = `<i class="fa-solid fa-heart"></i> ${data.count}`;
+      });
+  }
+
+  function reactToComment(commentId, type, btn) {
+      fetch(`/blog/comment/${commentId}/react/${type}`, {
+          method: 'POST'
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.action === 'added') {
+              btn.classList.add('active-reaction');
+              btn.style.color = 'var(--accent)';
+          } else if (data.action === 'removed') {
+              btn.classList.remove('active-reaction');
+              btn.style.color = '';
+          }
+          
+          const countContainer = document.getElementById(`comment-react-count-${commentId}`);
+          if (data.count > 0) {
+              countContainer.innerHTML = `<i class="fa-solid fa-heart"></i> ${data.count}`;
+          } else {
+              countContainer.innerHTML = '';
+          }
+      });
+  }
+
+  function openComments(postId) {
+      document.getElementById('comments-modal').style.display = 'flex';
+      const container = document.getElementById('comments-container');
+      container.innerHTML = '<div class="loader-orb" style="margin: 20px auto;"></div>';
+      
+      fetch(`/blog/post/${postId}/comments`)
+      .then(response => response.text())
+      .then(html => {
+          container.innerHTML = html;
+      });
+  }
+
+  function closeCommentsModal() {
+      document.getElementById('comments-modal').style.display = 'none';
+  }
+
+  function submitComment(postId) {
+      const content = document.getElementById('new-comment-content').value;
+      if (!content.trim()) return;
+
+      fetch(`/blog/post/${postId}/comment`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ content: content })
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.error) {
+              alert(data.error);
+              return;
+          }
+          // Reload comments
+          openComments(postId);
+      });
+  }
+
+  function replyToComment(commentId, username) {
+      const input = document.getElementById('new-comment-content');
+      input.value = `@${username} `;
+      input.focus();
+  }
+</script>

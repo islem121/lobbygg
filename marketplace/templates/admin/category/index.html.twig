@@ -1,0 +1,60 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Gestion des Catégories{% endblock %}
+{% block content_title %}Liste des Catégories{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item active">Catégories</li>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Catégories du Marketplace</h3>
+        <div class="card-tools">
+            <a href="{{ path('app_admin_category_new') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i> Nouvelle Catégorie
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for category in categories %}
+                <tr>
+                    <td>{{ category.id }}</td>
+                    <td>{{ category.name }}</td>
+                    <td>{{ category.description }}</td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{{ path('app_admin_category_show', {'id': category.id}) }}" class="btn btn-info btn-sm">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ path('app_admin_category_edit', {'id': category.id}) }}" class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">Aucune catégorie trouvée</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer clearfix">
+        {% include '_pagination.html.twig' %}
+    </div>
+</div>
+{% endblock %}

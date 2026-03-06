@@ -1,0 +1,225 @@
+{# templates/security/login.html.twig - VERSION ADAPTÉE POUR SYMFONY #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Cyber Login - Plateforme Gaming</title>
+    
+    {# IMPORTANT : Utilise asset() pour les chemins Symfony #}
+    <link rel="stylesheet" href="{{ asset('css/neon-cyber.css') }}">
+    
+    {# FontAwesome pour les icônes #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Styles additionnels pour Symfony */
+        .symfony-error {
+            background: rgba(255, 0, 65, 0.1);
+            border: 1px solid #ff0041;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            color: #ff0041;
+            font-size: 14px;
+            text-shadow: 0 0 10px #ff0041;
+            animation: glitch 0.5s infinite;
+            display: {% if error %}block{% else %}none{% endif %};
+        }
+        
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-1px, 1px); }
+            40% { transform: translate(-1px, -1px); }
+            60% { transform: translate(1px, 1px); }
+            80% { transform: translate(1px, -1px); }
+            100% { transform: translate(0); }
+        }
+        
+        .symfony-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0, 255, 65, 0.2);
+        }
+        
+        .symfony-link {
+            color: #00ff41;
+            text-decoration: none;
+            font-size: 13px;
+            opacity: 0.8;
+            transition: opacity 0.3s, text-shadow 0.3s;
+        }
+        
+        .symfony-link:hover {
+            opacity: 1;
+            text-shadow: 0 0 10px #00ff41;
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-grid">
+        <div class="grid-line grid-h-1"></div>
+        <div class="grid-line grid-v-1"></div>
+        <div class="grid-line grid-h-2"></div>
+        <div class="grid-line grid-v-2"></div>
+        <div class="grid-line grid-h-3"></div>
+        <div class="cyber-glitch glitch-1"></div>
+        <div class="cyber-glitch glitch-2"></div>
+    </div>
+
+    <div class="login-container">
+        <div class="cyber-terminal">
+            <div class="terminal-header">
+                <div class="terminal-buttons">
+                    <div class="term-btn btn-red"></div>
+                    <div class="term-btn btn-yellow"></div>
+                    <div class="term-btn btn-green"></div>
+                </div>
+                <div class="terminal-title">SYSTEM_LOGIN.exe</div>
+            </div>
+            
+            <div class="cyber-content">
+                {# Message d'erreur Symfony #}
+                {% if error %}
+                    <div class="symfony-error">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        ACCESS_DENIED: {{ error.messageKey|trans(error.messageData, 'security') }}
+                    </div>
+                {% endif %}
+                
+                <div class="neon-header">
+    <div class="cyber-logo">
+        <div class="logo-frame">
+            <img src="{{ asset('images/logo.png') }}" alt="Lobby.gg Logo" class="logo-image">
+            <div class="logo-scanner"></div>
+        </div>
+        <div class="neon-glow"></div>
+    </div>
+
+    <h1 class="cyber-title">
+        <span class="title-glitch">LOBBY.GG</span>
+    </h1>
+
+    <p class="access-text">[ SECURE_PLATFORM_ACCESS ]</p>
+</div>
+
+                
+                {# FORMULAIRE SYMFONY #}
+                <form method="post" action="{{ path('app_login') }}" class="neon-form" id="loginForm" novalidate>
+                    {# Token CSRF OBLIGATOIRE pour Symfony #}
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                    
+                    <div class="cyber-field">
+                        <label for="email">&gt; EMAIL_ADDRESS</label>
+                        <div class="field-frame">
+                            <div class="field-border"></div>
+                            <input type="email" 
+                                   id="email" 
+                                   name="email" 
+                                   value="{{ last_username }}"
+                                   required 
+                                   autocomplete="email"
+                                   autofocus>
+                            <div class="cyber-scanner">
+                                <div class="scan-line"></div>
+                            </div>
+                        </div>
+                        <span class="cyber-error" id="emailError"></span>
+                    </div>
+
+                    <div class="cyber-field">
+                        <label for="password">&gt; ACCESS_CODE</label>
+                        <div class="field-frame">
+                            <div class="field-border"></div>
+                            <input type="password" 
+                                   id="password" 
+                                   name="password" 
+                                   required 
+                                   autocomplete="current-password">
+                            <button type="button" class="cyber-toggle" id="passwordToggle" aria-label="Toggle password visibility">
+                                <div class="toggle-frame">
+                                    <svg class="eye-scan" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                        <path d="M9 3c-4 0-7 3-8 6 1 3 4 6 8 6s7-3 8-6c-1-3-4-6-8-6zm0 10a4 4 0 110-8 4 4 0 010 8zm0-6a2 2 0 100 4 2 2 0 000-4z" fill="currentColor"/>
+                                    </svg>
+                                    <svg class="eye-blocked" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                        <path d="M3 3l12 12M7 7a3 3 0 003 3m3-3C13 7 10 4 9 4c-1 0-3 1-4 2M9 14c4 0 7-3 8-6-1-1-2-2-3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                            </button>
+                            <div class="cyber-scanner">
+                                <div class="scan-line"></div>
+                            </div>
+                        </div>
+                        <span class="cyber-error" id="passwordError"></span>
+                    </div>
+
+                    <div class="cyber-options">
+                        <label class="neon-checkbox">
+                            <input type="checkbox" id="remember" name="_remember_me">
+                            <span class="checkbox-matrix">
+                                <div class="matrix-frame"></div>
+                                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                    <path d="M1 4l2.5 2.5L9 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            <span class="checkbox-text">MAINTAIN_SESSION</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="neon-button">
+                        <div class="btn-matrix"></div>
+                        <span class="btn-text">[ INITIALIZE_CONNECTION ]</span>
+                        <div class="btn-loader">
+                            <div class="matrix-loader">
+                                <div class="matrix-bar"></div>
+                                <div class="matrix-bar"></div>
+                                <div class="matrix-bar"></div>
+                                <div class="matrix-bar"></div>
+                            </div>
+                        </div>
+                        <div class="btn-glow"></div>
+                    </button>
+                    
+                    {# Liens Symfony #}
+                    <div class="symfony-links">
+                        <a href="{{ path('app_forgot_password') }}" class="symfony-link">
+                            <i class="fas fa-key"></i> RECOVER_ACCESS
+                        </a>
+                        <a href="{{ path('app_register') }}" class="symfony-link">
+                            <i class="fas fa-user-plus"></i> CREATE_PROFILE
+                        </a>
+                    </div>
+                </form>
+
+                <div class="cyber-footer">
+                    <div class="terminal-status">
+                        <div class="status-indicator">
+                            <div class="indicator-led led-green"></div>
+                            <span class="status-text">SYSTEM_READY</span>
+                        </div>
+                        <div class="system-info">
+                            <span class="info-line">USER: {{ last_username ?: 'GUEST' }}</span>
+                            <span class="info-line">STATUS: {% if error %}ERROR{% else %}READY{% endif %}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# IMPORTANT : Utilise asset() pour les chemins JS #}
+    <script src="{{ asset('js/neon-cyber.js') }}"></script>
+    
+    {# JavaScript adapté pour Symfony #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialiser la classe NeonCyberLoginForm si elle existe
+            if (typeof NeonCyberLoginForm !== 'undefined') {
+                new NeonCyberLoginForm();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,469 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg • Demandes de Sponsoring{% endblock %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">Demandes Reçues</h1>
+      <p class="page-sub">Gérez les demandes de partenariat envoyées par les clients pour vos offres.</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-ghost" type="button"><i class="fa-solid fa-inbox"></i> Boîte de réception</button>
+    </div>
+  </section>
+
+  <style>
+    .request-table .table .row {
+      grid-template-columns: 1.5fr 1fr 2fr 1fr 0.6fr;
+      align-items: center;
+    }
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+    .motivation-text {
+      font-size: 0.85em;
+      color: #aaa;
+    }
+    .offer-badge {
+      font-size: 0.75em;
+      padding: 2px 8px;
+      background: rgba(139, 61, 255, 0.1);
+      color: #8B3DFF;
+      border: 1px solid rgba(139, 61, 255, 0.2);
+      border-radius: 4px;
+      margin-bottom: 4px;
+      display: inline-block;
+    }
+    .status-badge {
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-weight: bold;
+      text-transform: uppercase;
+      display: inline-block;
+      text-align: center;
+      min-width: 90px;
+    }
+    .status-pending {
+      background: rgba(255, 193, 7, 0.1);
+      color: #ffc107;
+      border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+    .status-accepted {
+      background: rgba(0, 255, 128, 0.1);
+      color: #00ff80;
+      border: 1px solid rgba(0, 255, 128, 0.3);
+    }
+    .status-rejected {
+      background: rgba(255, 0, 80, 0.1);
+      color: #ff0050;
+      border: 1px solid rgba(255, 0, 80, 0.3);
+    }
+
+    /* Modal Contrat */
+    .contract-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+    }
+
+    .contract-content {
+      background: #0f0f1e;
+      margin: 2% auto;
+      padding: 0;
+      border: 1px solid #8B3DFF;
+      width: 700px;
+      box-shadow: 0 0 40px rgba(139, 61, 255, 0.4);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .contract-header {
+      background: linear-gradient(90deg, #1a1a2e, #2d1450);
+      padding: 25px;
+      border-bottom: 1px solid rgba(139, 61, 255, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .contract-header h2 {
+      margin: 0;
+      color: #fff;
+      font-size: 1.4rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .contract-body {
+      padding: 30px;
+      color: #ddd;
+      line-height: 1.6;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .contract-section {
+      margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 3px solid #8B3DFF;
+    }
+
+    .contract-section h3 {
+      color: #8B3DFF;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+
+    .contract-footer {
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border-top: 1px solid rgba(139, 61, 255, 0.2);
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .btn-action {
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.8rem;
+      border: 1px solid transparent;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-accept {
+      background: #00ff80;
+      color: #000;
+    }
+    .btn-accept:hover {
+      box-shadow: 0 0 15px rgba(0, 255, 128, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-reject {
+      background: #ff0050;
+      color: #fff;
+    }
+    .btn-reject:hover {
+      box-shadow: 0 0 15px rgba(255, 0, 80, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-wait {
+      background: rgba(255, 193, 7, 0.2);
+      color: #ffc107;
+      border-color: #ffc107;
+    }
+    .btn-wait:hover {
+      background: #ffc107;
+      color: #000;
+      transform: translateY(-2px);
+    }
+  </style>
+
+  <section class="grid">
+    <div class="col span-8">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-handshake-angle"></i> Demandes Reçues</h2>
+        </div>
+
+        <div class="request-table">
+          <div class="table">
+            <div class="row head">
+              <div>Client</div>
+              <div>Date</div>
+              <div>Détails</div>
+              <div>Statut</div>
+              <div>Dossier</div>
+            </div>
+
+            {% for request in requests %}
+            <div class="row">
+              <div class="brand">
+                <span class="brand-dot" style="background: #00ff80;"></span> 
+                {{ request.client.nom }} {{ request.client.prenom }}
+                <br>
+                <small style="color: #666; font-size: 0.8em;">{{ request.client.email }}</small>
+              </div>
+              <div class="muted" style="font-size: 0.85em;">{{ request.createdAt|date('d/m/Y H:i') }}</div>
+              <div class="motivation-text">
+                <span class="offer-badge">OFFRE: {{ request.offer.nomSociete }}</span><br>
+                {{ request.motivation|slice(0, 60) }}...
+              </div>
+              <div>
+                {% if request.status == 'accepté' %}
+                  <span class="status-badge status-accepted">Accepté</span>
+                {% elseif request.status == 'refusé' %}
+                  <span class="status-badge status-rejected">Refusé</span>
+                {% else %}
+                  <span class="status-badge status-pending">En attente</span>
+                {% endif %}
+              </div>
+              <div>
+                <button class="btn btn-ghost btn-sm open-contract-modal" 
+                        data-request-id="{{ request.id }}"
+                        data-client-name="{{ request.client.nom }} {{ request.client.prenom }}"
+                        data-offer-name="{{ request.offer.nomSociete }}"
+                        data-message="{{ request.message }}"
+                        data-motivation="{{ request.motivation }}"
+                        data-dossier-url="{{ request.dossier ? asset('uploads/sponsoring/' ~ request.dossier) : '' }}"
+                        title="Gérer la demande">
+                  <i class="fa-solid fa-file-invoice"></i>
+                </button>
+              </div>
+            </div>
+            {% else %}
+            <div class="row" style="display: block; text-align: center; padding: 40px; color: #888;">
+              Aucune demande de sponsoring reçue pour le moment.
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col span-4">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-chart-line"></i> Statistiques</h2>
+        </div>
+        <div class="mini-kpis">
+          <div class="kpi card">
+            <div class="kpi-label">Dossiers reçus</div>
+            <div class="kpi-value accent">{{ stats.total|default(0) }}</div>
+          </div>
+          <div class="kpi card">
+            <div class="kpi-label">Taux d’acceptation</div>
+            <div class="kpi-value">{{ stats.acceptanceRate|default(0) }}%</div>
+          </div>
+          <div class="kpi card">
+            <div class="kpi-label">Contrats actifs</div>
+            <div class="kpi-value">{{ stats.activeContracts|default(0) }}</div>
+          </div>
+          <div class="kpi card">
+            <div class="kpi-label">Budget total investi</div>
+            <div class="kpi-value">{{ stats.budgetInvested|default(0)|number_format(0, '.', ' ') }} DT</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal Dossier de Sponsoring -->
+  <div id="contractModal" class="contract-modal">
+    <div class="contract-content">
+      <div class="contract-header">
+        <h2>Dossier de Sponsoring</h2>
+        <span class="close-modal" style="cursor:pointer; font-size: 24px;">&times;</span>
+      </div>
+
+      <div class="contract-body" id="modalBodyScroll">
+        <div class="contract-section">
+          <h3>Fichier Joint</h3>
+          <div id="dossierFileContainer" style="margin-bottom: 15px;">
+            <a href="#" id="btnViewDossier" class="btn btn-primary" target="_blank">
+              <i class="fa-solid fa-file-pdf"></i> Ouvrir le document (PDF/Image)
+            </a>
+            <p id="noDossierMessage" style="color: #ff4b4b; display: none;">Aucun fichier joint à cette demande.</p>
+          </div>
+        </div>
+
+        <!-- Section pour le résultat de l'IA (Déplacée en haut pour visibilité) -->
+        <div id="aiResultSection" style="display: none; border: 1px solid rgba(139, 61, 255, 0.5); border-radius: 8px; padding: 15px; margin-bottom: 20px; background: rgba(139, 61, 255, 0.1);">
+          <h3 style="color: #00d2ff; margin-bottom: 15px; margin-top: 0;"><i class="fa-solid fa-brain"></i> Analyse de l'IA Gemini</h3>
+          <div style="display: flex; align-items: center; margin-bottom: 15px;">
+            <div style="font-size: 1.5rem; font-weight: bold; margin-right: 15px; min-width: 120px; color: #fff;">
+              Score : <span id="aiScore">0</span>%
+            </div>
+            <div style="flex-grow: 1; height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden;">
+              <div id="aiScoreBar" style="height: 100%; width: 0%; background: #8B3DFF; border-radius: 6px; transition: width 1s ease-in-out;"></div>
+            </div>
+          </div>
+          <p id="aiAvis" style="font-style: italic; color: #eee; line-height: 1.5; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 5px; margin-bottom: 0;"></p>
+        </div>
+
+        <div class="contract-section">
+          <h3>Parties Prenantes</h3>
+          <p><strong>Sponsor :</strong> <span id="contractSponsorName"></span></p>
+          <p><strong>Client (Bénéficiaire) :</strong> <span id="contractClientName"></span></p>
+        </div>
+
+        <div class="contract-section">
+          <h3>Message du Client</h3>
+          <p id="contractMessage"></p>
+        </div>
+
+        <div class="contract-section">
+          <h3>Motivation du Client</h3>
+          <p id="contractMotivation"></p>
+        </div>
+
+        <div class="contract-section">
+          <h3>Termes du Contrat</h3>
+          <p>Ce document constitue une intention de partenariat. En acceptant cette demande, vous confirmez votre intérêt pour sponsoriser ce client selon les termes définis dans votre offre initiale.</p>
+        </div>
+      </div>
+
+      <div class="contract-footer">
+        <button id="btnAIAnalyze" class="btn-action" style="background: linear-gradient(135deg, #8B3DFF, #00d2ff); color: white; border: none; margin-right: auto;">
+          <i class="fa-solid fa-robot"></i> Analyser avec Gemini IA
+        </button>
+        <a href="#" id="btnReject" class="btn-action btn-reject">Refuser</a>
+        <a href="#" id="btnWait" class="btn-action btn-wait">En attente</a>
+        <a href="#" id="btnAccept" class="btn-action btn-accept">Accepter</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const modal = document.getElementById('contractModal');
+      const closeBtn = document.querySelector('.close-modal');
+      
+      const contractSponsorName = document.getElementById('contractSponsorName');
+      const contractClientName = document.getElementById('contractClientName');
+      const contractMessage = document.getElementById('contractMessage');
+      const contractMotivation = document.getElementById('contractMotivation');
+      
+      const btnAccept = document.getElementById('btnAccept');
+      const btnReject = document.getElementById('btnReject');
+      const btnWait = document.getElementById('btnWait');
+      const btnViewDossier = document.getElementById('btnViewDossier');
+      const noDossierMessage = document.getElementById('noDossierMessage');
+      
+      const btnAIAnalyze = document.getElementById('btnAIAnalyze');
+      const aiResultSection = document.getElementById('aiResultSection');
+      const aiScore = document.getElementById('aiScore');
+      const aiScoreBar = document.getElementById('aiScoreBar');
+      const aiAvis = document.getElementById('aiAvis');
+      
+      let currentRequestId = null;
+
+      document.querySelectorAll('.open-contract-modal').forEach(button => {
+        button.addEventListener('click', function() {
+          const requestId = this.getAttribute('data-request-id');
+          currentRequestId = requestId;
+          const clientName = this.getAttribute('data-client-name');
+          const offerName = this.getAttribute('data-offer-name');
+          const message = this.getAttribute('data-message');
+          const motivation = this.getAttribute('data-motivation');
+          const dossierUrl = this.getAttribute('data-dossier-url');
+
+          contractSponsorName.textContent = offerName;
+          contractClientName.textContent = clientName;
+          contractMessage.textContent = message;
+          contractMotivation.textContent = motivation;
+
+          // Cacher l'analyse IA précédente
+          aiResultSection.style.display = 'none';
+          btnAIAnalyze.disabled = false;
+          btnAIAnalyze.innerHTML = '<i class="fa-solid fa-robot"></i> Analyser avec Gemini IA';
+
+          if (dossierUrl) {
+            btnViewDossier.href = dossierUrl;
+            btnViewDossier.style.display = 'inline-block';
+            noDossierMessage.style.display = 'none';
+          } else {
+            btnViewDossier.style.display = 'none';
+            noDossierMessage.style.display = 'block';
+          }
+
+          btnAccept.href = `/sponsoring/document/${requestId}/status/accepté`;
+          btnReject.href = `/sponsoring/document/${requestId}/status/refusé`;
+          btnWait.href = `/sponsoring/document/${requestId}/status/en attente`;
+
+          modal.style.display = 'block';
+        });
+      });
+
+      btnAIAnalyze.addEventListener('click', function() {
+        if (!currentRequestId) {
+          alert("ID de demande introuvable");
+          return;
+        }
+
+        btnAIAnalyze.disabled = true;
+        btnAIAnalyze.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyse en cours...';
+
+        // Utilisation de l'URL absolue via Twig
+        const url = `/sponsoring/document/analyze/${currentRequestId}`;
+        
+        console.log("Tentative d'analyse pour l'ID:", currentRequestId);
+        console.log("URL de l'API:", url);
+
+        fetch(url)
+          .then(async response => {
+            const isJson = response.headers.get('content-type')?.includes('application/json');
+            const data = isJson ? await response.json() : null;
+
+            if (!response.ok) {
+              const errorMsg = data?.error || `Erreur serveur (${response.status})`;
+              throw new Error(errorMsg);
+            }
+            return data;
+          })
+          .then(data => {
+            console.log('Analyse Gemini reçue:', data);
+            
+            if (data.error) {
+              alert("Erreur IA: " + data.error);
+              btnAIAnalyze.disabled = false;
+              btnAIAnalyze.innerHTML = '<i class="fa-solid fa-robot"></i> Analyser avec Gemini IA';
+              return;
+            }
+
+            aiScore.textContent = data.score;
+            aiScoreBar.style.width = data.score + '%';
+            
+            if (data.score < 40) aiScoreBar.style.background = '#ff3333';
+            else if (data.score < 70) aiScoreBar.style.background = '#ffcc00';
+            else aiScoreBar.style.background = '#33cc33';
+
+            aiAvis.textContent = data.avis;
+            aiResultSection.style.display = 'block';
+            
+            // Faire défiler vers le haut pour voir le résultat
+            document.getElementById('modalBodyScroll').scrollTop = 0;
+            
+            btnAIAnalyze.innerHTML = '<i class="fa-solid fa-check"></i> Analysé';
+          })
+          .catch(error => {
+            console.error('Détails de l\'erreur:', error);
+            alert(`Problème d'analyse : ${error.message}`);
+            btnAIAnalyze.disabled = false;
+            btnAIAnalyze.innerHTML = '<i class="fa-solid fa-robot"></i> Analyser avec Gemini IA';
+          });
+      });
+
+      closeBtn.onclick = function() {
+        modal.style.display = 'none';
+      }
+
+      window.onclick = function(event) {
+        if (event.target == modal) {
+          modal.style.display = 'none';
+        }
+      }
+    });
+  </script>
+{% endblock %}

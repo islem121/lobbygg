@@ -1,0 +1,42 @@
+{% for sponsor in sponsors %}
+    <tr>
+        <td>{{ sponsor.id }}</td>
+        <td>{{ sponsor.nomSociete }}</td>
+        <td>{{ sponsor.description|length > 30 ? sponsor.description|slice(0, 30) ~ '...' : sponsor.description }}</td>
+        <td>
+            <span class="badge {{ sponsor.targetType == 'client' ? 'bg-success' : 'bg-info' }}">
+                {{ sponsor.targetType|upper }}
+            </span>
+        </td>
+        <td>{{ sponsor.amount|number_format(2, ',', ' ') }} DT</td>
+        <td>
+            {% if sponsor.dossier %}
+                <span class="badge bg-secondary">OUI</span>
+            {% else %}
+                <span class="badge bg-light text-dark">NON</span>
+            {% endif %}
+        </td>
+        <td>{{ sponsor.sponsor.username }}</td>
+        <td>{{ sponsor.createdAt ? sponsor.createdAt|date('d/m/Y H:i') : '' }}</td>
+        <td>
+            <div class="btn-group">
+                <a href="{{ path('app_admin_sponsor_show', {'id': sponsor.id}) }}" class="btn btn-info btn-sm">
+                    <i class="bi bi-eye"></i>
+                </a>
+                <a href="{{ path('app_admin_sponsor_edit', {'id': sponsor.id}) }}" class="btn btn-warning btn-sm">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <form method="post" action="{{ path('app_admin_sponsor_delete', {'id': sponsor.id}) }}" style="display:inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet élément ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ sponsor.id) }}">
+                    <button class="btn btn-danger btn-sm">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </form>
+            </div>
+        </td>
+    </tr>
+{% else %}
+    <tr>
+        <td colspan="9" class="text-center text-muted">Aucun enregistrement trouvé</td>
+    </tr>
+{% endfor %}

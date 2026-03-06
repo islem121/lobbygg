@@ -1,0 +1,276 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg • My Posts{% endblock %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">My Posts</h1>
+      <p class="page-sub">Manage your contributions and share new updates.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ path('front_blog') }}" class="btn btn-ghost"><i class="fa-solid fa-arrow-left"></i> Back to Community</a>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="col span-8">
+      <div class="panel">
+        <div class="panel-head" onclick="openPostModal()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+          <h2 class="panel-title"><i class="fa-solid fa-pen-nib"></i> Create New Post</h2>
+          <i class="fa-solid fa-plus" style="transition: transform 0.3s;"></i>
+        </div>
+
+        {# Composer #}
+        {% if createAction is defined and createAction %}
+          {% include 'front/modules/_create_post_modal.html.twig' with {'createAction': createAction} %}
+        {% else %}
+          {% include 'front/modules/_create_post_modal.html.twig' %}
+        {% endif %}
+
+        {% if editForm is defined and editPost is defined %}
+          <div id="edit-post-modal" class="modal-overlay" style="display: none;">
+            <div class="modal-content create-post-modal-content edit-post-modal-content draggable-modal">
+              <div class="modal-header">
+                <h3><i class="fa-solid fa-pen-nib"></i> Modifier le post</h3>
+                <button type="button" class="btn-close-modal" onclick="closeEditPostModal()"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+              <div class="modal-body">
+                {{ form_start(editForm, {'action': path('app_post_edit', {id: editPost.id})}) }}
+                <div class="post-user-info">
+                  <div class="avatar avatar-grad">{{ app.user.username[:2]|upper }}</div>
+                  <div class="post-meta">
+                    <div class="post-username">{{ app.user.username }} <span class="muted">@{{ app.user.username|lower }}</span></div>
+                    <div class="post-status">Modifier votre publication</div>
+                  </div>
+                </div>
+
+                <div class="post-input-area">
+                  <div class="input-wrapper">
+                    <i class="fa-regular fa-pen-to-square input-icon"></i>
+                    {{ form_widget(editForm.content, {'attr': {'class': 'post-input-large'}}) }}
+                  </div>
+
+                  {% set editHasMedia = editPost.image %}
+                  {% set editIsVideo = editPost.image and (editPost.image ends with '.mp4' or editPost.image ends with '.mpeg') %}
+                  <div id="edit-media-preview-modal" class="media-preview-container {% if editHasMedia %}has-media{% endif %}" {% if editHasMedia %}data-original-type="{{ editIsVideo ? 'video' : 'image' }}" data-original-src="{{ asset('uploads/posts/' ~ editPost.image) }}"{% endif %}>
+                    <div class="media-empty-state">
+                      <i class="fa-solid fa-photo-film"></i>
+                      <span>Aucun média chargé</span>
+                    </div>
+                    <img id="edit-image-preview-modal" src="{% if editHasMedia and not editIsVideo %}{{ asset('uploads/posts/' ~ editPost.image) }}{% else %}#{% endif %}" alt="Preview" class="media-preview-item" {% if editHasMedia and not editIsVideo %}style="display: block;"{% endif %}>
+                    <video id="edit-video-preview-modal" controls class="media-preview-item" {% if editHasMedia and editIsVideo %}style="display: block;"{% endif %}>
+                      {% if editHasMedia and editIsVideo %}
+                        <source src="{{ asset('uploads/posts/' ~ editPost.image) }}" type="video/mp4">
+                      {% endif %}
+                    </video>
+                    <button type="button" onclick="removeEditMedia()" class="btn-remove-media"><i class="fa-solid fa-xmark"></i></button>
+                  </div>
+
+                  {{ form_widget(editForm.image, {'attr': {'id': 'edit_post_image_input_modal', 'class': 'file-input-hidden', 'onchange': 'previewEditMedia(this)', 'style': 'display: none;', 'accept': 'image/*,video/*'}}) }}
+                  <div class="media-error">
+                    {{ form_errors(editForm.image) }}
+                  </div>
+                </div>
+
+                <div class="post-actions-bar">
+                  <div class="action-left">
+                    <button class="chip action-btn action-btn-media" type="button" onclick="triggerEditPhotoUpload(this)">
+                      <i class="fa-solid fa-image" style="color: #4facfe;"></i> <span>Photo</span>
+                    </button>
+                    <button class="chip action-btn action-btn-media" type="button" onclick="triggerEditVideoUpload(this)">
+                      <i class="fa-solid fa-video" style="color: #7c4dff;"></i> <span>Vidéo</span>
+                    </button>
+                    <button class="chip action-btn" type="button">
+                      <i class="fa-solid fa-trophy" style="color: #ffd700;"></i> <span>Tournament</span>
+                    </button>
+                  </div>
+                  <div class="action-right" style="display: flex; gap: 10px;">
+                    <button class="btn btn-ghost btn-post-cancel" type="button" onclick="closeEditPostModal()">
+                      Cancel
+                    </button>
+                    <button class="btn btn-primary btn-post-submit" type="submit">
+                      <i class="fa-solid fa-floppy-disk"></i> Update
+                    </button>
+                  </div>
+                </div>
+                {{ form_end(editForm) }}
+              </div>
+            </div>
+          </div>
+
+          <style>
+            #edit-post-modal {
+              z-index: 2000;
+              padding: 20px;
+              background: rgba(0, 0, 0, 0.75);
+              align-items: center;
+            }
+            .edit-post-modal-content {
+              max-height: 85vh;
+              width: 100%;
+              max-width: 1000px;
+              margin: 0;
+              overflow: auto;
+            }
+          </style>
+
+          <script>
+            function openEditPostModal() {
+              document.getElementById('edit-post-modal').style.display = 'flex';
+              resetEditModalPosition();
+            }
+
+            function closeEditPostModal() {
+              document.getElementById('edit-post-modal').style.display = 'none';
+            }
+
+            document.getElementById('edit-post-modal').addEventListener('click', function(e) {
+              if (e.target === this) {
+                closeEditPostModal();
+              }
+            });
+
+            function previewEditMedia(input) {
+              const previewContainer = document.getElementById('edit-media-preview-modal');
+              const imgPreview = document.getElementById('edit-image-preview-modal');
+              const videoPreview = document.getElementById('edit-video-preview-modal');
+
+              if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                  previewContainer.classList.add('has-media');
+                  if (file.type.startsWith('image/')) {
+                    imgPreview.src = e.target.result;
+                    imgPreview.style.display = 'block';
+                    videoPreview.style.display = 'none';
+                    videoPreview.innerHTML = '';
+                  } else if (file.type.startsWith('video/')) {
+                    videoPreview.innerHTML = `<source src="${e.target.result}" type="${file.type}">`;
+                    videoPreview.style.display = 'block';
+                    imgPreview.style.display = 'none';
+                  }
+                }
+
+                reader.readAsDataURL(file);
+              }
+            }
+
+            function removeEditMedia() {
+              const input = document.getElementById('edit_post_image_input_modal');
+              const previewContainer = document.getElementById('edit-media-preview-modal');
+              const imgPreview = document.getElementById('edit-image-preview-modal');
+              const videoPreview = document.getElementById('edit-video-preview-modal');
+              const originalType = previewContainer.dataset.originalType;
+              const originalSrc = previewContainer.dataset.originalSrc;
+              input.value = '';
+
+              if (originalSrc) {
+                previewContainer.classList.add('has-media');
+                if (originalType === 'video') {
+                  videoPreview.innerHTML = `<source src="${originalSrc}" type="video/mp4">`;
+                  videoPreview.style.display = 'block';
+                  imgPreview.style.display = 'none';
+                } else {
+                  imgPreview.src = originalSrc;
+                  imgPreview.style.display = 'block';
+                  videoPreview.style.display = 'none';
+                  videoPreview.innerHTML = '';
+                }
+              } else {
+                previewContainer.classList.remove('has-media');
+                imgPreview.src = '#';
+                videoPreview.innerHTML = '';
+                imgPreview.style.display = 'none';
+                videoPreview.style.display = 'none';
+              }
+            }
+
+            function triggerEditPhotoUpload(btn) {
+              const modal = btn.closest('.edit-post-modal-content');
+              const input = modal.querySelector('.file-input-hidden');
+              if (input) {
+                  input.accept = 'image/*';
+                  input.click();
+              }
+            }
+
+            function triggerEditVideoUpload(btn) {
+              const modal = btn.closest('.edit-post-modal-content');
+              const input = modal.querySelector('.file-input-hidden');
+              if (input) {
+                  input.accept = 'video/*';
+                  input.click();
+              }
+            }
+
+            function resetEditModalPosition() {
+              const modal = document.querySelector('#edit-post-modal .modal-content');
+              if (!modal) return;
+              modal.style.position = 'fixed';
+              modal.style.left = '50%';
+              modal.style.top = '50%';
+              modal.style.transform = 'translate(-50%, -50%)';
+            }
+
+            function enableEditDrag() {
+              const overlay = document.getElementById('edit-post-modal');
+              if (!overlay) return;
+              const modal = overlay.querySelector('.modal-content');
+              const handle = overlay.querySelector('.modal-header');
+              if (!modal || !handle) return;
+              let isDragging = false;
+              let offsetX = 0;
+              let offsetY = 0;
+              handle.style.cursor = 'move';
+              handle.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                const rect = modal.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                modal.style.position = 'fixed';
+                modal.style.left = rect.left + 'px';
+                modal.style.top = rect.top + 'px';
+                modal.style.transform = 'none';
+              });
+              document.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                modal.style.left = e.clientX - offsetX + 'px';
+                modal.style.top = e.clientY - offsetY + 'px';
+              });
+              document.addEventListener('mouseup', function() {
+                isDragging = false;
+              });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+              openEditPostModal();
+              enableEditDrag();
+            });
+          </script>
+        {% endif %}
+
+        <div class="panel-head" style="margin-top: 30px;">
+            <h2 class="panel-title"><i class="fa-solid fa-layer-group"></i> Your Timeline</h2>
+        </div>
+
+        <div class="feed" style="margin-top:12px" data-feed>
+          {% for post in posts %}
+            {% include 'front/modules/_post_item.html.twig' with {'post': post, 'show_manage': true} %}
+          {% else %}
+            <div class="empty-feed" style="text-align: center; padding: 40px; color: #888;">
+                <i class="fa-solid fa-ghost" style="font-size: 48px; margin-bottom: 20px;"></i>
+                <p>You haven't posted anything yet.</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comments Modal -->
+  {% include 'front/modules/_comments_modal.html.twig' %}
+
+{% endblock %}

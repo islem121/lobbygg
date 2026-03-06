@@ -1,0 +1,137 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg • Mes Offres{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 100% !important; padding: 0 40px;">
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">Mes Offres</h1>
+      <p class="page-sub">Gérez vos campagnes de sponsoring et suivez vos performances.</p>
+    </div>
+    <div class="page-actions">
+      <a href="{{ path('front_sponsoring_new') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nouvelle Offre</a>
+      <a href="{{ path('front_sponsoring') }}" class="btn btn-ghost"><i class="fa-solid fa-list"></i> Toutes les Offres</a>
+    </div>
+  </section>
+
+  <style>
+    .sponsor-table-container {
+      width: 100% !important;
+      margin-top: 30px;
+    }
+    .sponsor-table {
+      width: 100% !important;
+      background: rgba(20, 20, 20, 0.4);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      border: 1px solid rgba(139, 61, 255, 0.2);
+      overflow: hidden;
+    }
+    .sponsor-table .table {
+      width: 100% !important;
+      display: flex;
+      flex-direction: column;
+    }
+    .sponsor-table .table .row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 2fr;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      gap: 15px;
+    }
+    .sponsor-table .table .row.head {
+      background: rgba(139, 61, 255, 0.1);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: rgba(255, 255, 255, 0.6);
+      border-bottom: 1px solid rgba(139, 61, 255, 0.3);
+    }
+    .btn-sm {
+      padding: 8px 15px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-right: 12px;
+      box-shadow: 0 0 10px var(--accent);
+    }
+    .accent {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .pill {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+  </style>
+
+  <div class="sponsor-table-container">
+    <div class="panel-head" style="margin-bottom: 20px;">
+      <h2 class="panel-title"><i class="fa-solid fa-handshake-angle"></i> Liste de mes offres</h2>
+    </div>
+
+    <div class="sponsor-table">
+      <div class="table">
+        <div class="row head">
+          <div>Société</div>
+          <div>Cible</div>
+          <div>Budget</div>
+          <div>Créé le</div>
+          <div style="text-align: right;">Actions</div>
+        </div>
+
+        {% for offer in offers %}
+        <div class="row">
+          <div class="brand" style="font-weight: 500;"><span class="brand-dot"></span> {{ offer.nomSociete }}</div>
+          <div>
+            <span class="pill" style="background: {{ offer.targetType == 'client' ? 'rgba(0, 255, 128, 0.1)' : 'rgba(139, 61, 255, 0.1)' }}; color: {{ offer.targetType == 'client' ? '#00ff80' : '#8B3DFF' }}; border: 1px solid {{ offer.targetType == 'client' ? 'rgba(0, 255, 128, 0.2)' : 'rgba(139, 61, 255, 0.2)' }};">
+              {{ offer.targetType|capitalize }}
+            </span>
+          </div>
+          <div class="accent">{{ offer.amount|number_format(0, '.', ',') }} DT</div>
+          <div style="color: rgba(255,255,255,0.4); font-size: 0.85rem;">
+            {{ offer.createdAt ? offer.createdAt|date("d M Y") : "now"|date("d M Y") }}
+          </div>
+          <div style="text-align: right;">
+            <div style="display: inline-flex; gap: 10px;">
+              <a href="{{ path('front_sponsoring_edit', {'id': offer.id}) }}" class="btn btn-ghost btn-sm" title="Modifier" style="color: #ffb100; border-color: rgba(255, 177, 0, 0.2);">
+                <i class="fa-solid fa-edit"></i> Modifier
+              </a>
+              
+              <form method="post" action="{{ path('front_sponsoring_delete', {'id': offer.id}) }}" style="display:inline-block;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette offre ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offer.id) }}">
+                <button class="btn btn-ghost btn-sm" title="Supprimer" style="color: #ff4b4b; border-color: rgba(255, 75, 75, 0.2);">
+                  <i class="fa-solid fa-trash"></i> Supprimer
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 80px 20px; color: #888;">
+            <i class="fa-solid fa-folder-open" style="font-size: 3.5rem; margin-bottom: 25px; display: block; opacity: 0.2; color: var(--accent);"></i>
+            <p style="font-size: 1.2rem; color: #fff; margin-bottom: 10px;">Aucune offre trouvée</p>
+            <p style="margin-bottom: 25px;">Vous n'avez pas encore créé d'offre de sponsoring.</p>
+            <a href="{{ path('front_sponsoring_new') }}" class="btn btn-primary">Créer ma première offre</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
