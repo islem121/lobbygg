@@ -1,0 +1,255 @@
+<div id="lobby-chatbot" class="chatbot-container">
+    <div id="chatbot-window" class="chatbot-window hidden">
+        <div class="chatbot-header">
+            <div class="header-info">
+                <i class="fas fa-robot"></i>
+                <span>Assistant Lobby.gg</span>
+            </div>
+            <button id="close-chatbot" class="close-btn">&times;</button>
+        </div>
+        <div id="chatbot-messages" class="chatbot-messages">
+            <div class="message bot">
+                Bonjour ! Je suis votre assistant. Comment puis-je vous aider ?
+            </div>
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="chatbot-input-field" placeholder="Écrivez un message...">
+            <button id="send-chatbot-msg"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+    <button id="chatbot-toggle" class="chatbot-toggle-btn">
+        <i class="fas fa-comment-dots"></i>
+    </button>
+</div>
+
+<style>
+    .chatbot-container {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        z-index: 9999;
+        font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .chatbot-toggle-btn {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #8b3dff 0%, #ff0055 100%);
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(139, 61, 255, 0.4);
+        transition: transform 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chatbot-toggle-btn:hover {
+        transform: scale(1.1);
+    }
+
+    .chatbot-window {
+        position: absolute;
+        bottom: 80px;
+        right: 0;
+        width: 350px;
+        height: 500px;
+        background: rgba(15, 15, 25, 0.95);
+        border: 1px solid rgba(139, 61, 255, 0.3);
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .chatbot-window.hidden {
+        display: none;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    .chatbot-header {
+        padding: 15px;
+        background: rgba(139, 61, 255, 0.2);
+        border-bottom: 1px solid rgba(139, 61, 255, 0.3);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #fff;
+        font-weight: bold;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+    .chatbot-messages {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .message {
+        padding: 10px 15px;
+        border-radius: 15px;
+        max-width: 80%;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .message.bot {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        align-self: flex-start;
+        border-bottom-left-radius: 2px;
+    }
+
+    .message.user {
+        background: #8b3dff;
+        color: #fff;
+        align-self: flex-end;
+        border-bottom-right-radius: 2px;
+    }
+
+    .chatbot-input {
+        padding: 15px;
+        border-top: 1px solid rgba(139, 61, 255, 0.3);
+        display: flex;
+        gap: 10px;
+    }
+
+    #chatbot-input-field {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(139, 61, 255, 0.3);
+        border-radius: 20px;
+        padding: 8px 15px;
+        color: #fff;
+        outline: none;
+    }
+
+    #send-chatbot-msg {
+        background: #8b3dff;
+        border: none;
+        color: white;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Product card in chat */
+    .chat-product-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(139, 61, 255, 0.2);
+        border-radius: 8px;
+        padding: 8px;
+        margin-top: 5px;
+    }
+
+    .chat-product-name {
+        font-weight: bold;
+        color: #ff0055;
+        font-size: 13px;
+    }
+
+    .chat-product-price {
+        font-size: 12px;
+        color: #8b3dff;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('chatbot-toggle');
+    const closeBtn = document.getElementById('close-chatbot');
+    const chatWindow = document.getElementById('chatbot-window');
+    const inputField = document.getElementById('chatbot-input-field');
+    const sendBtn = document.getElementById('send-chatbot-msg');
+    const messagesContainer = document.getElementById('chatbot-messages');
+
+    toggleBtn.addEventListener('click', () => {
+        chatWindow.classList.toggle('hidden');
+        if (!chatWindow.classList.contains('hidden')) {
+            inputField.focus();
+        }
+    });
+
+    closeBtn.addEventListener('click', () => {
+        chatWindow.classList.add('hidden');
+    });
+
+    const addMessage = (text, type, items = null) => {
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('message', type);
+        
+        let content = text.replace(/\n/g, '<br>');
+        msgDiv.innerHTML = content;
+
+        if (items && items.length > 0) {
+            items.forEach(item => {
+                const productDiv = document.createElement('div');
+                productDiv.classList.add('chat-product-card');
+                productDiv.innerHTML = `
+                    <div class="chat-product-name">${item.name}</div>
+                    <div class="chat-product-price">${item.price} DT</div>
+                `;
+                msgDiv.appendChild(productDiv);
+            });
+        }
+
+        messagesContainer.appendChild(msgDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    };
+
+    const sendMessage = async () => {
+        const text = inputField.value.trim();
+        if (!text) return;
+
+        addMessage(text, 'user');
+        inputField.value = '';
+
+        try {
+            const response = await fetch('{{ path('app_chatbot_message') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: text })
+            });
+
+            const data = await response.json();
+            addMessage(data.content, 'bot', data.items);
+        } catch (error) {
+            addMessage("Désolé, une erreur est survenue.", 'bot');
+        }
+    };
+
+    sendBtn.addEventListener('click', sendMessage);
+    inputField.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+});
+</script>

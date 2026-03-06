@@ -1,0 +1,503 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg - {{ tournament.title }}{% endblock %}
+{% block meta_description %}Check out this tournament: {{ tournament.title }} on {{ tournament.startDate ? tournament.startDate|date('Y-m-d H:i') : 'TBA' }}. Join or follow the event!{% endblock %}
+{% block social_meta %}
+  {% set tournamentPageUrl = tournamentPublicUrl|default(absolute_url(path('front_tournaments_show', {id: tournament.id}))) %}
+  {% set tournamentDescription = facebookShareQuote|default('Check out this tournament: ' ~ tournament.title ~ ' on ' ~ (tournament.startDate ? tournament.startDate|date('Y-m-d H:i') : 'TBA') ~ '. Join or follow the event!') %}
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Lobby.gg" />
+  <meta property="og:title" content="{{ tournament.title }}" />
+  <meta property="og:description" content="{{ tournamentDescription }}" />
+  <meta property="og:url" content="{{ tournamentPageUrl }}" />
+  <meta property="og:image" content="{{ absolute_url(asset('assets/images/logo-512x512.png')) }}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{ tournament.title }}" />
+  <meta name="twitter:description" content="{{ tournamentDescription }}" />
+  <meta name="twitter:image" content="{{ absolute_url(asset('assets/images/logo-512x512.png')) }}" />
+{% endblock %}
+
+{% block content %}
+  {% set tournamentPageUrl = tournamentPublicUrl|default(absolute_url(path('front_tournaments_show', {id: tournament.id}))) %}
+  {% set facebookQuote = facebookShareQuote|default('Check out this tournament: ' ~ tournament.title ~ ' on ' ~ (tournament.startDate ? tournament.startDate|date('Y-m-d H:i') : 'TBA') ~ '. Join or follow the event!') %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">{{ tournament.title }}</h1>
+      <p class="page-sub show-desc">{{ tournament.description|default('No description') }}</p>
+    </div>
+    <div class="page-actions">
+      <a class="btn btn-ghost" href="{{ path('front_tournaments') }}">
+        <i class="fa-solid fa-arrow-left"></i> Back
+      </a>
+      {% if is_granted('ROLE_ADMIN') %}
+        <a class="btn btn-primary" href="{{ path('front_tournaments_edit', {id: tournament.id}) }}">
+          <i class="fa-solid fa-pen"></i> Edit
+        </a>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="grid show-layout">
+    <div class="col span-7">
+      <div class="panel show-panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-circle-info"></i> Tournament Info</h2>
+        </div>
+        <ul class="show-stats">
+          <li><span>Status</span><strong>{{ prizePoolSnapshot.isPaid and prizePoolSnapshot.isSoldOut ? 'FULL' : tournament.status|upper }}</strong></li>
+          <li><span>Mode</span><strong>{{ tournament.mode|upper }}</strong></li>
+          <li><span>Type</span><strong>{{ tournament.type }}</strong></li>
+          <li><span>Entry Fee</span><strong>{{ tournament.entryFee > 0 ? tournament.entryFee|number_format(2, '.', ',') ~ ' DT' : 'FREE' }}</strong></li>
+          <li><span>Vouchers Sold</span><strong><span id="sold-vouchers">{{ prizePoolSnapshot.soldVouchers }}</span> / <span id="max-players">{{ prizePoolSnapshot.maxPlayers }}</span></strong></li>
+          <li><span>Remaining</span><strong id="remaining-vouchers">{{ prizePoolSnapshot.remainingVouchers }}</strong></li>
+          <li><span>Prize Pool</span><strong><span id="prize-pool-amount">{{ (prizePoolSnapshot.prizePool ?? 0)|number_format(2, '.', ',') }}</span>{% if prizePoolSnapshot.isPaid %} DT{% endif %}</strong></li>
+          <li><span>Start</span><strong>{{ tournament.startDate ? tournament.startDate|date('Y-m-d H:i') : 'N/A' }}</strong></li>
+          <li><span>End</span><strong>{{ tournament.endDate ? tournament.endDate|date('Y-m-d H:i') : 'N/A' }}</strong></li>
+          <li><span>Slots</span><strong>{{ participantsCount }} / {{ tournament.maxPlayers }}</strong></li>
+        </ul>
+
+        {% if prizePoolSnapshot.isPaid %}
+          <div class="show-progress-wrap">
+            <div class="show-progress-head">
+              <span>PrizePool Progress</span>
+              <span id="prize-progress-value">{{ prizePoolSnapshot.progressPercentage|number_format(0, '.', ',') }}%</span>
+            </div>
+            <div class="show-progress-track">
+              <div id="prize-progress-bar" style="height:100%; width:{{ prizePoolSnapshot.progressPercentage }}%; background:linear-gradient(90deg,#19d3ff,#8b3dff,#f24bff); transition:width .3s ease;"></div>
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="row-actions show-actions">
+          {% if is_granted('ROLE_USER') %}
+            {% if isJoined %}
+              <form method="post" action="{{ path('front_tournaments_leave', {id: tournament.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('leave_tournament_' ~ tournament.id) }}">
+                <button class="btn btn-ghost" type="submit">
+                  <i class="fa-solid fa-right-from-bracket"></i> Leave
+                </button>
+              </form>
+            {% else %}
+              <form method="post" action="{{ path('front_tournaments_join', {id: tournament.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('join_tournament_' ~ tournament.id) }}">
+                <button class="btn btn-primary" type="submit">
+                  <i class="fa-solid fa-bolt"></i> Join
+                </button>
+              </form>
+              {% if tournament.entryFee > 0 %}
+                <form method="post" action="{{ path('front_tournaments_purchase_voucher', {id: tournament.id}) }}">
+                  <input type="hidden" name="_token" value="{{ csrf_token('purchase_voucher_' ~ tournament.id) }}">
+                  <button id="purchase-voucher-btn" class="btn btn-ghost" type="submit" {{ prizePoolSnapshot.isSoldOut or hasVoucher ? 'disabled' : '' }}>
+                    <i class="fa-solid fa-ticket"></i>
+                    {{ hasVoucher ? 'Voucher Purchased' : (prizePoolSnapshot.isSoldOut ? 'Sold Out' : 'Purchase Voucher') }}
+                  </button>
+                </form>
+              {% endif %}
+            {% endif %}
+          {% endif %}
+          {% if is_granted('ROLE_USER') %}
+            <form method="post" action="{{ path('front_tournaments_share_feed', {id: tournament.id}) }}">
+              <input type="hidden" name="_token" value="{{ csrf_token('share_tournament_feed_' ~ tournament.id) }}">
+              <button class="btn btn-ghost" type="submit"><i class="fa-solid fa-share-nodes"></i> Share to Feed</button>
+            </form>
+            <a
+              class="btn btn-ghost"
+              href="{{ path('front_tournaments_share_external', {id: tournament.id, platform: 'facebook'}) }}"
+              data-facebook-share="1"
+              data-share-target="{{ path('front_tournaments_share_external', {id: tournament.id, platform: 'facebook'})|e('html_attr') }}"
+              data-share-url="{{ tournamentPageUrl|e('html_attr') }}"
+              data-share-quote="{{ facebookQuote|e('html_attr') }}"
+              data-share-platform="facebook"
+              data-share-text="{{ shareText|e('html_attr') }}"
+            ><i class="fa-brands fa-facebook"></i> Share on Facebook</a>
+            <a
+              class="btn btn-ghost"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="https://www.instagram.com/"
+              data-share-platform="instagram"
+              data-share-text="{{ shareText|e('html_attr') }}"
+            ><i class="fa-brands fa-instagram"></i></a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col span-5">
+      <div class="panel show-panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-users"></i> Participants</h2>
+        </div>
+
+        {% if participations is empty %}
+          <p>No participants yet.</p>
+        {% else %}
+          <div class="show-participants-list">
+            {% for p in participations %}
+              <div class="card show-participant-card">
+                <div><strong>{{ p.user ? p.user.email : 'Unknown user' }}</strong></div>
+                <div>Status: {{ p.status }}</div>
+                <div>Joined: {{ p.registrationDate ? p.registrationDate|date('Y-m-d H:i') : 'N/A' }}</div>
+
+                {% if is_granted('ROLE_ADMIN') %}
+                  <div class="row-actions show-participant-actions">
+                    {% for nextStatus in ['confirmed', 'eliminated', 'winner'] %}
+                      <form method="post" action="{{ path('front_tournaments_participation_status', {id: p.id, status: nextStatus}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('participation_status_' ~ p.id) }}">
+                        <button class="btn btn-mini btn-ghost" type="submit">{{ nextStatus }}</button>
+                      </form>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="col span-12">
+      <div class="panel show-panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-brain"></i> AI Prediction</h2>
+        </div>
+        {% if prediction %}
+          <ul class="show-stats" style="margin-bottom:10px;">
+            <li><span>Full Probability</span><strong>{{ prediction.probabilityFull|number_format(2, '.', ',') }}%</strong></li>
+            <li><span>Hours To Full</span><strong>{{ prediction.estimatedHoursToFull is not null ? prediction.estimatedHoursToFull|number_format(2, '.', ',') : 'N/A' }}</strong></li>
+            <li><span>Predicted Prize Pool</span><strong>{{ prediction.predictedPrizePool|number_format(2, '.', ',') }}</strong></li>
+          </ul>
+          {% if prediction.topPlayers is not empty %}
+            <div style="overflow:auto;">
+              <table style="width:100%; border-collapse: collapse;">
+                <thead>
+                  <tr>
+                    <th style="text-align:left; padding:8px;">Predicted Rank</th>
+                    <th style="text-align:left; padding:8px;">Player</th>
+                    <th style="text-align:left; padding:8px;">Win Rate</th>
+                    <th style="text-align:left; padding:8px;">Rating</th>
+                    <th style="text-align:left; padding:8px;">Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {% for row in prediction.topPlayers %}
+                  <tr>
+                    <td style="padding:8px;">#{{ loop.index }}</td>
+                    <td style="padding:8px;">{{ row.username }}</td>
+                    <td style="padding:8px;">{{ row.winRate|number_format(2, '.', ',') }}%</td>
+                    <td style="padding:8px;">{{ row.rating }}</td>
+                    <td style="padding:8px;">{{ row.score|number_format(2, '.', ',') }}</td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% endif %}
+        {% else %}
+          <p>Prediction unavailable.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="col span-12">
+      <div class="panel show-panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-ranking-star"></i> Leaderboard</h2>
+        </div>
+        {% if leaderboardRows is empty %}
+          <p>No leaderboard generated yet. It is generated automatically once tournament is finished.</p>
+        {% else %}
+          <div style="overflow:auto;">
+            <table style="width:100%; border-collapse: collapse;">
+              <thead>
+              <tr>
+                <th style="text-align:left; padding:8px;">Rank</th>
+                <th style="text-align:left; padding:8px;">Player</th>
+                <th style="text-align:left; padding:8px;">Wins</th>
+                <th style="text-align:left; padding:8px;">Losses</th>
+                <th style="text-align:left; padding:8px;">Points</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for row in leaderboardRows %}
+                {% set medalStyle = row.rank == 1 ? 'background:rgba(255,215,0,.16);' : (row.rank == 2 ? 'background:rgba(192,192,192,.15);' : (row.rank == 3 ? 'background:rgba(205,127,50,.16);' : '')) %}
+                <tr style="{{ medalStyle }}">
+                  <td style="padding:8px;">#{{ row.rank }}</td>
+                  <td style="padding:8px;">{{ row.username }}</td>
+                  <td style="padding:8px;">{{ row.wins }}</td>
+                  <td style="padding:8px;">{{ row.losses }}</td>
+                  <td style="padding:8px;">{{ row.points }}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if is_granted('ROLE_ADMIN') %}
+      <div class="col span-12">
+        <div class="panel show-panel">
+          <div class="panel-head">
+            <h2 class="panel-title"><i class="fa-solid fa-list-ol"></i> Waiting List (Admin)</h2>
+          </div>
+          {% if waitingListRows is empty %}
+            <p>No users in waiting list.</p>
+          {% else %}
+            <div style="overflow:auto;">
+              <table style="width:100%; border-collapse: collapse;">
+                <thead>
+                <tr>
+                  <th style="text-align:left; padding:8px;">Position</th>
+                  <th style="text-align:left; padding:8px;">User</th>
+                  <th style="text-align:left; padding:8px;">Created</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for row in waitingListRows %}
+                  <tr>
+                    <td style="padding:8px;">{{ row.position }}</td>
+                    <td style="padding:8px;">{{ row.username }}</td>
+                    <td style="padding:8px;">{{ row.createdAt|date('Y-m-d H:i') }}</td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  </section>
+
+  {% include 'front/partials/_tournament_chatbot.html.twig' with { chatbot_tournament_id: tournament.id } %}
+  <style>
+    .show-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      gap: 24px;
+      align-items: start;
+    }
+    .show-layout .span-7,
+    .show-layout .span-5 {
+      grid-column: auto;
+      width: 100%;
+    }
+    .show-desc {
+      max-width: 75ch;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .show-panel {
+      padding: 14px;
+      height: 100%;
+    }
+    .show-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .show-stats li {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: grid;
+      grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+      align-items: start;
+      gap: 10px;
+      font-size: 13px;
+    }
+    .show-stats li span { color: rgba(255,255,255,.72); min-width: 0; }
+    .show-stats li strong {
+      text-align: right;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .show-progress-wrap { margin-top: 12px; }
+    .show-progress-head { display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; }
+    .show-progress-track { height: 8px; border-radius: 999px; background: rgba(255,255,255,.12); overflow:hidden; }
+    .show-actions { margin-top: 12px; gap: 8px; }
+    .show-participants-list {
+      display: grid;
+      gap: 8px;
+      max-height: 520px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+    .show-participant-card { padding: 10px; font-size: 13px; }
+    .show-participant-actions { margin-top: 8px; gap: 6px; }
+    @media (max-width: 1100px) {
+      .show-layout {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+    }
+    @media (max-width: 980px) {
+      .show-stats { grid-template-columns: 1fr; }
+      .show-participants-list { max-height: none; }
+    }
+  </style>
+  {% if prizePoolSnapshot.isPaid %}
+    <script>
+      (function () {
+        const url = '{{ path('front_tournaments_prize_pool', {id: tournament.id}) }}';
+        const soldNode = document.getElementById('sold-vouchers');
+        const maxNode = document.getElementById('max-players');
+        const remainingNode = document.getElementById('remaining-vouchers');
+        const prizeNode = document.getElementById('prize-pool-amount');
+        const progressNode = document.getElementById('prize-progress-value');
+        const progressBar = document.getElementById('prize-progress-bar');
+        const purchaseBtn = document.getElementById('purchase-voucher-btn');
+
+        const refresh = function () {
+          fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              soldNode.textContent = data.soldVouchers;
+              maxNode.textContent = data.maxPlayers;
+              remainingNode.textContent = data.remainingVouchers;
+              prizeNode.textContent = Number(data.prizePool || 0).toFixed(2);
+              progressNode.textContent = Math.round(Number(data.progressPercentage || 0)) + '%';
+              progressBar.style.width = Number(data.progressPercentage || 0) + '%';
+
+              if (purchaseBtn && data.isSoldOut) {
+                purchaseBtn.disabled = true;
+                purchaseBtn.innerHTML = '<i class="fa-solid fa-ticket"></i> Sold Out';
+              }
+            })
+            .catch(function () {});
+        };
+
+        setInterval(refresh, 20000);
+      })();
+    </script>
+  {% endif %}
+  <script>
+    (function () {
+      const popupFeatures = 'width=600,height=400,menubar=no,toolbar=no,status=no,scrollbars=yes,resizable=yes';
+      const showShareHint = function () {
+        let hint = document.getElementById('facebook-share-hint');
+        if (!hint) {
+          hint = document.createElement('div');
+          hint.id = 'facebook-share-hint';
+          hint.style.position = 'fixed';
+          hint.style.right = '16px';
+          hint.style.bottom = '16px';
+          hint.style.zIndex = '9999';
+          hint.style.padding = '10px 12px';
+          hint.style.borderRadius = '8px';
+          hint.style.background = 'rgba(20,20,35,.95)';
+          hint.style.border = '1px solid rgba(255,255,255,.18)';
+          hint.style.color = '#fff';
+          hint.style.fontSize = '13px';
+          hint.style.boxShadow = '0 10px 30px rgba(0,0,0,.25)';
+          document.body.appendChild(hint);
+        }
+        hint.textContent = 'Text copied. Press Ctrl+V in Facebook.';
+        hint.style.display = 'block';
+        clearTimeout(window.__fbShareHintTimer);
+        window.__fbShareHintTimer = setTimeout(function () {
+          hint.style.display = 'none';
+        }, 3200);
+      };
+
+      const copyText = async function (text) {
+        if (!text) return;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+            return;
+          }
+        } catch (e) {}
+
+        const fallback = document.createElement('textarea');
+        fallback.value = text;
+        fallback.setAttribute('readonly', '');
+        fallback.style.position = 'absolute';
+        fallback.style.left = '-9999px';
+        document.body.appendChild(fallback);
+        fallback.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(fallback);
+      };
+
+      document.addEventListener('click', function (event) {
+        const trigger = event.target.closest('[data-facebook-share]');
+        if (!trigger) {
+          return;
+        }
+
+        event.preventDefault();
+        const shareQuote = trigger.getAttribute('data-share-quote') || '';
+        copyText(shareQuote);
+        showShareHint();
+        const shareTarget = trigger.getAttribute('data-share-target') || '';
+        if (shareTarget) {
+          const popupToRoute = window.open(shareTarget, 'facebook-share', popupFeatures);
+          if (popupToRoute && typeof popupToRoute.focus === 'function') {
+            popupToRoute.focus();
+          }
+          return;
+        }
+
+        const shareUrl = trigger.getAttribute('data-share-url') || '';
+        const fallbackQuote = trigger.getAttribute('data-share-quote') || '';
+        if (!shareUrl) {
+          return;
+        }
+
+        const facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u='
+          + encodeURIComponent(shareUrl)
+          + '&quote='
+          + encodeURIComponent(fallbackQuote);
+
+        const popup = window.open(facebookUrl, 'facebook-share', popupFeatures);
+        if (popup && typeof popup.focus === 'function') {
+          popup.focus();
+        }
+      });
+    })();
+  </script>
+  <script>
+    (function () {
+      const shareButtons = document.querySelectorAll('[data-share-platform][data-share-text]');
+      if (!shareButtons.length) return;
+
+      const copyText = async function (text) {
+        if (!text) return;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+            return;
+          }
+        } catch (e) {}
+
+        const fallback = document.createElement('textarea');
+        fallback.value = text;
+        fallback.setAttribute('readonly', '');
+        fallback.style.position = 'absolute';
+        fallback.style.left = '-9999px';
+        document.body.appendChild(fallback);
+        fallback.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(fallback);
+      };
+
+      shareButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const shareText = btn.getAttribute('data-share-text') || '';
+          copyText(shareText);
+        });
+      });
+    })();
+  </script>
+{% endblock %}
+

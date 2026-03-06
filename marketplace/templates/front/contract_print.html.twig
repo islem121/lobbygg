@@ -1,0 +1,423 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Contrat #CTR-{{ contract.id }} • PDF{% endblock %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">Contrat #CTR-{{ contract.id|format('%04d') }}</h1>
+      <p class="page-sub">Prévisualisation imprimable (Imprimer → Enregistrer en PDF).</p>
+    </div>
+    <div class="page-actions">
+      {% if app.user and app.user.id == contract.client.id %}
+        <button class="btn btn-info no-print" id="btn-analyze-contract" onclick="analyzeContractAI()">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Analyser avec l'IA Gemini
+        </button>
+      {% endif %}
+      
+      {# Bouton pour contacter le partenaire #}
+      {% set partner = (app.user.id == contract.sponsor.id ? contract.client : contract.sponsor) %}
+      <a href="{{ path('app_messages_conversation', {id: partner.id}) }}" class="btn btn-secondary no-print">
+        <i class="fa-solid fa-message"></i> Contacter {{ app.user.id == contract.sponsor.id ? 'le client' : 'le sponsor' }}
+      </a>
+
+      <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-file-pdf"></i> Imprimer / PDF</button>
+    </div>
+  </section>
+
+  {# Zone d'affichage du résultat de l'analyse IA #}
+  <div id="ai-analysis-result" class="no-print" style="display: none; margin: 20px auto; max-width: 900px; padding: 20px; border-radius: 8px; border: 1px solid #71d4fe; background: #f0faff;">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+      <i class="fa-solid fa-brain" style="font-size: 24px; color: #007bff;"></i>
+      <h3 style="margin: 0; color: #0056b3;">Analyse de conformité IA Gemini</h3>
+      <span id="ai-statut" style="margin-left: auto; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 14px;"></span>
+    </div>
+    <div style="margin-bottom: 15px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+        <strong>Score de confiance :</strong>
+        <span id="ai-score-text" style="font-weight: bold; color: #007bff; font-size: 16px;">0%</span>
+      </div>
+      <div style="height: 10px; width: 100%; background: #e9ecef; border-radius: 5px; overflow: hidden;">
+        <div id="ai-score-bar" style="height: 100%; background: #007bff; width: 0%; transition: width 0.5s ease;"></div>
+      </div>
+    </div>
+    <p id="ai-avis" style="font-style: italic; color: #444; line-height: 1.6;"></p>
+  </div>
+
+  <div class="print-wrapper">
+    <div class="print-sheet">
+      <div class="print-title">Contrat de Sponsoring</div>
+
+      <div class="meta">
+        <div class="meta-item"><span>Numéro</span> CTR-{{ contract.id|format('%04d') }}</div>
+        <div class="meta-item"><span>Date</span> {{ contract.createdAt|date('d/m/Y') }}</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Parties</div>
+        <div class="row">
+          <div class="col"><span>Sponsor</span> {{ contract.sponsor.nom }} {{ contract.sponsor.prenom }} ({{ contract.request.offer.nomSociete }})</div>
+          <div class="col"><span>Client</span> {{ contract.request.nomClient ?: (contract.client.nom ~ ' ' ~ contract.client.prenom) }}</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Objet du contrat</div>
+        {% set client_profile_name = contract.client.nom ~ ' ' ~ contract.client.prenom %}
+        {% set client_real_name = contract.request.nomClient ?: client_profile_name %}
+        
+        <p>
+          {% if client_profile_name|trim is not empty and client_profile_name != client_real_name %}
+            {{ contract.content|replace({ (client_profile_name): client_real_name }) }}
+          {% else %}
+            {{ contract.content }}
+          {% endif %}
+        </p>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Détails de l’offre</div>
+        <div class="row">
+          <div class="col"><span>Montant</span> {{ contract.request.offer.amount|number_format(0, '.', ' ') }} DT</div>
+          <div class="col"><span>Campagne</span> {{ contract.request.offer.nomSociete }}</div>
+        </div>
+      </div>
+
+      <div class="signatures">
+        <div class="sig" id="sponsor-sig-container">
+          <div class="line" id="sponsor-sig-line">
+            <img id="sponsor-signature-img" src="{{ contract.sponsorSignature }}" style="display: {{ contract.sponsorSignature ? 'block' : 'none' }}; max-height: 100%; max-width: 100%;">
+          </div>
+          <div class="sig-label">Signature Sponsor</div>
+          {% if app.user and app.user.id == contract.sponsor.id %}
+            <button type="button" class="btn btn-outline-primary btn-sm mt-2 no-print" onclick="openSignatureModal('sponsor')">
+              <i class="fa-solid fa-pen-nib"></i> {{ contract.sponsorSignature ? 'Modifier ma signature' : 'Signer ici' }}
+            </button>
+          {% endif %}
+        </div>
+        <div class="sig" id="client-sig-container">
+          <div class="line" id="client-sig-line">
+            <img id="client-signature-img" src="{{ contract.clientSignature }}" style="display: {{ contract.clientSignature ? 'block' : 'none' }}; max-height: 100%; max-width: 100%;">
+          </div>
+          <div class="sig-label">Signature Client</div>
+          {% if app.user and app.user.id == contract.client.id %}
+            <button type="button" class="btn btn-outline-primary btn-sm mt-2 no-print" onclick="openSignatureModal('client')">
+              <i class="fa-solid fa-pen-nib"></i> {{ contract.clientSignature ? 'Modifier ma signature' : 'Signer ici' }}
+            </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Modal de signature #}
+  <div id="signature-modal" class="modal-overlay no-print" style="display: none;">
+    <div class="signature-popup">
+      <div class="popup-header">
+        <h3>Dessiner votre signature</h3>
+        <button class="close-btn" onclick="closeSignatureModal()">&times;</button>
+      </div>
+      <div class="canvas-container">
+        <canvas id="signature-canvas" width="500" height="250"></canvas>
+      </div>
+      <div class="popup-actions">
+        <button class="btn btn-secondary" onclick="clearCanvas()">Effacer</button>
+        <button class="btn btn-primary" onclick="saveSignature()">Valider la signature</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let canvas = document.getElementById('signature-canvas');
+    let ctx = canvas.getContext('2d');
+    let drawing = false;
+    let currentRole = null;
+    const sponsorId = {{ contract.sponsor.id }};
+    const clientId = {{ contract.client.id }};
+    const currentUserId = {{ app.user ? app.user.id : 'null' }};
+
+    function openSignatureModal(role) {
+      if ((role === 'sponsor' && currentUserId !== sponsorId) || 
+          (role === 'client' && currentUserId !== clientId)) {
+        alert("Vous n'êtes pas autorisé à signer pour cette partie.");
+        return;
+      }
+      
+      currentRole = role;
+      document.getElementById('signature-modal').style.display = 'flex';
+      clearCanvas();
+    }
+
+    function closeSignatureModal() {
+      document.getElementById('signature-modal').style.display = 'none';
+    }
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+    }
+
+    function saveSignature() {
+      const dataUrl = canvas.toDataURL();
+      const img = document.getElementById(currentRole + '-signature-img');
+      
+      // Envoi au serveur via AJAX
+      fetch("{{ path('front_contract_sign', {'id': contract.id}) }}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          signature: dataUrl,
+          role: currentRole
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          img.src = dataUrl;
+          img.style.display = 'block';
+          
+          // Mettre à jour le texte du bouton
+          const btn = document.querySelector(`#${currentRole}-sig-container button`);
+          if (btn) {
+            btn.innerHTML = '<i class="fa-solid fa-pen-nib"></i> Modifier ma signature';
+          }
+          
+          closeSignatureModal();
+        } else {
+          alert("Erreur lors de la sauvegarde : " + (data.error || "Inconnu"));
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert("Une erreur est survenue lors de l'enregistrement.");
+      });
+    }
+
+    // Dessin sur canvas
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+
+    // Support Tactile
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      startDrawing(e.touches[0]);
+    });
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      draw(e.touches[0]);
+    });
+    canvas.addEventListener('touchend', stopDrawing);
+
+    function startDrawing(e) {
+      drawing = true;
+      draw(e);
+    }
+
+    function draw(e) {
+      if (!drawing) return;
+      
+      let rect = canvas.getBoundingClientRect();
+      let x = (e.clientX || e.pageX) - rect.left;
+      let y = (e.clientY || e.pageY) - rect.top;
+
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#000';
+
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+    }
+
+    function stopDrawing() {
+      drawing = false;
+      ctx.beginPath();
+    }
+
+    function analyzeContractAI() {
+      const btn = document.getElementById('btn-analyze-contract');
+      const resultDiv = document.getElementById('ai-analysis-result');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyse en cours...';
+      
+      fetch("{{ path('front_contract_analyze_ai', {'id': contract.id}) }}", {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Analyser avec l\'IA Gemini';
+        
+        if (data.error) {
+          alert(data.error);
+          return;
+        }
+        
+        // Affichage des résultats
+        resultDiv.style.display = 'block';
+        document.getElementById('ai-avis').innerText = data.avis;
+        document.getElementById('ai-score-bar').style.width = data.score + '%';
+        document.getElementById('ai-score-text').innerText = data.score + '%';
+        
+        const statutSpan = document.getElementById('ai-statut');
+        statutSpan.innerText = data.statut;
+        
+        // Style du statut
+        if (data.statut === 'Conforme') {
+          statutSpan.style.background = '#d4edda';
+          statutSpan.style.color = '#155724';
+        } else if (data.statut === 'Risqué' || data.statut === 'Incomplet') {
+          statutSpan.style.background = '#fff3cd';
+          statutSpan.style.color = '#856404';
+        } else {
+          statutSpan.style.background = '#f8d7da';
+          statutSpan.style.color = '#721c24';
+        }
+
+        // Scroll vers le résultat
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+      })
+      .catch(error => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Analyser avec l\'IA Gemini';
+        alert("Une erreur est survenue lors de l'analyse.");
+      });
+    }
+  </script>
+
+  <style>
+    .print-wrapper {
+      display: flex;
+      justify-content: center;
+      padding: 20px 0;
+    }
+    .print-sheet {
+      width: 900px;
+      background: #fff;
+      color: #000;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      padding: 32px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      line-height: 1.7;
+    }
+    .print-title {
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .meta-item span {
+      display: inline-block;
+      min-width: 90px;
+      font-weight: 600;
+    }
+    .section { margin-top: 18px; }
+    .section-title {
+      font-weight: 700;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 6px;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .col span {
+      font-weight: 600;
+      margin-right: 8px;
+    }
+    .signatures {
+      display: flex;
+      gap: 80px;
+      margin-top: 36px;
+    }
+    .sig { text-align: center; flex: 1; }
+    .sig .line { height: 60px; border-bottom: 1px solid #000; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .signature-popup {
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      width: 550px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      color: #333;
+    }
+    .popup-header h3 { margin: 0; font-size: 18px; }
+    .close-btn {
+      background: none; border: none; font-size: 24px; cursor: pointer; color: #999;
+    }
+    .canvas-container {
+      border: 2px dashed #ccc;
+      background: #fff;
+      margin-bottom: 16px;
+      cursor: crosshair;
+    }
+    #signature-canvas {
+      display: block;
+      background: #fff;
+    }
+    .popup-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+    .btn-outline-primary {
+        border: 1px solid #0d6efd;
+        color: #0d6efd;
+        background: transparent;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .btn-outline-primary:hover {
+        background: #0d6efd;
+        color: #fff;
+    }
+
+    @page { size: A4; margin: 18mm; }
+    @media print {
+      body { background: #fff !important; }
+      .header, .footer, .page-actions, nav.header-nav { display: none !important; }
+      .print-wrapper { padding: 0; }
+      .print-sheet { width: auto; box-shadow: none; border: none; padding: 0; }
+      .no-print { display: none !important; }
+    }
+  </style>
+{% endblock %}

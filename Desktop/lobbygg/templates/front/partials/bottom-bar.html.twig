@@ -1,0 +1,20 @@
+{# Bottom Action Bar: Three large navigation buttons #}
+<nav class="lobby-bottom-bar" aria-label="Quick navigation">
+  <div class="bottom-bar-inner"> {# Fix: ensure a single horizontal flex row wrapper for buttons #}
+    <a href="{{ is_granted('ROLE_ADMIN') ? path('app_admin_tournament_index') : path('front_tournaments') }}" class="bottom-btn" data-bottom-nav>
+      <i class="fa-solid fa-trophy"></i>
+      <span>Tournois</span>
+      <span class="bottom-btn-glow" aria-hidden="true"></span>
+    </a>
+    <a href="{{ path('front_marketplace') }}" class="bottom-btn" data-bottom-nav>
+      <i class="fa-solid fa-cart-shopping"></i>
+      <span>Marketplace</span>
+      <span class="bottom-btn-glow" aria-hidden="true"></span>
+    </a>
+    <a href="{{ path('front_sponsoring') }}" class="bottom-btn" data-bottom-nav>
+      <i class="fa-solid fa-handshake-angle"></i>
+      <span>Sponsoring</span>
+      <span class="bottom-btn-glow" aria-hidden="true"></span>
+    </a>
+  </div>
+</nav>

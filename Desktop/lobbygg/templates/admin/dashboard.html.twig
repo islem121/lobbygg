@@ -1,0 +1,77 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Dashboard{% endblock %}
+{% block content_title %}Dashboard{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+{% endblock %}
+
+{% block content %}
+    <div class="row g-3 mb-3">
+        <div class="col-lg-3 col-6"><div class="small-box text-bg-primary"><div class="inner"><h3>{{ stats.totalTournaments|default(0) }}</h3><p>Total Tournaments</p></div><div class="icon"><i class="bi bi-trophy-fill"></i></div></div></div>
+        <div class="col-lg-3 col-6"><div class="small-box text-bg-success"><div class="inner"><h3>{{ stats.activeTournaments|default(0) }}</h3><p>Active Tournaments</p></div><div class="icon"><i class="bi bi-lightning-fill"></i></div></div></div>
+        <div class="col-lg-3 col-6"><div class="small-box text-bg-warning"><div class="inner"><h3>{{ stats.totalPrizePools|default(0)|number_format(2, '.', ',') }}</h3><p>Total Prize Pools</p></div><div class="icon"><i class="bi bi-cash-stack"></i></div></div></div>
+        <div class="col-lg-3 col-6"><div class="small-box text-bg-info"><div class="inner"><h3>{{ stats.totalPlayers|default(0) }}</h3><p>Players</p></div><div class="icon"><i class="bi bi-people-fill"></i></div></div></div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">Top Players</h3></div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead><tr><th>Player</th><th>Points</th><th>Wins</th></tr></thead>
+                        <tbody>
+                        {% for row in stats.topPlayers|default([]) %}
+                            <tr><td>{{ row.username }}</td><td>{{ row.totalPoints }}</td><td>{{ row.totalWins }}</td></tr>
+                        {% else %}
+                            <tr><td colspan="3" class="text-center">No data</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">Voucher Sales</h3></div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead><tr><th>Tournament</th><th>Sold</th></tr></thead>
+                        <tbody>
+                        {% for row in stats.voucherSales|default([]) %}
+                            <tr><td>{{ row.title }}</td><td>{{ row.sold }}</td></tr>
+                        {% else %}
+                            <tr><td colspan="2" class="text-center">No data</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">Recent Tournament Notifications</h3></div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>Time</th><th>User</th><th>Tournament</th><th>Message</th></tr></thead>
+                        <tbody>
+                        {% for notif in recentTournamentNotifications %}
+                            <tr>
+                                <td>{{ notif.createdAt ? notif.createdAt|date('Y-m-d H:i') : '-' }}</td>
+                                <td>{{ notif.user ? (notif.user.username ?: notif.user.email) : 'Unknown' }}</td>
+                                <td>{{ notif.tournament ? notif.tournament.title : 'Unknown' }}</td>
+                                <td>{{ notif.message }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="4" class="text-center">No notifications yet</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

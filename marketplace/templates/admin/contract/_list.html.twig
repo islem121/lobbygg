@@ -1,0 +1,30 @@
+{% for contract in contracts %}
+    <tr>
+        <td>{{ contract.id }}</td>
+        <td>{{ contract.sponsor.username }}</td>
+        <td>{{ contract.client.username }}</td>
+        <td>#{{ contract.request.id }} ({{ contract.request.offer.nomSociete }})</td>
+        <td>{{ contract.content|length > 30 ? contract.content|slice(0, 30) ~ '...' : contract.content }}</td>
+        <td>{{ contract.createdAt ? contract.createdAt|date('d/m/Y H:i') : '' }}</td>
+        <td>
+            <div class="btn-group">
+                <a href="{{ path('app_admin_contract_show', {'id': contract.id}) }}" class="btn btn-info btn-sm">
+                    <i class="bi bi-eye"></i>
+                </a>
+                <a href="{{ path('app_admin_contract_edit', {'id': contract.id}) }}" class="btn btn-warning btn-sm">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <form method="post" action="{{ path('app_admin_contract_delete', {'id': contract.id}) }}" style="display:inline-block" onsubmit="return confirm('Êtes-vous sûr ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ contract.id) }}">
+                    <button class="btn btn-danger btn-sm">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </form>
+            </div>
+        </td>
+    </tr>
+{% else %}
+    <tr>
+        <td colspan="7" class="text-center text-muted">Aucun contrat trouvé</td>
+    </tr>
+{% endfor %}

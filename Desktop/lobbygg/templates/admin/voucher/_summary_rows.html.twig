@@ -1,0 +1,11 @@
+{% for row in summaryRows %}
+  <tr>
+    <td>{{ row.tournamentTitle }}</td>
+    <td>{{ row.entryFee|number_format(2, '.', ',') }}</td>
+    <td>{{ row.soldVouchers }}</td>
+    <td>{{ row.maxPlayers }}</td>
+    <td>{{ (row.entryFee * row.soldVouchers)|number_format(2, '.', ',') }}</td>
+  </tr>
+{% else %}
+  <tr><td colspan="5" class="text-center">No voucher sales found.</td></tr>
+{% endfor %}

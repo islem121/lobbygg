@@ -1,0 +1,348 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg • Demandes de Sponsoring{% endblock %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">Demandes Reçues</h1>
+      <p class="page-sub">Gérez les demandes de partenariat envoyées par les clients pour vos offres.</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-ghost" type="button"><i class="fa-solid fa-inbox"></i> Boîte de réception</button>
+    </div>
+  </section>
+
+  <style>
+    .request-table .table .row {
+      grid-template-columns: 1.5fr 1fr 2fr 1fr 0.6fr;
+      align-items: center;
+    }
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+    .motivation-text {
+      font-size: 0.85em;
+      color: #aaa;
+    }
+    .offer-badge {
+      font-size: 0.75em;
+      padding: 2px 8px;
+      background: rgba(139, 61, 255, 0.1);
+      color: #8B3DFF;
+      border: 1px solid rgba(139, 61, 255, 0.2);
+      border-radius: 4px;
+      margin-bottom: 4px;
+      display: inline-block;
+    }
+    .status-badge {
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-weight: bold;
+      text-transform: uppercase;
+      display: inline-block;
+      text-align: center;
+      min-width: 90px;
+    }
+    .status-pending {
+      background: rgba(255, 193, 7, 0.1);
+      color: #ffc107;
+      border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+    .status-accepted {
+      background: rgba(0, 255, 128, 0.1);
+      color: #00ff80;
+      border: 1px solid rgba(0, 255, 128, 0.3);
+    }
+    .status-rejected {
+      background: rgba(255, 0, 80, 0.1);
+      color: #ff0050;
+      border: 1px solid rgba(255, 0, 80, 0.3);
+    }
+
+    /* Modal Contrat */
+    .contract-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+    }
+
+    .contract-content {
+      background: #0f0f1e;
+      margin: 2% auto;
+      padding: 0;
+      border: 1px solid #8B3DFF;
+      width: 700px;
+      box-shadow: 0 0 40px rgba(139, 61, 255, 0.4);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .contract-header {
+      background: linear-gradient(90deg, #1a1a2e, #2d1450);
+      padding: 25px;
+      border-bottom: 1px solid rgba(139, 61, 255, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .contract-header h2 {
+      margin: 0;
+      color: #fff;
+      font-size: 1.4rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .contract-body {
+      padding: 30px;
+      color: #ddd;
+      line-height: 1.6;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .contract-section {
+      margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 3px solid #8B3DFF;
+    }
+
+    .contract-section h3 {
+      color: #8B3DFF;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+
+    .contract-footer {
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border-top: 1px solid rgba(139, 61, 255, 0.2);
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .btn-action {
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.8rem;
+      border: 1px solid transparent;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-accept {
+      background: #00ff80;
+      color: #000;
+    }
+    .btn-accept:hover {
+      box-shadow: 0 0 15px rgba(0, 255, 128, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-reject {
+      background: #ff0050;
+      color: #fff;
+    }
+    .btn-reject:hover {
+      box-shadow: 0 0 15px rgba(255, 0, 80, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-wait {
+      background: rgba(255, 193, 7, 0.2);
+      color: #ffc107;
+      border-color: #ffc107;
+    }
+    .btn-wait:hover {
+      background: #ffc107;
+      color: #000;
+      transform: translateY(-2px);
+    }
+  </style>
+
+  <section class="grid">
+    <div class="col span-8">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-handshake-angle"></i> Demandes Reçues</h2>
+        </div>
+
+        <div class="request-table">
+          <div class="table">
+            <div class="row head">
+              <div>Client</div>
+              <div>Date</div>
+              <div>Détails</div>
+              <div>Statut</div>
+              <div>Dossier</div>
+            </div>
+
+            {% for request in requests %}
+            <div class="row">
+              <div class="brand">
+                <span class="brand-dot" style="background: #00ff80;"></span> 
+                {{ request.client.nom }} {{ request.client.prenom }}
+                <br>
+                <small style="color: #666; font-size: 0.8em;">{{ request.client.email }}</small>
+              </div>
+              <div class="muted" style="font-size: 0.85em;">{{ request.createdAt|date('d/m/Y H:i') }}</div>
+              <div class="motivation-text">
+                <span class="offer-badge">OFFRE: {{ request.offer.nomSociete }}</span><br>
+                {{ request.motivation|slice(0, 60) }}...
+              </div>
+              <div>
+                {% if request.status == 'accepté' %}
+                  <span class="status-badge status-accepted">Accepté</span>
+                {% elseif request.status == 'refusé' %}
+                  <span class="status-badge status-rejected">Refusé</span>
+                {% else %}
+                  <span class="status-badge status-pending">En attente</span>
+                {% endif %}
+              </div>
+              <div>
+                <button class="btn btn-ghost btn-sm open-contract-modal" 
+                        data-request-id="{{ request.id }}"
+                        data-client-name="{{ request.client.nom }} {{ request.client.prenom }}"
+                        data-offer-name="{{ request.offer.nomSociete }}"
+                        data-message="{{ request.message }}"
+                        data-motivation="{{ request.motivation }}"
+                        title="Gérer le contrat">
+                  <i class="fa-solid fa-file-contract"></i>
+                </button>
+              </div>
+            </div>
+            {% else %}
+            <div class="row" style="display: block; text-align: center; padding: 40px; color: #888;">
+              Aucune demande de sponsoring reçue pour le moment.
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col span-4">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-chart-line"></i> Statistiques</h2>
+        </div>
+        <div class="mini-kpis">
+          <div class="kpi card">
+            <div class="kpi-label">Demandes Totales</div>
+            <div class="kpi-value accent">{{ requests|length }}</div>
+          </div>
+          <div class="kpi card">
+            <div class="kpi-label">Offres Actives</div>
+            <div class="kpi-value">{{ offersCount|default(0) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal Contrat de Sponsoring -->
+  <div id="contractModal" class="contract-modal">
+    <div class="contract-content">
+      <div class="contract-header">
+        <h2>Contrat de Sponsoring</h2>
+        <span class="close-modal" style="cursor:pointer; font-size: 24px;">&times;</span>
+      </div>
+
+      <div class="contract-body">
+        <div class="contract-section">
+          <h3>Parties Prenantes</h3>
+          <p><strong>Sponsor :</strong> <span id="contractSponsorName"></span></p>
+          <p><strong>Client (Bénéficiaire) :</strong> <span id="contractClientName"></span></p>
+        </div>
+
+        <div class="contract-section">
+          <h3>Message du Client</h3>
+          <p id="contractMessage"></p>
+        </div>
+
+        <div class="contract-section">
+          <h3>Motivation du Client</h3>
+          <p id="contractMotivation"></p>
+        </div>
+
+        <div class="contract-section">
+          <h3>Termes du Contrat</h3>
+          <p>Ce document constitue une intention de partenariat. En acceptant cette demande, vous confirmez votre intérêt pour sponsoriser ce client selon les termes définis dans votre offre initiale.</p>
+        </div>
+      </div>
+
+      <div class="contract-footer">
+        <a href="#" id="btnReject" class="btn-action btn-reject">Refuser</a>
+        <a href="#" id="btnWait" class="btn-action btn-wait">En attente</a>
+        <a href="#" id="btnAccept" class="btn-action btn-accept">Accepter</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const modal = document.getElementById('contractModal');
+      const closeBtn = document.querySelector('.close-modal');
+      
+      const contractSponsorName = document.getElementById('contractSponsorName');
+      const contractClientName = document.getElementById('contractClientName');
+      const contractMessage = document.getElementById('contractMessage');
+      const contractMotivation = document.getElementById('contractMotivation');
+      
+      const btnAccept = document.getElementById('btnAccept');
+      const btnReject = document.getElementById('btnReject');
+      const btnWait = document.getElementById('btnWait');
+
+      document.querySelectorAll('.open-contract-modal').forEach(button => {
+        button.addEventListener('click', function() {
+          const requestId = this.getAttribute('data-request-id');
+          const clientName = this.getAttribute('data-client-name');
+          const offerName = this.getAttribute('data-offer-name');
+          const message = this.getAttribute('data-message');
+          const motivation = this.getAttribute('data-motivation');
+
+          contractSponsorName.textContent = offerName;
+          contractClientName.textContent = clientName;
+          contractMessage.textContent = message;
+          contractMotivation.textContent = motivation;
+
+          btnAccept.href = `/sponsoring/document/${requestId}/status/accepté`;
+          btnReject.href = `/sponsoring/document/${requestId}/status/refusé`;
+          btnWait.href = `/sponsoring/document/${requestId}/status/en attente`;
+
+          modal.style.display = 'block';
+        });
+      });
+
+      closeBtn.onclick = function() {
+        modal.style.display = 'none';
+      }
+
+      window.onclick = function(event) {
+        if (event.target == modal) {
+          modal.style.display = 'none';
+        }
+      }
+    });
+  </script>
+{% endblock %}

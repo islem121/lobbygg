@@ -1,0 +1,75 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Gestion des Utilisateurs{% endblock %}
+{% block content_title %}Liste des Utilisateurs{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item active">Utilisateurs</li>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Utilisateurs enregistrés</h3>
+        <div class="card-tools d-flex align-items-center">
+            <div class="input-group input-group-sm mr-3" style="width: 200px;">
+                <input type="text" id="user-search" class="form-control float-right" placeholder="Rechercher...">
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-default">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
+            <a href="{{ path('app_admin_repair_passwords') }}" class="btn btn-warning btn-sm mr-2" onclick="return confirm('Voulez-vous hacher tous les mots de passe qui sont encore en texte clair ? Cela réparera les accès client/sponsor.')">
+                <i class="bi bi-shield-lock-fill"></i> Réparer les Mots de Passe
+            </a>
+            <a href="{{ path('app_admin_user_new') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-person-plus-fill"></i> Nouvel Utilisateur
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th style="width: 10px">ID</th>
+                    <th>Nom d'utilisateur</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th>Date de création</th>
+                    <th style="width: 150px">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="user-table-body">
+                {{ include('admin/user/_list.html.twig') }}
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer clearfix">
+        {% include '_pagination.html.twig' %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('user-search');
+    const tableBody = document.getElementById('user-table-body');
+    let timeout = null;
+
+    searchInput.addEventListener('keyup', function() {
+        clearTimeout(timeout);
+        const query = this.value;
+
+        timeout = setTimeout(function() {
+            fetch('{{ path('app_admin_user_search') }}?q=' + encodeURIComponent(query))
+                .then(response => response.text())
+                .then(html => {
+                    tableBody.innerHTML = html;
+                })
+                .catch(error => console.error('Erreur lors de la recherche:', error));
+        }, 300); // Délai de 300ms pour éviter trop de requêtes
+    });
+});
+</script>
+{% endblock %}

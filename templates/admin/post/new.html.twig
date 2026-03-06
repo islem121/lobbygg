@@ -1,0 +1,12 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Nouvel Article{% endblock %}
+
+{% block body %}
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title">Créer un nouvel article</h3>
+        </div>
+        {{ include('admin/post/_form.html.twig', {'button_label': 'Créer l\'article'}) }}
+    </div>
+{% endblock %}

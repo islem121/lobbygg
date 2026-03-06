@@ -1,0 +1,192 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg • Mes Contrats de Sponsoring{% endblock %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">Mes Contrats</h1>
+      <p class="page-sub">Consultez vos engagements et contrats de sponsoring validés.</p>
+    </div>
+  </section>
+
+  <style>
+    .contract-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 25px;
+      margin-top: 30px;
+    }
+    .contract-card {
+      background: rgba(45, 20, 80, 0.4);
+      border: 1px solid rgba(139, 61, 255, 0.2);
+      border-radius: 12px;
+      padding: 25px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .contract-card:hover {
+      border-color: #8B3DFF;
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .contract-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: #00ff80;
+    }
+    .contract-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    .contract-id {
+      font-family: 'Courier New', monospace;
+      font-size: 0.8em;
+      color: #8B3DFF;
+      background: rgba(139, 61, 255, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .contract-date {
+      font-size: 0.8em;
+      color: #888;
+    }
+    .contract-parties {
+      margin-bottom: 20px;
+    }
+    .party {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .party-icon {
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9em;
+    }
+    .party-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .party-label {
+      font-size: 0.7em;
+      text-transform: uppercase;
+      color: #666;
+      letter-spacing: 1px;
+    }
+    .party-name {
+      font-size: 0.95em;
+      font-weight: 600;
+      color: #fff;
+    }
+    .contract-body {
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      font-size: 0.85em;
+      line-height: 1.6;
+      color: #bbb;
+      margin-bottom: 20px;
+      border-left: 2px solid rgba(255, 255, 255, 0.1);
+    }
+    .contract-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .contract-status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #00ff80;
+      font-size: 0.8em;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .contract-amount {
+      color: #8B3DFF;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+  </style>
+
+  <div class="contract-grid">
+    {% for contract in contracts %}
+      <div class="contract-card">
+        <div class="contract-header">
+          <span class="contract-id">#CTR-{{ contract.id|format('%04d') }}</span>
+          <span class="contract-date">{{ contract.createdAt|date('d/m/Y') }}</span>
+        </div>
+
+        <div class="contract-parties">
+          {% if isSponsor %}
+            <div class="party">
+              <div class="party-icon"><i class="fa-solid fa-user"></i></div>
+              <div class="party-info">
+                <span class="party-label">Client</span>
+                <span class="party-name">{{ contract.client.nom }} {{ contract.client.prenom }}</span>
+              </div>
+            </div>
+            <div class="party">
+              <div class="party-icon"><i class="fa-solid fa-building"></i></div>
+              <div class="party-info">
+                <span class="party-label">Campagne</span>
+                <span class="party-name">{{ contract.request.offer.nomSociete }}</span>
+              </div>
+            </div>
+          {% else %}
+            <div class="party">
+              <div class="party-icon"><i class="fa-solid fa-building"></i></div>
+              <div class="party-info">
+                <span class="party-label">Compagnie</span>
+                <span class="party-name">{{ contract.request.offer.nomSociete }}</span>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="contract-body">
+          {{ contract.content|slice(0, 150) }}...
+        </div>
+
+        <div class="contract-footer">
+          <div class="contract-status">
+            <i class="fa-solid fa-circle-check"></i> Actif
+          </div>
+          <div class="contract-amount">
+            {{ contract.request.offer.amount|number_format(0, '.', ' ') }} DT
+          </div>
+          <div>
+            <a href="{{ path('front_contract_print', {id: contract.id}) }}" class="btn btn-ghost btn-sm" title="Télécharger en PDF" target="_blank">
+              <i class="fa-solid fa-file-pdf"></i> PDF
+            </a>
+            {% if isSponsor %}
+            <a href="{{ path('front_contract_send_email', {id: contract.id}) }}" class="btn btn-primary btn-sm" title="Envoyer au client">
+              <i class="fa-solid fa-envelope"></i> Email
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="col span-12" style="text-align: center; padding: 100px; background: rgba(45, 20, 80, 0.2); border-radius: 12px; border: 1px dashed rgba(139, 61, 255, 0.3);">
+        <i class="fa-solid fa-file-signature" style="font-size: 4rem; color: rgba(139, 61, 255, 0.2); margin-bottom: 20px;"></i>
+        <h3 style="color: #fff;">Aucun contrat actif</h3>
+        <p style="color: #888;">Les contrats apparaissent ici une fois qu'une demande de sponsoring est acceptée.</p>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

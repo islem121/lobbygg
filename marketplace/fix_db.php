@@ -1,0 +1,36 @@
+<?php
+
+require __DIR__.'/vendor/autoload.php';
+
+use Symfony\Component\Dotenv\Dotenv;
+use Doctrine\DBAL\DriverManager;
+
+$dotenv = new Dotenv();
+$dotenv->load(__DIR__.'/.env');
+
+$dbUrl = $_ENV['DATABASE_URL'];
+$connectionParams = ['url' => $dbUrl];
+$conn = DriverManager::getConnection($connectionParams);
+
+$sqls = [
+    "ALTER TABLE sponsor CHANGE company_name nom_societe VARCHAR(255) NOT NULL",
+    "ALTER TABLE sponsor ADD description LONGTEXT NOT NULL",
+    "ALTER TABLE sponsor ADD amount DOUBLE PRECISION NOT NULL",
+    "ALTER TABLE sponsor ADD target_type VARCHAR(50) NOT NULL",
+    "ALTER TABLE sponsor ADD dossier VARCHAR(255) DEFAULT NULL",
+    "ALTER TABLE sponsor ADD created_at DATETIME NOT NULL",
+    "ALTER TABLE sponsor ADD sponsor_id INT NOT NULL",
+    "ALTER TABLE sponsor DROP COLUMN logo",
+    "ALTER TABLE sponsor ADD CONSTRAINT FK_818CC9D412F7FB51 FOREIGN KEY (sponsor_id) REFERENCES user (id)",
+    "CREATE INDEX IDX_818CC9D412F7FB51 ON sponsor (sponsor_id)"
+];
+
+foreach ($sqls as $sql) {
+    try {
+        echo "Executing: $sql\n";
+        $conn->executeStatement($sql);
+        echo "Success\n";
+    } catch (\Exception $e) {
+        echo "Error: " . $e->getMessage() . "\n";
+    }
+}

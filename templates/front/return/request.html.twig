@@ -1,0 +1,38 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Demande de Retour - Lobby.gg{% endblock %}
+
+{% block content %}
+<div class="lobby-container" style="padding: 40px 20px; max-width: 800px; margin: 0 auto;">
+    <div class="panel card" style="background: rgba(15, 15, 25, 0.9); border: 1px solid rgba(139, 61, 255, 0.3); border-radius: 15px; padding: 30px;">
+        <h2 style="color: #ff0055; margin-bottom: 20px; font-family: 'Space Grotesk', sans-serif;">
+            <i class="fas fa-undo-alt"></i> Demander un retour
+        </h2>
+        
+        <div class="order-summary" style="margin-bottom: 30px; padding: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 10px;">
+            <p><strong>Commande #{{ order.id }}</strong></p>
+            <p>Produit : <span class="accent">{{ order.product.name }}</span></p>
+            <p>Quantité : {{ order.quantity }}</p>
+            <p>Prix total : {{ (order.product.price * order.quantity)|number_format(2, '.', ' ') }} DT</p>
+        </div>
+
+        <form method="POST">
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="reason" style="display: block; color: #fff; margin-bottom: 10px;">Raison du retour (obligatoire)</label>
+                <textarea id="reason" name="reason" class="form-control" rows="5" required 
+                    style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(139, 61, 255, 0.5); color: #fff; border-radius: 8px; padding: 10px;"
+                    placeholder="Veuillez expliquer pourquoi vous souhaitez retourner cet article..."></textarea>
+            </div>
+
+            <div class="actions" style="display: flex; gap: 15px;">
+                <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #8b3dff 0%, #ff0055 100%); border: none; padding: 10px 25px; border-radius: 5px; color: #fff; cursor: pointer; font-weight: bold;">
+                    Envoyer la demande
+                </button>
+                <a href="{{ path('app_home') }}" class="btn btn-ghost" style="color: rgba(255,255,255,0.6); text-decoration: none; padding: 10px 25px;">
+                    Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% if tournaments is empty %}
+  <p>No tournaments found.</p>
+{% else %}
+  <div class="tour-grid-wrap">
+    <div class="tournament-grid">
+      {% for row in tournaments %}
+        {% set t = row.entity %}
+        {% set desc = t.description|default('No description') %}
+        {% set tournamentUrl = absolute_url(path('front_tournaments_show', {id: t.id})) %}
+        {% set facebookQuote = 'Check out this tournament: ' ~ t.title ~ ' on ' ~ (t.startDate ? t.startDate|date('Y-m-d H:i') : 'TBA') ~ '. Join or follow the event!' %}
+        {% set facebookShareTarget = path('front_tournaments_share_external', {id: t.id, platform: 'facebook'}) %}
+        <article class="tournament-card tg-hover" style="aspect-ratio:1/1; width:100%; overflow:hidden;">
+          <div class="tour-accent"></div>
+          <div class="tour-top">
+            <h3 class="tour-name" title="{{ t.title }}">{{ t.title }}</h3>
+            <div class="tg-pill tg-pill-{{ t.status }}">{{ t.status|upper }}</div>
+          </div>
+
+          <div class="tour-meta">
+            <div class="tour-meta-item"><i class="fa-solid fa-gamepad"></i><span>{{ t.mode|upper }}</span></div>
+            <div class="tour-meta-item"><i class="fa-solid fa-users"></i><span>{{ row.participantsCount }}/{{ t.maxPlayers }}</span></div>
+            <div class="tour-meta-item"><i class="fa-solid fa-coins"></i><span>{{ t.entryFee > 0 ? t.entryFee ~ ' DT' : 'FREE' }}</span></div>
+            <div class="tour-meta-item"><i class="fa-solid fa-calendar"></i><span>{{ t.startDate ? t.startDate|date('d/m H:i') : 'N/A' }}</span></div>
+          </div>
+
+          <p class="tour-description">{{ desc }}</p>
+
+          <div class="tour-footer">
+            <div class="tour-countdown" data-start="{{ t.startDate ? t.startDate|date('c') : '' }}"></div>
+            <div class="tour-actions">
+              <a class="btn btn-mini btn-ghost" href="{{ path('front_tournaments_show', {id: t.id}) }}" title="View"><i class="fa-solid fa-eye"></i></a>
+              <button
+                class="btn btn-ghost btn-facebook-share"
+                type="button"
+                title="Share on Facebook"
+                data-facebook-share="1"
+                data-share-target="{{ facebookShareTarget|e('html_attr') }}"
+                data-share-url="{{ tournamentUrl|e('html_attr') }}"
+                data-share-quote="{{ facebookQuote|e('html_attr') }}"
+              >
+                <i class="fa-brands fa-facebook"></i>
+                <span>Share on Facebook</span>
+              </button>
+              {% if is_granted('ROLE_USER') %}
+                {% if row.isJoined %}
+                  <form method="post" action="{{ path('front_tournaments_leave', {id: t.id}) }}" class="inline-form">
+                    <input type="hidden" name="_token" value="{{ csrf_token('leave_tournament_' ~ t.id) }}">
+                    <button class="btn btn-mini btn-ghost" type="submit" title="Leave"><i class="fa-solid fa-right-from-bracket"></i></button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{{ path('front_tournaments_join', {id: t.id}) }}" class="inline-form">
+                    <input type="hidden" name="_token" value="{{ csrf_token('join_tournament_' ~ t.id) }}">
+                    <button class="btn btn-mini btn-primary" type="submit" title="Join"><i class="fa-solid fa-bolt"></i></button>
+                  </form>
+                {% endif %}
+              {% endif %}
+              {% if is_granted('ROLE_ADMIN') %}
+                <a class="btn btn-mini btn-ghost" href="{{ path('front_tournaments_edit', {id: t.id}) }}" title="Edit"><i class="fa-solid fa-pen"></i></a>
+                <form method="post" action="{{ path('front_tournaments_delete', {id: t.id}) }}" class="inline-form" onsubmit="return confirm('Delete tournament?');">
+                  <input type="hidden" name="_token" value="{{ csrf_token('delete_tournament_' ~ t.id) }}">
+                  <button class="btn btn-mini btn-ghost" type="submit" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}

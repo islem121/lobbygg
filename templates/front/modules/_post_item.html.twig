@@ -1,0 +1,63 @@
+{% set show_manage = show_manage|default(false) %}
+<article class="card post-card" id="post-{{ post.id }}">
+  <div class="post-top">
+    <div class="avatar avatar-grad">{{ post.user.username[:2]|upper }}</div>
+    <div class="post-meta">
+      <div class="post-user">{{ post.user.username }} <span class="muted">@{{ post.user.username|lower }}</span></div>
+      <div class="post-time">{{ post.createdAt|date('M d, H:i') }} · <span class="pill pill-accent" style="position:static;height:auto;min-width:auto;padding:2px 10px">{{ post.type|default('General') }}</span></div>
+    </div>
+    {% if show_manage and app.user == post.user %}
+        <div class="post-menu-wrapper" style="position: relative;">
+            <button class="icon-btn" type="button" aria-label="Post menu" onclick="this.nextElementSibling.classList.toggle('show')"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="post-menu-dropdown" style="display: none; position: absolute; right: 0; top: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; z-index: 10; min-width: 150px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                <a href="{{ path('app_post_edit', {id: post.id}) }}" style="width: 100%; text-align: left; padding: 10px 15px; background: none; border: none; color: var(--text-main); cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; text-decoration: none;">
+                    <i class="fa-solid fa-pen-to-square"></i> Modifier
+                </a>
+                <form action="{{ path('app_post_delete', {id: post.id}) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this post?');">
+                    <button type="submit" style="width: 100%; text-align: left; padding: 10px 15px; background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+        <style>
+            .post-menu-dropdown.show { display: block !important; }
+            .post-menu-dropdown button:hover { background: rgba(255,107,107,0.1); }
+            .post-menu-dropdown a:hover { background: rgba(255,255,255,0.08); }
+        </style>
+    {% endif %}
+  </div>
+  <div class="post-body">
+    <p>{{ post.content }}</p>
+    {% if post.image %}
+      <div class="post-media" style="margin-top: 10px;">
+        {% if post.image ends with '.mp4' or post.image ends with '.mpeg' %}
+            <video controls style="width: 100%; border-radius: 8px;">
+                <source src="{{ asset('uploads/posts/' ~ post.image) }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        {% else %}
+            <img src="{{ asset('uploads/posts/' ~ post.image) }}" alt="Post image" style="width: 100%; border-radius: 8px;">
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+  <div class="post-actions">
+    {% set userReacted = false %}
+    {% for reaction in post.reactions %}
+        {% if reaction.user == app.user %}
+            {% set userReacted = true %}
+        {% endif %}
+    {% endfor %}
+    
+    <button class="chip {% if userReacted %}chip-active{% endif %}" type="button" onclick="reactToPost({{ post.id }}, 'like', this)">
+        <i class="fa-solid fa-fire"></i> Like
+    </button>
+    <button class="chip" type="button" onclick="openComments({{ post.id }})"><i class="fa-regular fa-comment-dots"></i> Comment</button>
+    <button class="chip" type="button"><i class="fa-solid fa-share-nodes"></i> Share</button>
+    <div class="post-stats">
+      <span id="react-count-{{ post.id }}"><i class="fa-solid fa-heart"></i> {{ post.reactions|length }}</span>
+      <span><i class="fa-solid fa-comment"></i> {{ post.comments|length }}</span>
+    </div>
+  </div>
+</article>

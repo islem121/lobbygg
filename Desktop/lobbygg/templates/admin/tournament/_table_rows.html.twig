@@ -1,0 +1,29 @@
+{% for row in rows %}
+  {% set tournament = row[0] %}
+  <tr>
+    <td>{{ tournament.id }}</td>
+    <td>{{ tournament.title }}</td>
+    <td><span class="badge bg-info">{{ tournament.status }}</span></td>
+    <td>{{ tournament.mode|upper }}</td>
+    <td>{{ tournament.entryFee|number_format(2, '.', ',') }}</td>
+    <td>{{ tournament.entryFee > 0 ? (tournament.entryFee * row.participantsCount)|number_format(2, '.', ',') : '-' }}</td>
+    <td>{{ tournament.startDate ? tournament.startDate|date('d/m/Y H:i') : '-' }}</td>
+    <td>{{ tournament.endDate ? tournament.endDate|date('d/m/Y') : '-' }}</td>
+    <td>{{ tournament.maxPlayers }}</td>
+    <td>{{ row.participantsCount }}</td>
+    <td>
+      <div class="btn-group">
+        <a href="{{ path('app_admin_tournament_show', {'id': tournament.id}) }}" class="btn btn-info btn-sm">
+          <i class="bi bi-eye"></i>
+        </a>
+        <a href="{{ path('app_admin_tournament_edit', {'id': tournament.id}) }}" class="btn btn-warning btn-sm">
+          <i class="bi bi-pencil"></i>
+        </a>
+      </div>
+    </td>
+  </tr>
+{% else %}
+  <tr>
+    <td colspan="11" class="text-center">No tournaments found</td>
+  </tr>
+{% endfor %}

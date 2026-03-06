@@ -1,0 +1,374 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Marketplace Analytics{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --color-blue: #4299e1;
+            --color-indigo: #667eea;
+            --color-yellow: #ecc94b;
+            --color-green: #48bb78;
+            --color-teal: #38b2ac;
+            --color-navy: #2c3e50;
+            --shadow-soft: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            --radius-card: 24px;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-primary);
+        }
+
+        .dashboard-container {
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-navy);
+            margin: 0;
+        }
+
+        /* Main Card */
+        .master-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-card);
+            padding: 30px;
+            box-shadow: var(--shadow-soft);
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs-custom {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab-btn {
+            background: transparent;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-tab-btn:hover {
+            background: #f7fafc;
+            color: var(--color-blue);
+        }
+
+        .nav-tab-btn.active {
+            background: var(--color-blue);
+            color: white;
+            box-shadow: 0 4px 6px rgba(66, 153, 225, 0.3);
+        }
+        
+        /* Different active colors for different tabs */
+        .nav-tab-btn.active[data-target="earnings"] { background: var(--color-yellow); color: #2d3748; }
+        .nav-tab-btn.active[data-target="sellers"] { background: var(--color-blue); }
+        .nav-tab-btn.active[data-target="products"] { background: var(--color-green); }
+        .nav-tab-btn.active[data-target="categories"] { background: var(--color-navy); }
+        .nav-tab-btn.active[data-target="clients"] { background: var(--color-teal); }
+
+        /* Chart Container */
+        .chart-wrapper {
+            flex-grow: 1;
+            position: relative;
+            width: 100%;
+            height: 400px; /* Fixed height for consistency */
+        }
+
+        /* Stats/Details Section below chart */
+        .details-container {
+            margin-top: 30px;
+            border-top: 1px solid #edf2f7;
+            padding-top: 20px;
+        }
+
+        .details-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--color-navy);
+        }
+
+        .mini-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .mini-stat-card {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #edf2f7;
+        }
+
+        .mini-stat-label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 5px; }
+        .mini-stat-value { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
+
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="page-header">
+        <h1 class="page-title">Marketplace Statistics</h1>
+        <div style="background: #fff; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; box-shadow: var(--shadow-soft); color: var(--text-secondary);">
+            {{ "now"|date("F Y") }} <i class="fas fa-calendar-alt" style="margin-left: 8px;"></i>
+        </div>
+    </div>
+
+    <div class="master-card">
+        <!-- Navigation -->
+        <div class="nav-tabs-custom">
+            <button class="nav-tab-btn active" data-target="earnings" onclick="updateChart('earnings')">
+                <i class="fas fa-wallet"></i> Earnings
+            </button>
+            <button class="nav-tab-btn" data-target="sellers" onclick="updateChart('sellers')">
+                <i class="fas fa-store"></i> Top Sellers
+            </button>
+            <button class="nav-tab-btn" data-target="products" onclick="updateChart('products')">
+                <i class="fas fa-box"></i> Top Products
+            </button>
+            <button class="nav-tab-btn" data-target="categories" onclick="updateChart('categories')">
+                <i class="fas fa-layer-group"></i> Top Categories
+            </button>
+            <button class="nav-tab-btn" data-target="clients" onclick="updateChart('clients')">
+                <i class="fas fa-users"></i> Top Clients
+            </button>
+        </div>
+
+        <!-- Chart Area -->
+        <div class="chart-wrapper">
+            <canvas id="masterChart"></canvas>
+        </div>
+
+        <!-- Dynamic Details (Simple Summary) -->
+        <div class="details-container">
+            <h3 class="details-title" id="detailsTitle">Overview</h3>
+            <div class="mini-stats-grid" id="detailsGrid">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // --- Data Injection ---
+    const rawData = {
+        earnings: {{ monthlyRevenue|json_encode|raw }},
+        sellers: {{ topSellers|json_encode|raw }},
+        products: {{ bestProducts|json_encode|raw }},
+        categories: {{ topCategories|json_encode|raw }},
+        clients: {{ topBuyers|json_encode|raw }}
+    };
+
+    let masterChart = null;
+    const ctx = document.getElementById('masterChart').getContext('2d');
+
+    // --- Chart Configurations ---
+    function getChartConfig(type) {
+        switch(type) {
+            case 'earnings':
+                const labelsEarn = rawData.earnings.map(d => d.month);
+                const dataEarn = rawData.earnings.map(d => d.revenue);
+                
+                // Gradient for Earnings
+                const gradEarn = ctx.createLinearGradient(0, 0, 0, 400);
+                gradEarn.addColorStop(0, 'rgba(236, 201, 75, 0.5)'); // Yellow
+                gradEarn.addColorStop(1, 'rgba(236, 201, 75, 0.0)');
+
+                return {
+                    type: 'line',
+                    data: {
+                        labels: labelsEarn,
+                        datasets: [{
+                            label: 'Revenue (TND)',
+                            data: dataEarn,
+                            borderColor: '#ecc94b',
+                            backgroundColor: gradEarn,
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#ecc94b'
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                };
+
+            case 'sellers':
+                return {
+                    type: 'bar',
+                    data: {
+                        labels: rawData.sellers.map(d => d.sellerName),
+                        datasets: [{
+                            label: 'Total Sales',
+                            data: rawData.sellers.map(d => d.revenue),
+                            backgroundColor: '#4299e1', // Blue
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        indexAxis: 'y' // Horizontal Bar
+                    }
+                };
+
+            case 'products':
+                return {
+                    type: 'bar',
+                    data: {
+                        labels: rawData.products.map(d => d.productName),
+                        datasets: [{
+                            label: 'Units Sold',
+                            data: rawData.products.map(d => d.totalSales),
+                            backgroundColor: '#48bb78', // Green
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                };
+
+            case 'categories':
+                return {
+                    type: 'doughnut',
+                    data: {
+                        labels: rawData.categories.map(d => d.categoryName),
+                        datasets: [{
+                            data: rawData.categories.map(d => d.totalSales),
+                            backgroundColor: ['#2c3e50', '#4299e1', '#ecc94b', '#48bb78', '#38b2ac'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        cutout: '60%',
+                        plugins: { legend: { position: 'right' } }
+                    }
+                };
+
+            case 'clients':
+                return {
+                    type: 'bar',
+                    data: {
+                        labels: rawData.clients.map(d => d.username),
+                        datasets: [{
+                            label: 'Total Spent (TND)',
+                            data: rawData.clients.map(d => d.totalSpent),
+                            backgroundColor: '#38b2ac', // Teal
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                };
+        }
+    }
+
+    // --- Update Function ---
+    function updateChart(type) {
+        // 1. Update Buttons
+        document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`.nav-tab-btn[data-target="${type}"]`).classList.add('active');
+
+        // 2. Destroy old chart
+        if (masterChart) masterChart.destroy();
+
+        // 3. Create new chart
+        const config = getChartConfig(type);
+        masterChart = new Chart(ctx, {
+            type: config.type,
+            data: config.data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                ...config.options
+            }
+        });
+
+        // 4. Update Details Section
+        updateDetails(type);
+    }
+
+    function updateDetails(type) {
+        const grid = document.getElementById('detailsGrid');
+        const title = document.getElementById('detailsTitle');
+        grid.innerHTML = '';
+
+        let items = [];
+        
+        if (type === 'earnings') {
+            title.innerText = 'Monthly Breakdown';
+            items = rawData.earnings.slice(-4).map(d => ({ label: d.month, value: parseFloat(d.revenue).toFixed(2) + ' TND' }));
+        } else if (type === 'sellers') {
+            title.innerText = 'Top Performing Sellers';
+            items = rawData.sellers.slice(0, 4).map(d => ({ label: d.sellerName, value: parseFloat(d.revenue).toFixed(2) + ' TND' }));
+        } else if (type === 'products') {
+            title.innerText = 'Best Selling Products';
+            items = rawData.products.slice(0, 4).map(d => ({ label: d.productName, value: d.totalSales + ' units' }));
+        } else if (type === 'categories') {
+            title.innerText = 'Category Performance';
+            items = rawData.categories.slice(0, 4).map(d => ({ label: d.categoryName, value: d.totalSales + ' sales' }));
+        } else if (type === 'clients') {
+            title.innerText = 'Top Buyers';
+            items = rawData.clients.slice(0, 4).map(d => ({ label: d.username, value: parseFloat(d.totalSpent).toFixed(2) + ' TND' }));
+        }
+
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'mini-stat-card';
+            div.innerHTML = `<div class="mini-stat-label">${item.label}</div><div class="mini-stat-value">${item.value}</div>`;
+            grid.appendChild(div);
+        });
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        updateChart('earnings');
+    });
+
+</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Tournament Details{% endblock %}
+{% block content_title %}Tournament Details{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_tournament_index') }}">Tournaments</a></li>
+    <li class="breadcrumb-item active">Details</li>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <table class="table">
+            <tbody>
+                <tr><th>ID</th><td>{{ tournament.id }}</td></tr>
+                <tr><th>Title</th><td>{{ tournament.title }}</td></tr>
+                <tr><th>Description</th><td>{{ tournament.description }}</td></tr>
+                <tr><th>Status</th><td>{{ tournament.status }}</td></tr>
+                <tr><th>Mode</th><td>{{ tournament.mode|upper }}</td></tr>
+                <tr><th>Entry Fee</th><td>{{ tournament.entryFee|number_format(2, '.', ',') }}</td></tr>
+                <tr><th>Prize Pool</th><td>{{ tournament.prizePool is not null ? tournament.prizePool|number_format(2, '.', ',') : '-' }}</td></tr>
+                <tr><th>AI Generated</th><td>{{ tournament.isAiGenerated ? 'Yes' : 'No' }}</td></tr>
+                <tr><th>Start</th><td>{{ tournament.startDate ? tournament.startDate|date('d/m/Y H:i') : '-' }}</td></tr>
+                <tr><th>End</th><td>{{ tournament.endDate ? tournament.endDate|date('d/m/Y') : '-' }}</td></tr>
+                <tr><th>Max Players</th><td>{{ tournament.maxPlayers }}</td></tr>
+                <tr><th>Created At</th><td>{{ tournament.createdAt ? tournament.createdAt|date('d/m/Y H:i') : '-' }}</td></tr>
+            </tbody>
+        </table>
+
+        <a class="btn btn-secondary" href="{{ path('app_admin_tournament_index') }}">Back</a>
+        <a class="btn btn-warning" href="{{ path('app_admin_tournament_edit', {'id': tournament.id}) }}">Edit</a>
+        <form method="post" action="{{ path('app_admin_tournament_generate_matches', {'id': tournament.id}) }}" style="display:inline-block;">
+            <input type="hidden" name="_token" value="{{ csrf_token('generate_matches_' ~ tournament.id) }}">
+            <button class="btn btn-info" type="submit">Generate Matches</button>
+        </form>
+        <form method="post" action="{{ path('app_admin_tournament_finalize', {'id': tournament.id}) }}" style="display:inline-block;">
+            <input type="hidden" name="_token" value="{{ csrf_token('finalize_tournament_' ~ tournament.id) }}">
+            <button class="btn btn-success" type="submit" onclick="return confirm('Finalize this tournament?')">Finalize Tournament</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

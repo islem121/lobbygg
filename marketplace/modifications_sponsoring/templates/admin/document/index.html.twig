@@ -1,0 +1,74 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block content_title %}Gestion des Demandes{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_sponsoring') }}">Sponsor Management</a></li>
+    <li class="breadcrumb-item active">Documents</li>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Liste des Demandes (Documents)</h3>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Client</th>
+                    <th>Offre</th>
+                    <th>Message</th>
+                    <th>Motivation</th>
+                    <th>Statut</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for document in documents %}
+                <tr>
+                    <td>{{ document.id }}</td>
+                    <td>{{ document.client.username }}</td>
+                    <td>{{ document.offer.nomSociete }}</td>
+                    <td>{{ document.message|length > 30 ? document.message|slice(0, 30) ~ '...' : document.message }}</td>
+                    <td>{{ document.motivation|length > 30 ? document.motivation|slice(0, 30) ~ '...' : document.motivation }}</td>
+                    <td>
+                        {% if document.status == 'en attente' %}
+                            <span class="badge bg-warning">EN ATTENTE</span>
+                        {% elseif document.status == 'accepté' %}
+                            <span class="badge bg-success">VALIDÉ</span>
+                        {% else %}
+                            <span class="badge bg-danger">{{ document.status|upper }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ document.createdAt ? document.createdAt|date('d/m/Y H:i') : '' }}</td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{{ path('app_admin_document_show', {'id': document.id}) }}" class="btn btn-info btn-sm">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ path('app_admin_document_edit', {'id': document.id}) }}" class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="post" action="{{ path('app_admin_document_delete', {'id': document.id}) }}" style="display:inline-block" onsubmit="return confirm('Êtes-vous sûr ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ document.id) }}">
+                                <button class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted">Aucune demande trouvée</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

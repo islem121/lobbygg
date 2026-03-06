@@ -1,0 +1,147 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Gestion des Utilisateurs{% endblock %}
+{% block content_title %}Liste des Utilisateurs{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item active">Utilisateurs</li>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Utilisateurs enregistrés</h3>
+        <div class="card-tools d-flex align-items-center gap-2">
+            <div class="input-group input-group-sm" style="width: 250px;">
+                <input type="text" id="search-user" class="form-control" placeholder="Rechercher (nom, email)...">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+            </div>
+            <a href="{{ path('app_admin_repair_passwords') }}" class="btn btn-warning btn-sm" onclick="return confirm('Voulez-vous hacher tous les mots de passe qui sont encore en texte clair ? Cela réparera les accès client/sponsor.')">
+                <i class="bi bi-shield-lock-fill"></i> Réparer MDP
+            </a>
+            <a href="{{ path('app_admin_user_new') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-person-plus-fill"></i> Nouveau
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th style="width: 10px">ID</th>
+                    <th>
+                        <a href="#" class="sort-link text-dark text-decoration-none" data-sort="username">
+                            Nom d'utilisateur <i class="bi bi-arrow-down-up"></i>
+                        </a>
+                    </th>
+                    <th>
+                        <a href="#" class="sort-link text-dark text-decoration-none" data-sort="nom">
+                            Nom <i class="bi bi-arrow-down-up"></i>
+                        </a>
+                    </th>
+                    <th>
+                        <a href="#" class="sort-link text-dark text-decoration-none" data-sort="prenom">
+                            Prénom <i class="bi bi-arrow-down-up"></i>
+                        </a>
+                    </th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th>
+                        <a href="#" class="sort-link text-dark text-decoration-none" data-sort="dateNaissance">
+                            Date de naissance <i class="bi bi-arrow-down-up"></i>
+                        </a>
+                    </th>
+                    <th>
+                        <a href="#" class="sort-link text-dark text-decoration-none" data-sort="genre">
+                            Genre <i class="bi bi-arrow-down-up"></i>
+                        </a>
+                    </th>
+                    <th>
+                        <a href="#" class="sort-link text-dark text-decoration-none" data-sort="origin">
+                            Origine <i class="bi bi-arrow-down-up"></i>
+                        </a>
+                    </th>
+                    <th>
+                        <a href="#" class="sort-link text-dark text-decoration-none" data-sort="telephone">
+                            Téléphone <i class="bi bi-arrow-down-up"></i>
+                        </a>
+                    </th>
+                    <th>Face ID</th>
+                    <th>
+                        <a href="#" class="sort-link text-dark text-decoration-none" data-sort="createdAt">
+                            Date de création <i class="bi bi-arrow-down-up"></i>
+                        </a>
+                    </th>
+                    <th style="width: 150px">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="user-table-body">
+                {% include 'admin/user/_table_body.html.twig' %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('search-user');
+        const tableBody = document.getElementById('user-table-body');
+        const sortLinks = document.querySelectorAll('.sort-link');
+        let currentSort = '{{ currentSort|default("id") }}';
+        let currentDirection = '{{ currentDirection|default("ASC") }}';
+        let timeoutId;
+
+        function fetchUsers() {
+            const query = searchInput.value;
+            const url = `{{ path('app_admin_user_index') }}?q=${encodeURIComponent(query)}&sort=${currentSort}&direction=${currentDirection}`;
+
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                tableBody.innerHTML = html;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(fetchUsers, 300);
+        });
+
+        sortLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const sort = this.getAttribute('data-sort');
+
+                if (currentSort === sort) {
+                    currentDirection = currentDirection === 'ASC' ? 'DESC' : 'ASC';
+                } else {
+                    currentSort = sort;
+                    currentDirection = 'ASC';
+                }
+                
+                // Update icons visually
+                sortLinks.forEach(l => {
+                    const icon = l.querySelector('i');
+                    icon.className = 'bi bi-arrow-down-up';
+                });
+                const activeIcon = this.querySelector('i');
+                if (currentDirection === 'ASC') {
+                    activeIcon.className = 'bi bi-sort-alpha-down';
+                } else {
+                    activeIcon.className = 'bi bi-sort-alpha-up-alt';
+                }
+
+                fetchUsers();
+            });
+        });
+    });
+</script>
+{% endblock %}

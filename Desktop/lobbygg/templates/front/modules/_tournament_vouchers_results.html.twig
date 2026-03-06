@@ -1,0 +1,28 @@
+{% if vouchers is empty %}
+  <p>No vouchers found.</p>
+{% else %}
+  <div style="overflow:auto;">
+    <table style="width:100%; border-collapse: collapse;">
+      <thead>
+        <tr>
+          <th style="text-align:left; padding:8px;">Code</th>
+          <th style="text-align:left; padding:8px;">Tournament</th>
+          <th style="text-align:left; padding:8px;">Amount</th>
+          <th style="text-align:left; padding:8px;">Purchased</th>
+          <th style="text-align:left; padding:8px;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for voucher in vouchers %}
+          <tr>
+            <td style="padding:8px;"><code>{{ voucher.code }}</code></td>
+            <td style="padding:8px;">{{ voucher.tournament ? voucher.tournament.title : 'Unknown' }}</td>
+            <td style="padding:8px;">{{ voucher.amount|number_format(2, '.', ',') }}</td>
+            <td style="padding:8px;">{{ voucher.purchasedAt ? voucher.purchasedAt|date('Y-m-d H:i') : '-' }}</td>
+            <td style="padding:8px;">{{ voucher.used ? 'Used' : 'Available' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}

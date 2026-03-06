@@ -1,0 +1,80 @@
+Array
+(
+    [Field] => id
+    [Type] => int(11)
+    [Null] => NO
+    [Key] => PRI
+    [Default] => 
+    [Extra] => auto_increment
+)
+
+Array
+(
+    [Field] => nom_societe
+    [Type] => varchar(255)
+    [Null] => NO
+    [Key] => 
+    [Default] => 
+    [Extra] => 
+)
+
+Array
+(
+    [Field] => description
+    [Type] => longtext
+    [Null] => NO
+    [Key] => 
+    [Default] => 
+    [Extra] => 
+)
+
+Array
+(
+    [Field] => amount
+    [Type] => double
+    [Null] => NO
+    [Key] => 
+    [Default] => 
+    [Extra] => 
+)
+
+Array
+(
+    [Field] => target_type
+    [Type] => varchar(50)
+    [Null] => NO
+    [Key] => 
+    [Default] => 
+    [Extra] => 
+)
+
+Array
+(
+    [Field] => dossier
+    [Type] => varchar(255)
+    [Null] => YES
+    [Key] => 
+    [Default] => 
+    [Extra] => 
+)
+
+Array
+(
+    [Field] => created_at
+    [Type] => datetime
+    [Null] => NO
+    [Key] => 
+    [Default] => 
+    [Extra] => 
+)
+
+Array
+(
+    [Field] => sponsor_id
+    [Type] => int(11)
+    [Null] => NO
+    [Key] => MUL
+    [Default] => 
+    [Extra] => 
+)
+

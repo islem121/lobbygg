@@ -1,0 +1,52 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block content_title %}Détails du Sponsor{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_sponsoring') }}">Sponsor Management</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_sponsor_index') }}">Sponsors</a></li>
+    <li class="breadcrumb-item active">Détails</li>
+{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Informations sur l'offre</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th>ID</th>
+                        <td>{{ sponsor.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Nom de la Société</th>
+                        <td>{{ sponsor.nomSociete }}</td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>{{ sponsor.description }}</td>
+                    </tr>
+                    <tr>
+                        <th>Montant</th>
+                        <td>{{ sponsor.amount }} DT</td>
+                    </tr>
+                    <tr>
+                        <th>Type de Cible</th>
+                        <td>{{ sponsor.targetType|upper }}</td>
+                    </tr>
+                    <tr>
+                        <th>Date de Création</th>
+                        <td>{{ sponsor.createdAt ? sponsor.createdAt|date('d/m/Y H:i') : '' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer">
+            <a href="{{ path('app_admin_sponsor_index') }}" class="btn btn-secondary">Retour à la liste</a>
+            <a href="{{ path('app_admin_sponsor_edit', {'id': sponsor.id}) }}" class="btn btn-warning">Modifier</a>
+        </div>
+    </div>
+{% endblock %}

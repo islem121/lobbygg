@@ -1,0 +1,23 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Modifier le Produit{% endblock %}
+{% block content_title %}Modifier Produit #{{ product.id }}{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_product_index') }}">Produits</a></li>
+    <li class="breadcrumb-item active">Modifier</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-warning">
+            <div class="card-header">
+                <h3 class="card-title">Editer les informations</h3>
+            </div>
+            {{ include('admin/product/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

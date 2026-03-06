@@ -164,31 +164,20 @@ class NeonCyberLoginForm {
         }, 300);
     }
     
-    async handleSubmit(e) {
-        e.preventDefault();
+    handleSubmit(e) {
+        // Supprimé e.preventDefault() pour laisser Symfony gérer l'authentification
         
         const isEmailValid = this.validateEmail();
         const isPasswordValid = this.validatePassword();
         
         if (!isEmailValid || !isPasswordValid) {
-            // Add system error glitch
+            e.preventDefault(); // Bloquer seulement si erreur de validation
             this.triggerSystemGlitch();
             return;
         }
         
         this.setLoading(true);
-        
-        try {
-            // Simulate cyber authentication process
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            
-            // Show matrix success
-            this.showMatrixSuccess();
-        } catch (error) {
-            this.showError('password', '[ ERROR: CONNECTION_FAILED ]');
-        } finally {
-            this.setLoading(false);
-        }
+        // Le formulaire va maintenant se soumettre normalement vers /login
     }
     
     async handleSocialLogin(provider, button) {
