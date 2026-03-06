@@ -4,31 +4,28 @@ namespace App\Security;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
 
 class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
 {
-    private UrlGeneratorInterface $urlGenerator;
+    private $router;
 
-    public function __construct(UrlGeneratorInterface $urlGenerator)
+    public function __construct(RouterInterface $router)
     {
-        $this->urlGenerator = $urlGenerator;
+        $this->router = $router;
     }
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token): RedirectResponse
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token): Response
     {
-        $user = $token->getUser();
         $roles = $token->getRoleNames();
-        
-        // dd($roles); // Décommentez cette ligne pour forcer l'arrêt et voir les rôles si ça ne redirige toujours pas
 
-        if (in_array('ROLE_ADMIN', $roles)) {
-            return new RedirectResponse($this->urlGenerator->generate('app_admin'));
+        if (in_array('ROLE_ADMIN', $roles, true)) {
+            return new RedirectResponse($this->router->generate('app_admin'));
         }
 
-        // Clients et Sponsors vont tous les deux vers la home page traitée précédemment
-        return new RedirectResponse($this->urlGenerator->generate('app_home'));
+        return new RedirectResponse($this->router->generate('app_home'));
     }
 }

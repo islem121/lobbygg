@@ -13,86 +13,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root {
-            --primary: #8B3DFF;
-            --secondary: #ff0080;
-            --accent: #00f2ff;
-            --bg-dark: #0a0a0a;
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-        }
-
         /* Styles spécifiques à l'inscription */
-        body {
-            background-color: var(--bg-dark);
-            background-image: 
-                radial-gradient(circle at 10% 10%, rgba(139, 61, 255, 0.1) 0%, transparent 40%),
-                radial-gradient(circle at 90% 90%, rgba(255, 0, 128, 0.1) 0%, transparent 40%);
-            height: auto !important;
-            min-height: 100vh;
-            overflow-y: auto !important;
-            display: block !important; /* Pour éviter les problèmes de centrage flex qui coupent le contenu */
-            padding-top: 50px;
-            padding-bottom: 50px;
-        }
-
         .register-container {
             max-width: 500px;
-            margin: 0 auto; /* Centrage horizontal manuel */
         }
-        
-        .cyber-terminal {
-            position: relative;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(139, 61, 255, 0.2);
-            overflow: visible !important; /* Permet au contenu de dépasser si besoin */
-        }
-
-        .scanlines {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                rgba(18, 16, 16, 0) 50%,
-                rgba(0, 0, 0, 0.1) 50%
-            ), linear-gradient(
-                90deg,
-                rgba(255, 0, 0, 0.03),
-                rgba(0, 255, 0, 0.01),
-                rgba(0, 0, 255, 0.03)
-            );
-            background-size: 100% 4px, 3px 100%;
-            pointer-events: none;
-            z-index: 10;
-            opacity: 0.3;
-        }
-
-        .logo-glitch {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url("{{ asset('images/logo.png') }}") no-repeat center center;
-            background-size: 40px;
-            opacity: 0.5;
-            filter: hue-rotate(90deg);
-            z-index: 1;
-            animation: logoGlitch 4s infinite;
-            display: none;
-        }
-
-        @keyframes logoGlitch {
-            0% { transform: translate(0); clip-path: inset(0 0 0 0); }
-            5% { transform: translate(-5px, 2px); clip-path: inset(10% 0 80% 0); }
-            10% { transform: translate(5px, -2px); clip-path: inset(80% 0 10% 0); }
-            15% { transform: translate(0); clip-path: inset(0 0 0 0); }
-            100% { transform: translate(0); }
-        }
-        
-        #optionalFields { display: none; }
         
         .cyber-title span {
             color: #9D4EDD;
@@ -196,17 +120,7 @@
     </div>
 
     <div class="login-container register-container">
-        {# Affichage des messages Flash pour le debug #}
-        {% for label, messages in app.flashes %}
-            {% for message in messages %}
-                <div class="cyber-alert alert-{{ label }}" style="margin-bottom: 20px; padding: 15px; border: 1px solid {% if label == 'success' %}#00ff41{% else %}#ff5555{% endif %}; background: rgba(0,0,0,0.8); color: {% if label == 'success' %}#00ff41{% else %}#ff5555{% endif %}; font-family: 'Courier New', monospace; font-size: 14px; text-transform: uppercase; box-shadow: 0 0 10px {% if label == 'success' %}#00ff41{% else %}#ff5555{% endif %};">
-                    [SYSTEM_MESSAGE]: {{ message }}
-                </div>
-            {% endfor %}
-        {% endfor %}
-
         <div class="cyber-terminal">
-            <div class="scanlines"></div>
             <div class="terminal-header">
                 <div class="terminal-buttons">
                     <div class="term-btn btn-red"></div>
@@ -220,10 +134,12 @@
                 {# Logo et titre #}
                 <div class="neon-header">
                     <div class="cyber-logo">
-                        <div class="logo-glitch"></div>
                         <div class="logo-frame">
                             <div class="logo-core">
-                                <img src="{{ asset('images/logo.png') }}" alt="Lobby.gg Logo" class="logo-image" style="width: 30px; height: 30px;">
+                                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                    <path d="M20 10C14.477 10 10 14.477 10 20C10 25.523 14.477 30 20 30C25.523 30 30 25.523 30 20C30 14.477 25.523 10 20 10ZM20 25C17.239 25 15 22.761 15 20C15 17.239 17.239 15 20 15C22.761 15 25 17.239 25 20C25 22.761 22.761 25 20 25Z" fill="#6A0DAD"/>
+                                    <path d="M22 18H18V22H22V18Z" fill="#FF6B9D"/>
+                                </svg>
                             </div>
                             <div class="logo-scanner"></div>
                         </div>
@@ -236,7 +152,7 @@
                 </div>
                 
                 {# Formulaire d'inscription #}
-                <form class="neon-form" id="registerForm" method="post" action="{{ path('app_register') }}">
+                <form class="neon-form" id="registerForm" method="post" novalidate>
 
                     {# Grille pour nom/prénom #}
                     <div class="form-grid">
@@ -248,13 +164,12 @@
                                        id="nom" 
                                        name="nom" 
                                        required
-                                       value="{{ app.request.request.get('nom') }}"
                                        placeholder="ENTREZ VOTRE NOM">
                                 <div class="cyber-scanner">
                                     <div class="scan-line"></div>
                                 </div>
                             </div>
-                            <span class="cyber-error {% if errors.nom is defined %}show{% endif %}" id="nomError">{% if errors.nom is defined %}{{ errors.nom }}{% endif %}</span>
+                            <span class="cyber-error" id="nomError"></span>
                         </div>
                         
                         <div class="cyber-field">
@@ -265,16 +180,16 @@
                                        id="prenom" 
                                        name="prenom" 
                                        required
-                                       value="{{ app.request.request.get('prenom') }}"
                                        placeholder="ENTREZ VOTRE PRÉNOM">
                                 <div class="cyber-scanner">
                                     <div class="scan-line"></div>
                                 </div>
                             </div>
-                            <span class="cyber-error {% if errors.prenom is defined %}show{% endif %}" id="prenomError">{% if errors.prenom is defined %}{{ errors.prenom }}{% endif %}</span>
+                            <span class="cyber-error" id="prenomError"></span>
                         </div>
                     </div>
                     
+                    {# Email #}
                     <div class="cyber-field">
                         <label for="email">&gt; EMAIL</label>
                         <div class="field-frame">
@@ -283,15 +198,18 @@
                                    id="email" 
                                    name="email" 
                                    required
-                                   value="{{ app.request.request.get('email') }}"
                                    placeholder="EX: GAMER@LOBBY.GG">
                             <div class="cyber-scanner">
                                 <div class="scan-line"></div>
                             </div>
                         </div>
-                        <span class="cyber-error {% if errors.email is defined %}show{% endif %}" id="emailError">{% if errors.email is defined %}{{ errors.email }}{% endif %}</span>
+                        <div class="requirement invalid" id="emailRequirement">
+                            <i class="fas fa-times"></i> Doit contenir @
+                        </div>
+                        <span class="cyber-error" id="emailError"></span>
                     </div>
                     
+                    {# Mot de passe #}
                     <div class="cyber-field">
                         <label for="password">&gt; MOT_DE_PASSE</label>
                         <div class="field-frame">
@@ -315,8 +233,6 @@
                                 <div class="scan-line"></div>
                             </div>
                         </div>
-                        <span class="cyber-error {% if errors.password is defined %}show{% endif %}" id="passwordError">{% if errors.password is defined %}{{ errors.password }}{% endif %}</span>
-                    </div>
                         <div class="password-strength">
                             <span>FORCE:</span>
                             <div class="strength-bar">
@@ -337,6 +253,7 @@
                         </div>
                     </div>
                     
+                    {# Confirmation mot de passe #}
                     <div class="cyber-field">
                         <label for="confirmPassword">&gt; CONFIRMER</label>
                         <div class="field-frame">
@@ -363,37 +280,39 @@
                         <div class="requirement invalid" id="matchReq">
                             <i class="fas fa-times"></i> Correspond au mot de passe
                         </div>
-                        <span class="cyber-error" id="confirmError">{% if errors.confirm_password is defined %}{{ errors.confirm_password }}{% endif %}</span>
+                        <span class="cyber-error" id="confirmError"></span>
                     </div>
                     
-                    <div class="cyber-field" id="optionalDate">
+                    {# Date de naissance #}
+                    <div class="cyber-field">
                         <label for="date_naissance">&gt; DATE_DE_NAISSANCE</label>
                         <div class="field-frame">
                             <div class="field-border"></div>
                             <input type="date" 
                                    id="date_naissance" 
                                    name="date_naissance" 
-                                   
+                                   required
                                    placeholder=" ">
                             <div class="cyber-scanner">
                                 <div class="scan-line"></div>
                             </div>
                         </div>
-                        <div class="requirement invalid" id="ageCheck">
+                        <div class="age-check" id="ageCheck">
                             <i class="fas fa-user-clock"></i>
                             <span id="ageText">Âge: calcul en cours...</span>
                         </div>
-                        <span class="cyber-error" id="dateError">{% if errors.dateNaissance is defined %}{{ errors.dateNaissance }}{% endif %}</span>
+                        <span class="cyber-error" id="dateError"></span>
                     </div>
                     
-                    <div class="cyber-field" id="optionalPhone">
+                    {# Téléphone #}
+                    <div class="cyber-field">
                         <label for="telephone">&gt; TÉLÉPHONE</label>
                         <div class="field-frame">
                             <div class="field-border"></div>
                             <input type="tel" 
                                    id="telephone" 
                                    name="telephone" 
-                                   value="{{ app.request.request.get('telephone') }}"
+                                   required
                                    pattern="[0-9]{10}"
                                    placeholder="0123456789">
                             <div class="cyber-scanner">
@@ -403,26 +322,28 @@
                         <div class="requirement invalid" id="phoneReq">
                             <i class="fas fa-times"></i> 10 chiffres
                         </div>
-                        <span class="cyber-error" id="phoneError">{% if errors.telephone is defined %}{{ errors.telephone }}{% endif %}</span>
+                        <span class="cyber-error" id="phoneError"></span>
                     </div>
                     
-                    <div class="cyber-field" id="optionalRole">
+                    {# Rôle #}
+                    <div class="cyber-field">
                         <label for="role">&gt; RÔLE</label>
                         <div class="field-frame">
                             <div class="field-border"></div>
-                            <select id="role" name="role" class="cyber-select">
+                            <select id="role" name="role" required class="cyber-select">
                                 <option value="" disabled selected hidden>&gt; CHOISIR_RÔLE</option>
-                                <option value="client" {% if app.request.request.get('role') == 'client' %}selected{% endif %}>JOUEUR (CLIENT)</option>
-                                <option value="admin" {% if app.request.request.get('role') == 'admin' %}selected{% endif %}>ADMIN</option>
-                                <option value="sponsor" {% if app.request.request.get('role') == 'sponsor' %}selected{% endif %}>SPONSOR</option>
+                                <option value="client">JOUEUR (CLIENT)</option>
+                                <option value="admin">ADMIN</option>
+                                <option value="sponsor">SPONSOR</option>
                             </select>
                             <div class="cyber-scanner">
                                 <div class="scan-line"></div>
                             </div>
                         </div>
-                        <span class="cyber-error" id="roleError">{% if errors.role is defined %}{{ errors.role }}{% endif %}</span>
+                        <span class="cyber-error" id="roleError"></span>
                     </div>
 
+                    {# Checkbox CGU #}
                     <div class="cyber-options">
                         <label class="neon-checkbox">
                             <input type="checkbox" id="cgu" name="cgu" required>
@@ -437,8 +358,8 @@
                     </div>
                     <span class="cyber-error" id="cguError"></span>
                     {# Boutons d'action #}
-                    <div class="form-actions" style="flex-direction: column; gap: 20px;">
-                        <button id="submitTop" type="submit" class="neon-button" style="width: 100%;">
+                    <div class="form-actions">
+                        <button type="submit" class="neon-button">
                             <div class="btn-matrix"></div>
                             <span class="btn-text">[ CRÉER_COMPTE ]</span>
                             <div class="btn-loader">
@@ -451,9 +372,9 @@
                             </div>
                             <div class="btn-glow"></div>
                         </button>
-
+                        
                         <a href="{{ path('app_login') }}" class="btn-secondary">
-                            <i class="fas fa-arrow-left"></i> RETOUR À LA CONNEXION
+                            <i class="fas fa-arrow-left"></i> RETOUR
                         </a>
                     </div>
                 </form>
@@ -483,7 +404,7 @@
             const dateInput = document.getElementById('date_naissance');
             const phoneInput = document.getElementById('telephone');
             const emailInput = document.getElementById('email');
-            const submitBtn = document.getElementById('submitTop');
+            const submitBtn = form.querySelector('.neon-button');
             
             // 1. Validation en temps réel du mot de passe
             passwordInput.addEventListener('input', function() {
@@ -507,7 +428,7 @@
             setupPasswordToggles();
             
             // 7. Soumission du formulaire
-            // form.addEventListener('submit', handleSubmit);
+            form.addEventListener('submit', handleSubmit);
             
             // Fonctions de validation
             
@@ -575,15 +496,6 @@
             
             function validateAge() {
                 const birthDate = new Date(dateInput.value);
-                if (!dateInput.value) {
-                    const ageCheck = document.getElementById('ageCheck');
-                    const ageText = document.getElementById('ageText');
-                    ageText.textContent = 'Âge: optionnel';
-                    ageCheck.style.background = 'rgba(106, 13, 173, 0.1)';
-                    ageCheck.style.borderColor = 'rgba(106, 13, 173, 0.3)';
-                    ageText.style.color = '#6A0DAD';
-                    return true;
-                }
                 const today = new Date();
                 let age = today.getFullYear() - birthDate.getFullYear();
                 const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -614,12 +526,6 @@
             function validatePhone() {
                 const phone = phoneInput.value.replace(/\D/g, ''); // Garde seulement les chiffres
                 const phoneReq = document.getElementById('phoneReq');
-                if (!phoneInput.value.trim()) {
-                    phoneReq.classList.remove('invalid');
-                    phoneReq.classList.add('valid');
-                    phoneReq.querySelector('i').className = 'fas fa-check';
-                    return true;
-                }
                 const isValid = phone.length === 10;
                 
                 // Formate le numéro
@@ -673,27 +579,22 @@
                 e.preventDefault();
                 console.log('🔄 Processing registration...');
                 
-                // Reset errors
-                const errorSpans = document.querySelectorAll('.cyber-error');
-                errorSpans.forEach(span => span.textContent = '');
-
                 // Validation finale
                 const isPasswordValid = validatePassword();
                 const isMatchValid = validatePasswordMatch();
-                const isAgeValid = dateInput.value ? validateAge() : true;
-                const isPhoneValid = phoneInput.value ? validatePhone() : true;
+                const isAgeValid = validateAge();
+                const isPhoneValid = validatePhone();
                 const isEmailValid = validateEmail();
                 
                 // Vérifier tous les champs requis
-                const requiredFields = ['nom', 'prenom', 'email', 'password', 'confirmPassword'];
+                const requiredFields = ['nom', 'prenom', 'email', 'password', 'confirmPassword', 'date_naissance', 'telephone'];
                 let allFieldsValid = true;
                 
                 requiredFields.forEach(fieldId => {
                     const field = document.getElementById(fieldId);
-                    if (!field || !field.value.trim()) {
+                    if (!field.value.trim()) {
                         showError(fieldId + 'Error', 'CHAMP_REQUIS');
                         allFieldsValid = false;
-                        console.log('❌ Field missing:', fieldId);
                     }
                 });
                 
@@ -702,45 +603,24 @@
                 if (!cguCheckbox.checked) {
                     showError('cguError', 'ACCEPTER_CGU_REQUIS');
                     allFieldsValid = false;
-                    console.log('❌ CGU not checked');
                 }
                 
-                console.log('Validation stats:', {
-                    allFieldsValid,
-                    isPasswordValid,
-                    isMatchValid,
-                    isAgeValid,
-                    isPhoneValid,
-                    isEmailValid
-                });
-
                 // Si tout est valide
                 if (allFieldsValid && isPasswordValid && isMatchValid && isAgeValid && isPhoneValid && isEmailValid) {
-                    console.log('✅ Form is valid! Submitting...');
                     // Animation de chargement
                     submitBtn.classList.add('loading');
                     submitBtn.disabled = true;
                     
-                    // Utiliser submit() directement sur l'élément DOM
+                    // On laisse le formulaire s'envoyer réellement à Symfony
                     form.submit();
                 } else {
-                    // Afficher un message global si possible ou secouer le bouton
-                    let missing = [];
-                    if (!allFieldsValid) missing.push('Champs obligatoires');
-                    if (!isPasswordValid) missing.push('Mot de passe non conforme');
-                    if (!isMatchValid) missing.push('Confirmation différente');
-                    if (!isAgeValid) missing.push('Âge requis');
-                    if (!isEmailValid) missing.push('Email invalide');
-
-                    alert('Veuillez corriger les points suivants :\n- ' + missing.join('\n- '));
-
                     // Effet d'erreur
                     submitBtn.style.animation = 'shake 0.5s';
                     setTimeout(() => {
                         submitBtn.style.animation = '';
                     }, 500);
                     
-                    console.log('❌ Validation failed:', missing);
+                    console.log('❌ Validation failed');
                 }
             }
             

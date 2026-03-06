@@ -1,39 +1,10 @@
-# FICHIERS DE CONFIGURATION SENSIBLES (NE PAS PARTAGER)
-/.env
+
+###> symfony/framework-bundle ###
 /.env.local
-/.env.test
-/.env.prod
-
-# DOSSIER DES DÉPENDANCES PHP (TRÈS LOURD)
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
 /vendor/
-
-# DOSSIER DES DÉPENDANCES JAVASCRIPT (TRÈS LOURD)
-/node_modules/
-
-# FICHIERS DE CACHE ET LOGS
-/var/cache/*
-/var/log/*
-!var/cache/.gitkeep
-!var/log/.gitkeep
-
-# FICHIERS COMPILÉS
-/public/build/
-
-# FICHIERS DE SYMFONY
-/.php-version
-.phpunit.result.cache
-.phpunit.cache
-/phpunit.xml
-
-# FICHIERS D'IDE (VS Code, PHPStorm)
-.idea/
-.vscode/
-*.swp
-*.swo
-.DS_Store
-
-# TESTS
-/coverage/
-
-# DOCKER
-docker-compose.override.yml
+###< symfony/framework-bundle ###

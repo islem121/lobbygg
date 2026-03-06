@@ -24,7 +24,6 @@ class UserType extends AbstractType
                 'choices' => [
                     'Joueur' => User::ROLE_CLIENT,
                     'Admin' => User::ROLE_ADMIN,
-                    'Sponsor' => User::ROLE_SPONSOR,
                 ],
             ])
         ;
@@ -34,8 +33,6 @@ class UserType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => User::class,
-            'attr' => ['novalidate' => 'novalidate'],
-            'required' => false,
         ]);
     }
 }

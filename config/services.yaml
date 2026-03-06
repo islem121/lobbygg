@@ -4,7 +4,6 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-    sponsoring_directory: '%kernel.project_dir%/public/uploads/sponsoring'
 
 services:
     # default configuration for services in *this* file
@@ -20,17 +19,6 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-
-    App\Service\PaymentService:
-        arguments:
-            $stripeSecretKey: '%env(STRIPE_SECRET_KEY)%'
-            $stripeSimulationMode: '%env(bool:STRIPE_SIMULATION_MODE)%'
-
-    App\Service\AiComparisonService:
-        arguments:
-            $openaiApiKey: '%env(default::OPENAI_API_KEY)%'
-            $aiModel: '%env(default::AI_MODEL)%'
-            $aiBaseUri: '%env(default::AI_BASE_URI)%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

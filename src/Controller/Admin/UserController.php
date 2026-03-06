@@ -17,10 +17,37 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class UserController extends AbstractController
 {
     #[Route('/', name: 'app_admin_user_index', methods: ['GET'])]
-    public function index(UserRepository $userRepository): Response
+    public function index(Request $request, UserRepository $userRepository): Response
     {
+        $q = $request->query->get('q');
+        $sort = $request->query->get('sort', 'id');
+        $direction = $request->query->get('direction', 'ASC');
+
+        // Whitelist allowed sort fields to prevent SQL injection
+        $allowedSorts = ['id', 'username', 'nom', 'prenom', 'email', 'dateNaissance', 'genre', 'origin', 'telephone', 'createdAt'];
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'id';
+        }
+
+        // Whitelist allowed directions
+        $direction = strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
+
+        if ($q) {
+            $users = $userRepository->searchNonAdmins($q, $sort, $direction);
+        } else {
+            $users = $userRepository->findAllNonAdmins($sort, $direction);
+        }
+
+        if ($request->isXmlHttpRequest()) {
+            return $this->render('admin/user/_table_body.html.twig', [
+                'users' => $users,
+            ]);
+        }
+
         return $this->render('admin/user/index.html.twig', [
-            'users' => $userRepository->findAllNonAdmins(),
+            'users' => $users,
+            'currentSort' => $sort,
+            'currentDirection' => $direction,
         ]);
     }
 
@@ -32,21 +59,17 @@ class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            try {
-                // Hachage du mot de passe
-                $plainPassword = $user->getPassword();
-                if ($plainPassword) {
-                    $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
-                }
-
-                $entityManager->persist($user);
-                $entityManager->flush();
-
-                $this->addFlash('success', 'Utilisateur créé avec succès.');
-                return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
-            } catch (\Exception $e) {
-                $this->addFlash('error', 'Erreur lors de la création : ' . $e->getMessage());
+            // Hachage du mot de passe
+            $plainPassword = $user->getPassword();
+            if ($plainPassword) {
+                $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
             }
+
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Utilisateur créé avec succès.');
+            return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('admin/user/new.html.twig', [
@@ -131,6 +154,20 @@ class UserController extends AbstractController
             $entityManager->remove($user);
             $entityManager->flush();
             $this->addFlash('success', 'Utilisateur supprimé avec succès.');
+        }
+
+        return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/{id}/block', name: 'app_admin_user_block', methods: ['POST'])]
+    public function block(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('block'.$user->getId(), $request->request->get('_token'))) {
+            $user->setIsBlocked(!$user->isBlocked());
+            $entityManager->flush();
+            
+            $status = $user->isBlocked() ? 'bloqué' : 'débloqué';
+            $this->addFlash('success', "L'utilisateur a été $status avec succès.");
         }
 
         return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
