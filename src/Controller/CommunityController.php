@@ -29,6 +29,7 @@ class CommunityController extends AbstractController
     #[Route('/', name: 'front_blog')]
     public function index(Request $request, PostRepository $postRepository, EntityManagerInterface $entityManager, SluggerInterface $slugger, \App\Repository\NotificationRepository $notificationRepo): Response
     {
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         $form = null;
 
@@ -171,6 +172,7 @@ class CommunityController extends AbstractController
     #[Route('/my-posts', name: 'app_my_posts')]
     public function myPosts(Request $request, PostRepository $postRepository, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         if (!$user) return $this->redirectToRoute('app_login');
 
@@ -249,6 +251,7 @@ class CommunityController extends AbstractController
     #[Route('/post/{id}/react/{type}', name: 'app_post_react', methods: ['POST'])]
     public function reactToPost(Post $post, string $type, EntityManagerInterface $entityManager, PostReactionRepository $reactionRepo): JsonResponse
     {
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         if (!$user) return new JsonResponse(['error' => 'Unauthorized'], 401);
 
@@ -355,6 +358,7 @@ class CommunityController extends AbstractController
     #[Route('/comment/{id}/react/{type}', name: 'app_comment_react', methods: ['POST'])]
     public function reactToComment(Comment $comment, string $type, EntityManagerInterface $entityManager, \App\Repository\CommentReactionRepository $reactionRepo): JsonResponse
     {
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         if (!$user) return new JsonResponse(['error' => 'Unauthorized'], 401);
 

@@ -33,7 +33,9 @@ class SponsorCrudController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Assigner l'utilisateur connecté comme sponsor
-            $sponsor->setSponsor($this->getUser());
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
+            $sponsor->setSponsor($user);
             
             $entityManager->persist($sponsor);
             $entityManager->flush();

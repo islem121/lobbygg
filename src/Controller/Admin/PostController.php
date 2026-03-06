@@ -28,7 +28,9 @@ class PostController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $post = new Post();
-        $post->setUser($this->getUser()); // Admin as author
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $post->setUser($user); // Admin as author
         
         $form = $this->createForm(BlogPostType::class, $post);
         $form->handleRequest($request);

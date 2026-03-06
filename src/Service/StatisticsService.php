@@ -6,9 +6,12 @@ use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;
 use App\Repository\UserRepository;
 
+use Doctrine\ORM\EntityManagerInterface;
+
 class StatisticsService
 {
     public function __construct(
+        private EntityManagerInterface $entityManager,
         private OrderRepository $orderRepository,
         private ProductRepository $productRepository,
         private UserRepository $userRepository,
@@ -102,7 +105,7 @@ class StatisticsService
         // On récupère les 12 derniers mois de revenus
         // Note: DATE_FORMAT est spécifique à MySQL. 
         // Si besoin de compatibilité multi-DB, il faudrait une autre approche.
-        $conn = $this->orderRepository->getEntityManager()->getConnection();
+        $conn = $this->entityManager->getConnection();
         
         $sql = "
             SELECT 
@@ -121,7 +124,7 @@ class StatisticsService
 
     public function getMonthlyOrders(): array
     {
-        $conn = $this->orderRepository->getEntityManager()->getConnection();
+        $conn = $this->entityManager->getConnection();
         $sql = "
             SELECT 
                 DATE_FORMAT(order_date, '%Y-%m') as month, 
@@ -137,7 +140,7 @@ class StatisticsService
 
     public function getMonthlyUsers(): array
     {
-        $conn = $this->userRepository->getEntityManager()->getConnection();
+        $conn = $this->entityManager->getConnection();
         $sql = "
             SELECT 
                 DATE_FORMAT(created_at, '%Y-%m') as month, 

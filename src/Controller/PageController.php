@@ -143,9 +143,11 @@ class PageController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
         
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
         $product = new Product();
         $product->setCreatedAt(new \DateTimeImmutable());
-        $product->setSeller($this->getUser());
+        $product->setSeller($user);
         
         $form = $this->createForm(ProductType::class, $product);
         $form->handleRequest($request);
@@ -496,6 +498,7 @@ class PageController extends AbstractController
         $form->handleRequest($httpRequest);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            /** @var \App\Entity\User $user */
             $user = $this->getUser();
             $document->setClient($user);
             $document->setOffer($sponsor);
