@@ -1,12 +1,27 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset='utf-8'>
-  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-  <title>AdminLTE v4</title>
-  <meta name='viewport' content='width=device-width, initial-scale=1'>
-</head>
-<body>
-  <script>window.location.href = './dist/pages/index.html'</script>
-</body>
-</html>
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Dashboard - AdminLTE 4{% endblock %}
+{% block content_title %}Dashboard{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-3 col-6">
+            <div class="small-box text-bg-primary">
+                <div class="inner">
+                    <h3>150</h3>
+                    <p>New Orders</p>
+                </div>
+                <div class="icon"><i class="bi bi-bag-plus-fill"></i></div>
+                <a href="#" class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
+                    More info <i class="bi bi-link-45deg"></i>
+                </a>
+            </div>
+        </div>
+        <!-- Add more dashboard widgets here if needed -->
+    </div>
+{% endblock %}

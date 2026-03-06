@@ -2,9 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -13,69 +16,16 @@ use Symfony\Component\Validator\Validation;
 class SecurityController extends AbstractController
 {
     #[Route('/login', name: 'app_login')]
-    public function login(AuthenticationUtils $authenticationUtils, Request $request): Response
+    public function login(\Symfony\Component\Security\Http\Authentication\AuthenticationUtils $authenticationUtils): Response
     {
-        // Récupérer les erreurs de connexion de Symfony
+        // Get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
-        
-        // Dernier email saisi
+        // Last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
-        
-        // Initialiser les erreurs de validation
-        $emailError = null;
-        $passwordError = null;
-        
-        // VALIDATION SI FORMULAIRE SOUMIS
-        if ($request->isMethod('POST')) {
-            $email = $request->request->get('_username', '');
-            $password = $request->request->get('_password', '');
-            
-            // Validation Symfony des données
-            $validator = Validation::createValidator();
-            
-            // Validation email
-            $emailViolations = $validator->validate($email, [
-                new Assert\NotBlank(['message' => 'L\'email est obligatoire.']),
-                new Assert\Email(['message' => 'Veuillez entrer un email valide.']),
-                new Assert\Length([
-                    'max' => 180,
-                    'maxMessage' => 'L\'email ne peut pas dépasser {{ limit }} caractères.'
-                ])
-            ]);
-            
-            if (count($emailViolations) > 0) {
-                $emailError = $emailViolations[0]->getMessage();
-            }
-            
-            // Validation mot de passe
-            $passwordViolations = $validator->validate($password, [
-                new Assert\NotBlank(['message' => 'Le mot de passe est obligatoire.']),
-                new Assert\Length([
-                    'min' => 6,
-                    'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères.'
-                ])
-            ]);
-            
-            if (count($passwordViolations) > 0) {
-                $passwordError = $passwordViolations[0]->getMessage();
-            }
-            
-            // Si validation échoue, on ajoute des messages flash
-            if ($emailError || $passwordError) {
-                if ($emailError) {
-                    $this->addFlash('error', $emailError);
-                }
-                if ($passwordError) {
-                    $this->addFlash('error', $passwordError);
-                }
-            }
-        }
 
         return $this->render('security/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
-            'email_error' => $emailError,
-            'password_error' => $passwordError,
         ]);
     }
 
@@ -85,39 +35,66 @@ class SecurityController extends AbstractController
         throw new \LogicException('This method is handled by the firewall.');
     }
 
+    #[Route('/register', name: 'app_register', methods: ['GET', 'POST'])]
+    public function register(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager): Response
+    {
+        if ($request->isMethod('POST')) {
+            try {
+                $email = $request->request->get('email');
+                $password = $request->request->get('password');
+                $nom = $request->request->get('nom');
+                $prenom = $request->request->get('prenom');
+                $dateNaissance = $request->request->get('date_naissance');
+                $telephone = $request->request->get('telephone');
+                $role = $request->request->get('role');
+
+                if (!$role) {
+                    $role = User::ROLE_CLIENT;
+                }
+
+                $user = new User();
+                $user->setEmail($email);
+                $user->setUsername($prenom . ' ' . $nom);
+                $user->setNom($nom);
+                $user->setPrenom($prenom);
+                if ($dateNaissance) {
+                    $user->setDateNaissance(new \DateTime($dateNaissance));
+                }
+                $user->setTelephone($telephone);
+                $user->setRole($role);
+                
+                // Hachage du mot de passe
+                $hashedPassword = $passwordHasher->hashPassword($user, $password);
+                $user->setPassword($hashedPassword);
+
+                $entityManager->persist($user);
+                $entityManager->flush();
+
+                // On redirige vers login après inscription pour que l'utilisateur se connecte
+                return $this->redirectToRoute('app_login');
+            } catch (\Exception $e) {
+                return $this->render('security/register.html.twig', [
+                    'error' => 'Erreur : ' . $e->getMessage()
+                ]);
+            }
+        }
+
+        return $this->render('security/register.html.twig');
+    }
+
     #[Route('/forgot-password', name: 'app_forgot_password')]
-    public function forgotPassword(Request $request): Response
+    public function forgotPassword(): Response
     {
         return $this->render('security/forgot_password.html.twig');
     }
 
-    #[Route('/blog', name: 'app_blog')]
-public function blog(): Response
-{
-    // Vérifier que l'utilisateur est connecté ET a le rôle client
-    if (!$this->getUser()) {
-        return $this->redirectToRoute('app_login');
-    }
-    
-    $user = $this->getUser();
-    
-    // Vérifier si l'utilisateur a le rôle client
-    if ($user->getRole() !== 'client') {
-        // Si ce n'est pas un client, rediriger vers le dashboard
-        $this->addFlash('error', 'Accès réservé aux clients.');
-        return $this->redirectToRoute('app_login');
-    }
 
-    // Afficher la page blog
-    return $this->render('front/modules/blog.html.twig', [
-        'user' => $user,
-    ]);
-}
-
-
+    // Supprimé car en conflit avec PageController::home
+    /*
     #[Route('/', name: 'app_homepage')]
     public function homepage(): Response
     {
-        return $this->redirectToRoute('app_login');
+        return $this->render('security/login.html.twig');
     }
+    */
 }

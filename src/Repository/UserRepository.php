@@ -31,13 +31,12 @@ class UserRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?User
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function findAllNonAdmins(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.role != :adminRole')
+            ->setParameter('adminRole', User::ROLE_ADMIN)
+            ->getQuery()
+            ->getResult();
+    }
 }

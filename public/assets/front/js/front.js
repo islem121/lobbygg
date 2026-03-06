@@ -237,55 +237,13 @@
   }
 
   // ---------- Search: lightweight fake results ----------
+  /* Fake search removed */
   const search = $("[data-search] input");
   const results = $("[data-search-results]");
   if (search && results) {
-    const items = [
-      { kind: "User", label: "NeonViper" },
-      { kind: "User", label: "ArcadeNova" },
-      { kind: "Tournoi", label: "Violet Rift Cup" },
-      { kind: "Tournoi", label: "Lobby.gg Arena" },
-      { kind: "Market", label: "ARGB Keycaps" },
-      { kind: "Market", label: "Pro Controller" },
-    ];
-
-    const render = (q) => {
-      const query = q.trim().toLowerCase();
-      if (!query) {
-        results.classList.remove("open");
-        results.innerHTML = "";
-        return;
-      }
-      const out = items
-        .filter((it) => (it.kind + " " + it.label).toLowerCase().includes(query))
-        .slice(0, 6);
-      results.innerHTML = out.map((it) => `
-        <div class="search-item" role="button" tabindex="0">
-          <span class="kind">${it.kind}</span>
-          <span class="label">${it.label}</span>
-          <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-        </div>
-      `).join("");
-      results.classList.toggle("open", out.length > 0);
-    };
-
-    search.addEventListener("input", (e) => render(e.target.value));
-    document.addEventListener("click", (e) => {
-      if (!e.target.closest("[data-search]")) {
-        results.classList.remove("open");
-      }
-    });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "/" && document.activeElement !== search) {
-        e.preventDefault();
-        search.focus();
-      }
-      if (e.key === "Escape") {
-        results.classList.remove("open");
-        search.blur();
-      }
-    });
+     // Optional: Implement real search AJAX here
   }
+
 
   // ---------- Card tilt + micro bounce ----------
   const tiltCards = $$("[data-tilt]");
@@ -476,151 +434,10 @@
   }
 
   // ---------- Infinite scroll feed (append posts on demand) ----------
-  const feed = document.querySelector("[data-feed]");
-  const loader = document.querySelector("[data-feed-loader]");
-  if (feed) {
-    const samples = [
-      { tag: "Update", user: "LobbyOps", handle: "@lobbyops", text: "Ranked tweaks: better party MMR calibration + faster queue for solo grinders.", reacts: 1820, comments: 140 },
-      { tag: "Tournament", user: "RiftRunner", handle: "@riftrunner", text: "Scrims tonight. Looking for 2 flex players. DM your role + region.", reacts: 611, comments: 58 },
-      { tag: "Marketplace", user: "MetaSniper", handle: "@metasniper", text: "Found a clean mic arm + cable kit combo. Minimal. No gamer tax.", reacts: 903, comments: 77 },
-      { tag: "Sponsoring", user: "HyperNova", handle: "@hypernova", text: "Sponsor spotlight: gear up your team. Apply for the 2026 Partner Program.", reacts: 430, comments: 39 },
-      { tag: "Clip", user: "PulseKira", handle: "@pulsekira", text: "New aim drill: 6 minutes/day. Track your reaction time and consistency.", reacts: 1207, comments: 96 },
-    ];
-
-    let page = 0;
-    let busy = false;
-
-    const postHTML = (p, time) => {
-      const initials = (p.user || "GG").slice(0, 2).toUpperCase();
-      const safe = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[c]));
-      return `
-        <article class="card post-card" data-tilt>
-          <div class="post-top">
-            <div class="avatar avatar-grad">${safe(initials)}</div>
-            <div class="post-meta">
-              <div class="post-user">${safe(p.user)} <span class="muted">${safe(p.handle)}</span></div>
-              <div class="post-time">${safe(time)} · <span class="pill pill-accent" style="position:static;height:auto;min-width:auto;padding:2px 10px">${safe(p.tag)}</span></div>
-            </div>
-            <button class="icon-btn" type="button" aria-label="Post menu"><i class="fa-solid fa-ellipsis"></i></button>
-          </div>
-          <div class="post-body">${safe(p.text)}</div>
-          <div class="post-actions">
-            <button class="chip chip-like" type="button" data-reaction><i class="fa-solid fa-fire"></i> Like</button>
-            <button class="chip" type="button"><i class="fa-regular fa-comment-dots"></i> Comment</button>
-            <button class="chip" type="button"><i class="fa-solid fa-share-nodes"></i> Share</button>
-            <div class="post-stats">
-              <span><i class="fa-solid fa-heart"></i> ${p.reacts}</span>
-              <span><i class="fa-solid fa-comment"></i> ${p.comments}</span>
-            </div>
-          </div>
-        </article>
-      `;
-    };
-
-    const wireNewInteractions = (root) => {
-      // Re-bind reactions for new nodes
-      const newReact = root.querySelectorAll("[data-reaction]");
-      newReact.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const r = btn.getBoundingClientRect();
-          const ox = r.left + r.width * 0.5;
-          const oy = r.top + r.height * 0.5;
-          const burst = 10;
-          for (let i = 0; i < burst; i++) {
-            const p = document.createElement("span");
-            p.className = "micro-particle";
-            p.style.background = (i % 2 === 0) ? "#FF6B6B" : "#634F9C";
-            const ang = (Math.PI * 2) * (i / burst);
-            const mag = 14 + Math.random() * 28;
-            p.style.left = ox + "px";
-            p.style.top = oy + "px";
-            p.style.setProperty("--dx", `${Math.cos(ang) * mag}px`);
-            p.style.setProperty("--dy", `${Math.sin(ang) * mag}px`);
-            document.body.appendChild(p);
-            setTimeout(() => p.remove(), 650);
-          }
-          btn.animate([
-            { transform: "translateY(0) scale(1)" },
-            { transform: "translateY(-2px) scale(1.04)" },
-            { transform: "translateY(0) scale(1)" },
-          ], { duration: 360, easing: "cubic-bezier(.2,.9,.2,1)" });
-        }, { once: false });
-      });
-
-      // Re-bind tilt for new nodes
-      if (window.matchMedia("(pointer:fine)").matches) {
-        root.querySelectorAll("[data-tilt]").forEach((card) => {
-          if (card.__tiltBound) return;
-          card.__tiltBound = true;
-          let raf = 0;
-          const onMove = (e) => {
-            const r = card.getBoundingClientRect();
-            const px = (e.clientX - r.left) / r.width;
-            const py = (e.clientY - r.top) / r.height;
-            const rx = (py - 0.5) * -7;
-            const ry = (px - 0.5) * 9;
-            cancelAnimationFrame(raf);
-            raf = requestAnimationFrame(() => {
-              card.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) translateY(-2px) scale(1.01)`;
-            });
-          };
-          const reset = () => {
-            cancelAnimationFrame(raf);
-            card.style.transform = "";
-          };
-          card.addEventListener("mousemove", onMove);
-          card.addEventListener("mouseleave", reset);
-        });
-      }
-    };
-
-    const appendMore = async () => {
-      if (busy) return;
-      busy = true;
-      if (loader) loader.classList.add("show");
-
-      // fake latency for realism
-      await new Promise((r) => setTimeout(r, 420));
-
-      const frag = document.createElement("div");
-      const time = page === 0 ? "Just now" : `${3 + page * 2}m`;
-      const batch = 3;
-      for (let i = 0; i < batch; i++) {
-        const p = samples[(page * batch + i) % samples.length];
-        frag.insertAdjacentHTML("beforeend", postHTML(p, time));
-      }
-
-      // insert before loader (which is outside feed), so append to feed itself
-      feed.insertAdjacentHTML("beforeend", frag.innerHTML);
-      wireNewInteractions(feed);
-
-      page += 1;
-      if (loader) loader.classList.remove("show");
-      busy = false;
-    };
-
-    // initial wire for existing nodes
-    wireNewInteractions(document);
-
-    // Observe scroll end
-    const sentinel = document.createElement("div");
-    sentinel.style.height = "1px";
-    feed.appendChild(sentinel);
-
-    if ("IntersectionObserver" in window) {
-      const io2 = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) appendMore();
-        });
-      }, { rootMargin: "900px 0px 900px 0px", threshold: 0.01 });
-      io2.observe(sentinel);
-    } else {
-      window.addEventListener("scroll", () => {
-        const nearBottom = (window.innerHeight + window.scrollY) > (document.body.offsetHeight - 900);
-        if (nearBottom) appendMore();
-      }, { passive: true });
-    }
-  }
+  /* 
+   * Fake infinite scroll removed to use real server-side pagination/data.
+   * If needed, implement real AJAX loading here pointing to an API endpoint.
+   */
 })();
 
 

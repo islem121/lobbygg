@@ -1,0 +1,37 @@
+<div class="comment-item" id="comment-{{ comment.id }}">
+    <div class="comment-avatar">{{ comment.user.username[:2]|upper }}</div>
+    <div class="comment-content">
+        <div class="comment-bubble">
+            <div class="comment-author">{{ comment.user.username }}</div>
+            <div class="comment-text">{{ comment.content }}</div>
+        </div>
+        <div class="comment-actions">
+            <span class="comment-time">{{ comment.createdAt|date('M d, H:i') }}</span>
+            
+            {% set userReacted = false %}
+            {% for reaction in comment.reactions %}
+                {% if reaction.user == app.user %}
+                    {% set userReacted = true %}
+                {% endif %}
+            {% endfor %}
+
+            <button type="button" class="action-link {% if userReacted %}active-reaction{% endif %}" onclick="reactToComment({{ comment.id }}, 'like', this)">Like</button>
+            <span id="comment-react-count-{{ comment.id }}" class="reaction-count" style="margin-right: 10px; font-size: 11px; color: var(--accent);">
+                {% if comment.reactions|length > 0 %}
+                    <i class="fa-solid fa-heart"></i> {{ comment.reactions|length }}
+                {% endif %}
+            </span>
+
+            <button type="button" class="action-link" onclick="replyToComment({{ comment.id }}, '{{ comment.user.username }}')">Reply</button>
+        </div>
+        
+        <!-- Replies -->
+        {% if comment.replies|length > 0 %}
+            <div class="comment-replies">
+                {% for reply in comment.replies %}
+                    {% include 'front/modules/_comment_item.html.twig' with {'comment': reply} %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
