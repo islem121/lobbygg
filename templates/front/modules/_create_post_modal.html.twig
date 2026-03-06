@@ -8,9 +8,9 @@
 
         <div class="modal-body">
             {% if createAction is defined and createAction %}
-                {{ form_start(form, {'action': createAction}) }}
+                {{ form_start(form, {'action': createAction, 'attr': {'novalidate': 'novalidate'}}) }}
             {% else %}
-                {{ form_start(form) }}
+                {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
             {% endif %}
             <div class="post-user-info">
                 <div class="avatar avatar-grad">{{ app.user.username[:2]|upper }}</div>
@@ -24,6 +24,9 @@
                 <div class="input-wrapper">
                     <i class="fa-regular fa-pen-to-square input-icon"></i>
                     {{ form_widget(form.content, {'attr': {'placeholder': "What's on your mind, gamer?", 'class': 'post-input-large'}}) }}
+                </div>
+                <div class="content-error" style="color: #ff0055; font-size: 12px; margin-top: 5px;">
+                    {{ form_errors(form.content) }}
                 </div>
                 
                 <div id="media-preview-modal" class="media-preview-container">

@@ -57,10 +57,9 @@
         </div>
     {% endif %}
 
-    <button class="header-icon" type="button" aria-label="Quick Messages">
+    <a href="{{ path('app_messages') }}" class="header-icon" aria-label="Messages">
       <i class="fa-solid fa-comment-dots"></i>
-      <span class="pill">2</span>
-    </button>
+    </a>
 
     <div class="header-user" data-user-menu>
       <div class="user-avatar" aria-hidden="true">
@@ -79,7 +78,9 @@
 
 <div class="user-dropdown" data-user-dropdown aria-hidden="true">
   <a class="dd-item" href="{{ path('front_users') }}"><i class="fa-solid fa-user-astronaut"></i> Profile</a>
-  <a class="dd-item" href="{{ path('front_marketplace') }}"><i class="fa-solid fa-bag-shopping"></i> Saved items</a>
+  <a class="dd-item" href="{{ path('app_messages') }}"><i class="fa-solid fa-comments"></i> Mes Messages</a>
+  <a class="dd-item" href="{{ path('front_marketplace_my_products') }}"><i class="fa-solid fa-box-open"></i> Mes Produits</a>
+  <a class="dd-item" href="{{ path('front_marketplace') }}"><i class="fa-solid fa-bag-shopping"></i> Marketplace</a>
   <a class="dd-item" href="{{ path('front_tournaments') }}"><i class="fa-solid fa-trophy"></i> My tournaments</a>
   <div class="dd-sep"></div>
   <a class="dd-item" href="{{ path('app_logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>

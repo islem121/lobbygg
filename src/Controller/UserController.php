@@ -14,9 +14,11 @@ use Symfony\Component\Routing\Attribute\Route;
 
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 #[Route('/user')]
-#[IsGranted('ROLE_ADMIN')]
+#[IsGranted('ROLE_USER')]
 final class UserController extends AbstractController
 {
     #[Route('/update-image', name: 'app_user_update_image', methods: ['POST'])]
@@ -39,7 +41,7 @@ final class UserController extends AbstractController
                     $newFilename
                 );
                 
-                // Optional: Delete old image if it exists
+                // Supprimer l'ancienne image si elle existe
                 if ($user->getImage()) {
                     $oldImagePath = $this->getParameter('kernel.project_dir').'/public/uploads/profiles/'.$user->getImage();
                     if (file_exists($oldImagePath)) {
@@ -60,7 +62,7 @@ final class UserController extends AbstractController
     }
 
     #[Route('/settings/update', name: 'app_settings_update', methods: ['POST'])]
-    public function updateSettings(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function updateSettings(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, ValidatorInterface $validator, UserPasswordHasherInterface $passwordHasher): Response
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -69,14 +71,37 @@ final class UserController extends AbstractController
         $username = $request->request->get('username');
         $email = $request->request->get('email');
         $password = $request->request->get('password');
+        $passwordConfirm = $request->request->get('password_confirm');
         $imageFile = $request->files->get('profile_image');
 
         if ($username) $user->setPrenom($username);
         if ($email) $user->setEmail($email);
         
-        if ($password && $password === $request->request->get('password_confirm')) {
-            // In a real app, use UserPasswordHasherInterface
-            $user->setPassword($password); 
+        // Validation Symfony
+        $violations = $validator->validate($user);
+        
+        if (count($violations) > 0) {
+            $errors = [];
+            foreach ($violations as $violation) {
+                $errors[$violation->getPropertyPath()] = $violation->getMessage();
+            }
+            return $this->render('user/settings.html.twig', [
+                'user' => $user,
+                'errors' => $errors
+            ]);
+        }
+
+        if ($password) {
+            if ($password === $passwordConfirm) {
+                if (strlen($password) < 6) {
+                    $this->addFlash('error', 'Le mot de passe doit faire au moins 6 caractères.');
+                    return $this->redirectToRoute('app_settings');
+                }
+                $user->setPassword($passwordHasher->hashPassword($user, $password));
+            } else {
+                $this->addFlash('error', 'Les mots de passe ne correspondent pas.');
+                return $this->redirectToRoute('app_settings');
+            }
         }
 
         if ($imageFile) {
@@ -98,7 +123,9 @@ final class UserController extends AbstractController
                 }
 
                 $user->setImage($newFilename);
-            } catch (FileException $e) {}
+            } catch (FileException $e) {
+                $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
+            }
         }
 
         $entityManager->flush();
@@ -107,16 +134,47 @@ final class UserController extends AbstractController
         return $this->redirectToRoute('app_settings');
     }
 
-    #[Route('/settings', name: 'app_settings', priority: 10)]
-    public function settings(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/account/delete', name: 'app_account_delete', methods: ['POST'])]
+    public function deleteAccount(Request $request, EntityManagerInterface $entityManager): Response
     {
         /** @var User $user */
         $user = $this->getUser();
         if (!$user) return $this->redirectToRoute('app_login');
 
-        // Logic for settings update will go here
+        if ($this->isCsrfTokenValid('delete_account', $request->request->get('_token'))) {
+            // Delete profile image if exists
+            if ($user->getImage()) {
+                $imagePath = $this->getParameter('kernel.project_dir').'/public/uploads/profiles/'.$user->getImage();
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+            }
+
+            // Invalidate session and logout
+            $request->getSession()->invalidate();
+            $this->container->get('security.token_storage')->setToken(null);
+
+            $entityManager->remove($user);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Your account has been deleted successfully.');
+            return $this->redirectToRoute('app_home');
+        }
+
+        $this->addFlash('error', 'Invalid CSRF token.');
+        return $this->redirectToRoute('app_settings');
+    }
+
+    #[Route('/settings', name: 'app_settings', priority: 10)]
+    public function settings(): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        if (!$user) return $this->redirectToRoute('app_login');
+
         return $this->render('user/settings.html.twig', [
             'user' => $user,
+            'errors' => []
         ]);
     }
 

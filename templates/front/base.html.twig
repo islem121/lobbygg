@@ -42,6 +42,13 @@
         {% include 'partials/_cyber_navbar.html.twig' %}
 
         <main class="lobby-content">
+          {% for label, messages in app.flashes %}
+            {% for message in messages %}
+              <div class="alert alert-{{ label == 'error' ? 'danger' : label }}" style="padding: 15px; margin: 20px; border-radius: 4px; background: rgba(0,0,0,0.5); border: 1px solid {{ label == 'error' ? '#ff0055' : '#8b3dff' }}; color: #fff;">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endfor %}
           {% block content %}{% endblock %}
         </main>
 
@@ -49,7 +56,9 @@
       </div>
     </div>
 
-    {% include 'front/partials/bottom-bar.html.twig' %}
+    {% if app.request.attributes.get('_route') != 'front_marketplace' %}
+      {% include 'front/partials/bottom-bar.html.twig' %}
+    {% endif %}
 
     {# Optional: GSAP via CDN (no npm) #}
     <script defer src="{{ asset('assets/vendor/js/gsap.min.js') }}"></script>

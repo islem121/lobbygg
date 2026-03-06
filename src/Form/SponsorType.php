@@ -20,9 +20,8 @@ class SponsorType extends AbstractType
                 'label' => 'Nom de la Société',
                 'attr' => [
                     'placeholder' => 'Entrez le nom de votre société',
-                    'class' => 'cyber-input-field'
+                    'class' => 'form-control'
                 ],
-                'disabled' => true,
             ])
             ->add('targetType', ChoiceType::class, [
                 'label' => 'Type de Cible',
@@ -31,21 +30,21 @@ class SponsorType extends AbstractType
                     'Tournament' => 'tournament',
                 ],
                 'attr' => [
-                    'class' => 'cyber-input-field'
+                    'class' => 'form-control'
                 ]
             ])
             ->add('amount', NumberType::class, [
                 'label' => 'Montant du Sponsoring (DT)',
                 'attr' => [
                     'placeholder' => '0.00',
-                    'class' => 'cyber-input-field'
+                    'class' => 'form-control'
                 ]
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description de l\'offre',
                 'attr' => [
                     'placeholder' => 'Décrivez votre offre de sponsoring...',
-                    'class' => 'cyber-input-field',
+                    'class' => 'form-control',
                     'rows' => 5
                 ]
             ])
@@ -56,6 +55,8 @@ class SponsorType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Sponsor::class,
+            'attr' => ['novalidate' => 'novalidate'],
+            'required' => false,
         ]);
     }
 }

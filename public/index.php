@@ -9,6 +9,9 @@ require dirname(__DIR__).'/vendor/autoload.php';
 
 (new Dotenv())->bootEnv(dirname(__DIR__).'/.env');
 
+$_SERVER['APP_ENV'] = $_SERVER['APP_ENV'] ?? 'dev';
+$_SERVER['APP_DEBUG'] = $_SERVER['APP_DEBUG'] ?? $_SERVER['APP_ENV'] === 'dev';
+
 if ($_SERVER['APP_DEBUG']) {
     umask(0000);
     Debug::enable();

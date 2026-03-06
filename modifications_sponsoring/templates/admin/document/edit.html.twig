@@ -1,0 +1,19 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block content_title %}Modifier la Demande{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_sponsoring') }}">Sponsor Management</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_document_index') }}">Documents</a></li>
+    <li class="breadcrumb-item active">Modifier</li>
+{% endblock %}
+
+{% block content %}
+    <div class="card card-warning">
+        <div class="card-header">
+            <h3 class="card-title">Modification du document ID : {{ document.id }}</h3>
+        </div>
+        {{ include('admin/document/_form.html.twig', {'button_label': 'Mettre à jour', 'back_path': path('app_admin_document_index')}) }}
+    </div>
+{% endblock %}

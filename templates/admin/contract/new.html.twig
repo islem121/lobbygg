@@ -1,0 +1,19 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block content_title %}Nouveau Contrat{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_sponsoring') }}">Sponsor Management</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_contract_index') }}">Contrats</a></li>
+    <li class="breadcrumb-item active">Nouveau</li>
+{% endblock %}
+
+{% block content %}
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title">Créer un nouveau contrat</h3>
+        </div>
+        {{ include('admin/contract/_form.html.twig', {'back_path': path('app_admin_contract_index')}) }}
+    </div>
+{% endblock %}

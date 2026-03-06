@@ -1,0 +1,333 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg • Mes Offres{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 100% !important; padding: 0 40px;">
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">Mes Offres</h1>
+      <p class="page-sub">Gérez vos campagnes de sponsoring et suivez vos performances.</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-primary" id="openCreateModal"><i class="fa-solid fa-plus"></i> Nouvelle Offre</button>
+      <a href="{{ path('front_sponsoring') }}" class="btn btn-ghost"><i class="fa-solid fa-list"></i> Toutes les Offres</a>
+    </div>
+  </section>
+
+  <style>
+    .sponsor-table-container {
+      width: 100% !important;
+      margin-top: 30px;
+    }
+    .sponsor-table {
+      width: 100% !important;
+      background: rgba(20, 20, 20, 0.4);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      border: 1px solid rgba(139, 61, 255, 0.2);
+      overflow: hidden;
+    }
+    .sponsor-table .table {
+      width: 100% !important;
+      display: flex;
+      flex-direction: column;
+    }
+    .sponsor-table .table .row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 2fr;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      gap: 15px;
+    }
+    .sponsor-table .table .row.head {
+      background: rgba(139, 61, 255, 0.1);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: rgba(255, 255, 255, 0.6);
+      border-bottom: 1px solid rgba(139, 61, 255, 0.3);
+    }
+    .btn-sm {
+      padding: 8px 15px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-right: 12px;
+      box-shadow: 0 0 10px var(--accent);
+    }
+    .accent {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .pill {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    /* Modal Styles */
+    .cyber-modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+    }
+
+    .cyber-modal-content {
+      background: #0f051a;
+      margin: 2vh auto;
+      padding: 30px;
+      border: 1px solid rgba(139, 61, 255, 0.5);
+      width: 600px;
+      max-height: 95vh;
+      overflow-y: auto;
+      box-shadow: 0 0 40px rgba(139, 61, 255, 0.2);
+      border-radius: 15px;
+      position: relative;
+    }
+
+    /* Scrollbar Styling for Modal */
+    .cyber-modal-content::-webkit-scrollbar {
+      width: 6px;
+    }
+    .cyber-modal-content::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .cyber-modal-content::-webkit-scrollbar-thumb {
+      background: #8B3DFF;
+      border-radius: 10px;
+    }
+
+    .cyber-modal-header {
+      border-bottom: 1px solid rgba(139, 61, 255, 0.2);
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+
+    .cyber-modal-header h2 {
+      margin: 0;
+      color: #fff;
+      font-size: 1.8rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .close-modal {
+      position: absolute;
+      right: 25px;
+      top: 25px;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .close-modal:hover {
+      color: #fff;
+      transform: rotate(90deg);
+    }
+
+    /* Form Styling inside Modal */
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 10px;
+      color: #8B3DFF;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 600;
+    }
+
+    .form-control {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(139, 61, 255, 0.2);
+      color: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      outline: none;
+      transition: all 0.3s ease;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .form-control:focus {
+      border-color: #8B3DFF;
+      background: rgba(139, 61, 255, 0.05);
+      box-shadow: 0 0 15px rgba(139, 61, 255, 0.2);
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+      padding-bottom: 10px;
+    }
+
+    .modal-footer .btn {
+      flex: 1;
+      padding: 15px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: bold;
+    }
+  </style>
+
+  <div class="sponsor-table-container">
+    <div class="panel-head" style="margin-bottom: 20px;">
+      <h2 class="panel-title"><i class="fa-solid fa-handshake-angle"></i> Liste de mes offres</h2>
+    </div>
+
+    <div class="sponsor-table">
+      <div class="table">
+        <div class="row head">
+          <div>Société</div>
+          <div>Cible</div>
+          <div>Budget</div>
+          <div>Créé le</div>
+          <div style="text-align: right;">Actions</div>
+        </div>
+
+        {% for offer in offers %}
+        <div class="row">
+          <div class="brand" style="font-weight: 500;"><span class="brand-dot"></span> {{ offer.nomSociete }}</div>
+          <div>
+            <span class="pill" style="background: {{ offer.targetType == 'client' ? 'rgba(0, 255, 128, 0.1)' : 'rgba(139, 61, 255, 0.1)' }}; color: {{ offer.targetType == 'client' ? '#00ff80' : '#8B3DFF' }}; border: 1px solid {{ offer.targetType == 'client' ? 'rgba(0, 255, 128, 0.2)' : 'rgba(139, 61, 255, 0.2)' }};">
+              {{ offer.targetType|capitalize }}
+            </span>
+          </div>
+          <div class="accent">{{ offer.amount|number_format(0, '.', ',') }} DT</div>
+          <div style="color: rgba(255,255,255,0.4); font-size: 0.85rem;">
+            {{ "now"|date("d M Y") }}
+          </div>
+          <div style="text-align: right;">
+            <div style="display: inline-flex; gap: 10px;">
+              <a href="{{ path('front_sponsoring_edit', {'id': offer.id}) }}" class="btn btn-ghost btn-sm" title="Modifier" style="color: #ffb100; border-color: rgba(255, 177, 0, 0.2);">
+                <i class="fa-solid fa-edit"></i> Modifier
+              </a>
+              
+              <form method="post" action="{{ path('front_sponsoring_delete', {'id': offer.id}) }}" style="display:inline-block;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette offre ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offer.id) }}">
+                <button class="btn btn-ghost btn-sm" title="Supprimer" style="color: #ff4b4b; border-color: rgba(255, 75, 75, 0.2);">
+                  <i class="fa-solid fa-trash"></i> Supprimer
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 80px 20px; color: #888;">
+            <i class="fa-solid fa-folder-open" style="font-size: 3.5rem; margin-bottom: 25px; display: block; opacity: 0.2; color: var(--accent);"></i>
+            <p style="font-size: 1.2rem; color: #fff; margin-bottom: 10px;">Aucune offre trouvée</p>
+            <p style="margin-bottom: 25px;">Vous n'avez pas encore créé d'offre de sponsoring.</p>
+            <button class="btn btn-primary" id="openCreateModalEmpty">Créer ma première offre</button>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Création Offre -->
+<div id="createOfferModal" class="cyber-modal">
+  <div class="cyber-modal-content">
+    <span class="close-modal" id="closeCreateModal">&times;</span>
+    <div class="cyber-modal-header">
+      <h2>Nouvelle Offre</h2>
+    </div>
+
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+      <div class="form-group">
+        {{ form_label(form.nomSociete, 'Nom de la Société') }}
+        {{ form_widget(form.nomSociete, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Sywar Ammar'}}) }}
+        <div class="invalid-feedback d-block" style="color: #ff4b4b; font-size: 0.8rem; margin-top: 5px;">
+            {{ form_errors(form.nomSociete) }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        {{ form_label(form.targetType, 'Cible du Sponsoring') }}
+        {{ form_widget(form.targetType, {'attr': {'class': 'form-control'}}) }}
+        <div class="invalid-feedback d-block" style="color: #ff4b4b; font-size: 0.8rem; margin-top: 5px;">
+            {{ form_errors(form.targetType) }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        {{ form_label(form.amount, 'Montant du Sponsoring (DT)') }}
+        {{ form_widget(form.amount, {'attr': {'class': 'form-control', 'placeholder': '0.00'}}) }}
+        <div class="invalid-feedback d-block" style="color: #ff4b4b; font-size: 0.8rem; margin-top: 5px;">
+            {{ form_errors(form.amount) }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        {{ form_label(form.description, "Description de l'offre") }}
+        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'placeholder': 'Décrivez votre offre...', 'rows': '4'}}) }}
+        <div class="invalid-feedback d-block" style="color: #ff4b4b; font-size: 0.8rem; margin-top: 5px;">
+            {{ form_errors(form.description) }}
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="cancelCreateModal">Annuler</button>
+        <button type="submit" class="btn btn-primary">Créer la Campagne</button>
+      </div>
+    {{ form_end(form) }}
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('createOfferModal');
+    const openBtn = document.getElementById('openCreateModal');
+    const openBtnEmpty = document.getElementById('openCreateModalEmpty');
+    const closeBtn = document.getElementById('closeCreateModal');
+    const cancelBtn = document.getElementById('cancelCreateModal');
+
+    const openModal = () => {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Empêcher le scroll
+    };
+
+    const closeModal = () => {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    };
+
+    if (openBtn) openBtn.onclick = openModal;
+    if (openBtnEmpty) openBtnEmpty.onclick = openModal;
+    if (closeBtn) closeBtn.onclick = closeModal;
+    if (cancelBtn) cancelBtn.onclick = closeModal;
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            closeModal();
+        }
+    };
+});
+</script>
+{% endblock %}

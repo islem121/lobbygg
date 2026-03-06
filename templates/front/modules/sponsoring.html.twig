@@ -9,7 +9,9 @@
       <p class="page-sub">Discover partners, spotlight brands, and track performance — social-first sponsorship space.</p>
     </div>
     <div class="page-actions">
-      <button class="btn btn-primary" type="button"><i class="fa-solid fa-handshake"></i> Become a Partner</button>
+      {% if is_granted('ROLE_SPONSOR') %}
+        <a href="{{ path('front_sponsoring_my_offers') }}" class="btn btn-primary"><i class="fa-solid fa-list-check"></i> Mes Offres</a>
+      {% endif %}
       <button class="btn btn-ghost" type="button"><i class="fa-solid fa-bullhorn"></i> Spotlight</button>
     </div>
   </section>
@@ -38,13 +40,27 @@
 
     .cyber-modal-content {
       background: #1a1a2e;
-      margin: 5% auto;
+      margin: 2vh auto;
       padding: 30px;
       border: 1px solid #8B3DFF;
       width: 500px;
+      max-height: 95vh;
+      overflow-y: auto;
       box-shadow: 0 0 20px rgba(139, 61, 255, 0.3);
       border-radius: 10px;
       position: relative;
+    }
+
+    /* Scrollbar Styling for Modal */
+    .cyber-modal-content::-webkit-scrollbar {
+      width: 6px;
+    }
+    .cyber-modal-content::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .cyber-modal-content::-webkit-scrollbar-thumb {
+      background: #8B3DFF;
+      border-radius: 10px;
     }
 
     .cyber-modal-header {
@@ -149,7 +165,8 @@
     .modal-actions {
       display: flex;
       gap: 15px;
-      margin-top: 30px;
+      margin-top: 20px;
+      padding-bottom: 10px;
     }
   </style>
 
@@ -190,12 +207,16 @@
               <div class="accent">--%</div>
               <div>{{ offer.amount|number_format(0, '.', ',') }} DT</div>
               <div>
-                <button class="btn btn-ghost btn-sm open-request-modal" 
-                        data-offer-id="{{ offer.id }}" 
-                        data-offer-name="{{ offer.nomSociete }}"
-                        title="Envoyer une demande">
-                  <i class="fa-solid fa-file-pdf"></i>
-                </button>
+                {% if is_granted('ROLE_CLIENT') %}
+                  <button class="btn btn-ghost btn-sm open-request-modal" 
+                          data-offer-id="{{ offer.id }}" 
+                          data-offer-name="{{ offer.nomSociete }}"
+                          title="Envoyer une demande">
+                    <i class="fa-solid fa-file-pdf"></i>
+                  </button>
+                {% else %}
+                  <span class="text-muted small">Connectez-vous en tant que Joueur pour postuler</span>
+                {% endif %}
               </div>
             </div>
             {% else %}
@@ -241,7 +262,7 @@
         <h2>Demande pour <span id="modalOfferName"></span></h2>
       </div>
 
-      {{ form_start(form, {'attr': {'id': 'sponsoringRequestForm'}}) }}
+      {{ form_start(form, {'attr': {'id': 'sponsoringRequestForm', 'novalidate': 'novalidate'}}) }}
         <div class="cyber-field">
           <label class="cyber-label">Nom Complet</label>
           <input type="text" class="cyber-input-field" value="{{ app.user.nom }} {{ app.user.prenom }}" disabled>
@@ -255,11 +276,17 @@
         <div class="cyber-field">
           {{ form_label(form.message, null, {'label_attr': {'class': 'cyber-label'}}) }}
           {{ form_widget(form.message) }}
+          <div class="invalid-feedback d-block" style="color: #ff4b4b; font-size: 0.8rem; margin-top: 5px;">
+              {{ form_errors(form.message) }}
+          </div>
         </div>
 
         <div class="cyber-field">
           {{ form_label(form.motivation, null, {'label_attr': {'class': 'cyber-label'}}) }}
           {{ form_widget(form.motivation) }}
+          <div class="invalid-feedback d-block" style="color: #ff4b4b; font-size: 0.8rem; margin-top: 5px;">
+              {{ form_errors(form.motivation) }}
+          </div>
         </div>
 
         <div class="modal-actions">
