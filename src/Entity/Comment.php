@@ -14,7 +14,7 @@ class Comment
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(name: 'comment_id')]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
@@ -28,21 +28,21 @@ class Comment
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[ORM\Column(name: 'up_votes')]
+    private int $upVotes = 0;
+
+    #[ORM\Column(name: 'down_votes')]
+    private int $downVotes = 0;
+
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
     #[Assert\NotBlank(message: 'L\'auteur est obligatoire.')]
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'post_id', nullable: false)]
     #[Assert\NotBlank(message: 'L\'article est obligatoire.')]
     private ?Post $post = null;
-
-    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'replies')]
-    private ?self $parent = null;
-
-    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class, cascade: ['persist', 'remove'])]
-    private Collection $replies;
 
     #[ORM\OneToMany(mappedBy: 'comment', targetEntity: CommentReaction::class, orphanRemoval: true)]
     private Collection $reactions;
@@ -50,7 +50,6 @@ class Comment
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->replies = new ArrayCollection();
         $this->reactions = new ArrayCollection();
     }
 
@@ -92,6 +91,28 @@ class Comment
         return $this;
     }
 
+    public function getUpVotes(): int
+    {
+        return $this->upVotes;
+    }
+
+    public function setUpVotes(int $upVotes): static
+    {
+        $this->upVotes = $upVotes;
+        return $this;
+    }
+
+    public function getDownVotes(): int
+    {
+        return $this->downVotes;
+    }
+
+    public function setDownVotes(int $downVotes): static
+    {
+        $this->downVotes = $downVotes;
+        return $this;
+    }
+
     public function getUser(): ?User
     {
         return $this->user;
@@ -111,45 +132,6 @@ class Comment
     public function setPost(?Post $post): static
     {
         $this->post = $post;
-        return $this;
-    }
-
-    public function getParent(): ?self
-    {
-        return $this->parent;
-    }
-
-    public function setParent(?self $parent): static
-    {
-        $this->parent = $parent;
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, self>
-     */
-    public function getReplies(): Collection
-    {
-        return $this->replies;
-    }
-
-    public function addReply(self $reply): static
-    {
-        if (!$this->replies->contains($reply)) {
-            $this->replies->add($reply);
-            $reply->setParent($this);
-        }
-        return $this;
-    }
-
-    public function removeReply(self $reply): static
-    {
-        if ($this->replies->removeElement($reply)) {
-            // set the owning side to null (unless already changed)
-            if ($reply->getParent() === $this) {
-                $reply->setParent(null);
-            }
-        }
         return $this;
     }
 

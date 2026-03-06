@@ -1,0 +1,44 @@
+{# Sidebar: fixed, transparent violet, hover glow #}
+<aside class="lobby-sidebar" aria-label="Main navigation">
+  <nav class="side-nav">
+    <div class="side-section">Lobby.gg</div>
+
+    <a class="side-item {{ page == 'blog' ? 'active' : '' }}" href="{{ path('front_blog') }}">
+      <i class="fa-solid fa-rss"></i>
+      <span>Blog</span>
+      <span class="trail" aria-hidden="true"></span>
+    </a>
+
+    <a class="side-item {{ page == 'users' ? 'active' : '' }}" href="{{ path('front_users') }}"> {# Revert: original Users nav item #}
+      <i class="fa-solid fa-user-astronaut"></i>
+      <span>User Management</span>
+      <span class="trail" aria-hidden="true"></span>
+    </a>
+
+    <a class="side-item {{ page == 'marketplace' ? 'active' : '' }}" href="{{ path('front_marketplace') }}">
+      <i class="fa-solid fa-cart-shopping"></i>
+      <span>Marketplace</span>
+      <span class="trail" aria-hidden="true"></span>
+    </a>
+
+    <a class="side-item {{ page == 'tournaments' ? 'active' : '' }}" href="{{ is_granted('ROLE_ADMIN') ? path('app_admin_tournament_index') : path('front_tournaments') }}">
+      <i class="fa-solid fa-trophy"></i>
+      <span>Tournaments</span>
+      <span class="trail" aria-hidden="true"></span>
+    </a>
+
+    <a class="side-item {{ page == 'sponsoring' ? 'active' : '' }}" href="{{ path('front_sponsoring') }}">
+      <i class="fa-solid fa-handshake-angle"></i>
+      <span>Sponsoring</span>
+      <span class="trail" aria-hidden="true"></span>
+    </a>
+
+    <div class="side-footer">
+      <div class="side-badge">
+        <span class="dot"></span>
+        <span class="txt">2026 • Frontoffice</span>
+      </div>
+    </div>
+  </nav>
+</aside>
+

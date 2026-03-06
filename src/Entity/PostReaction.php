@@ -24,7 +24,7 @@ class PostReaction
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'reactions')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'post_id', nullable: false)]
     private ?Post $post = null;
 
     public function __construct()

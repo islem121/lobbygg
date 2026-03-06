@@ -1,0 +1,49 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}External Interests{% endblock %}
+{% block content_title %}External Tournament Interests{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item active">External Interests</li>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Users Interested in External Tournaments</h3>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Tournament</th>
+                    <th>Source</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for interest in interests %}
+                    <tr>
+                        <td>{{ interest.user ? (interest.user.username ?: interest.user.email) : 'Unknown' }}</td>
+                        <td>
+                            {% if interest.url %}
+                                <a href="{{ interest.url }}" target="_blank" rel="noopener noreferrer">{{ interest.title }}</a>
+                            {% else %}
+                                {{ interest.title }}
+                            {% endif %}
+                        </td>
+                        <td>{{ interest.source }}</td>
+                        <td>{{ interest.createdAt ? interest.createdAt|date('Y-m-d H:i') : '-' }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center">No external interests yet.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

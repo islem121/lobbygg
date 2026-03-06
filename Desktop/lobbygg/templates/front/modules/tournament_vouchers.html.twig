@@ -1,0 +1,52 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg - My Tournament Vouchers{% endblock %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">My Tournament Vouchers</h1>
+      <p class="page-sub">Track purchased entries and voucher status.</p>
+    </div>
+  </section>
+
+  <section
+    class="grid"
+    data-controller="tournaments"
+    data-tournaments-endpoint-value="{{ path('front_tournament_vouchers_ajax_list') }}"
+  >
+    <div class="col span-12">
+      <div class="panel">
+        <form method="get" class="row-actions" data-tournaments-target="form" data-action="submit->tournaments#filter change->tournaments#filter" style="gap:10px; margin-bottom:14px;">
+          <input class="form-control" type="text" name="q" value="{{ filters.q ?? '' }}" placeholder="Voucher code / tournament" data-tournaments-target="searchInput" style="max-width:260px;">
+          <select class="form-control" name="tournament" style="max-width:260px;">
+            <option value="">All tournaments</option>
+            {% for tournament in tournaments %}
+              <option value="{{ tournament.id }}" {{ (filters.tournament ?? 0) == tournament.id ? 'selected' : '' }}>{{ tournament.title }}</option>
+            {% endfor %}
+          </select>
+          <button class="btn btn-primary" type="submit">Apply</button>
+          <a class="btn btn-ghost" href="{{ path('front_tournament_vouchers') }}">Reset</a>
+        </form>
+
+        <div data-tournaments-target="results">
+          {% include 'front/modules/_tournament_vouchers_results.html.twig' with { vouchers: vouchers } %}
+        </div>
+
+        <div class="tour-pagination" data-tournaments-target="pagination">
+          {% if pagination.totalPages > 1 %}
+            {% set prevPage = pagination.page - 1 %}
+            {% set nextPage = pagination.page + 1 %}
+            {% if pagination.page > 1 %}
+              <a class="btn btn-mini btn-ghost" href="{{ path('front_tournament_vouchers', app.request.query.all|merge({page: prevPage})) }}" data-action="click->tournaments#paginate">&larr; Prev</a>
+            {% endif %}
+            <span class="tour-page-info">Page {{ pagination.page }} / {{ pagination.totalPages }}</span>
+            {% if pagination.page < pagination.totalPages %}
+              <a class="btn btn-mini btn-ghost" href="{{ path('front_tournament_vouchers', app.request.query.all|merge({page: nextPage})) }}" data-action="click->tournaments#paginate">Next &rarr;</a>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

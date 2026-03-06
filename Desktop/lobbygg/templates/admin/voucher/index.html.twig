@@ -1,0 +1,98 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Voucher Management{% endblock %}
+{% block content_title %}Vouchers{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item active">Vouchers</li>
+{% endblock %}
+
+{% block content %}
+<div data-controller="tournaments" data-tournaments-endpoint-value="{{ path('app_admin_voucher_ajax_list') }}">
+<div class="card mb-3">
+    <div class="card-header">
+        <h3 class="card-title">Filter</h3>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-2" data-tournaments-target="form" data-action="submit->tournaments#filter change->tournaments#filter">
+            <div class="col-md-4">
+                <input class="form-control" type="text" name="q" value="{{ q ?? '' }}" placeholder="Code / user / tournament" data-tournaments-target="searchInput">
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" name="tournament">
+                    <option value="">All tournaments</option>
+                    {% for t in tournaments %}
+                        <option value="{{ t.id }}" {{ selectedTournamentId == t.id ? 'selected' : '' }}>{{ t.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" type="submit">Apply</button>
+            </div>
+            <div class="col-md-2">
+                <a class="btn btn-outline-secondary w-100" href="{{ path('app_admin_voucher_index') }}">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3 class="card-title">Sales Summary by Tournament</h3>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>Tournament</th>
+                    <th>Entry Fee</th>
+                    <th>Sold Vouchers</th>
+                    <th>Max Players</th>
+                    <th>Current PrizePool</th>
+                </tr>
+            </thead>
+            <tbody data-tournaments-target="summary">
+                {% include 'admin/voucher/_summary_rows.html.twig' with { summaryRows: summaryRows } %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Voucher List</h3>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Code</th>
+                    <th>User</th>
+                    <th>Tournament</th>
+                    <th>Amount</th>
+                    <th>Purchased</th>
+                </tr>
+            </thead>
+            <tbody data-tournaments-target="results">
+                {% include 'admin/voucher/_voucher_rows.html.twig' with { vouchers: vouchers } %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="p-3 d-flex gap-2 align-items-center" data-tournaments-target="pagination">
+    {% if pagination.totalPages > 1 %}
+        {% set prevPage = pagination.page - 1 %}
+        {% set nextPage = pagination.page + 1 %}
+        {% if pagination.page > 1 %}
+            <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_admin_voucher_index', app.request.query.all|merge({page: prevPage})) }}" data-action="click->tournaments#paginate">Prev</a>
+        {% endif %}
+        <span>Page {{ pagination.page }} / {{ pagination.totalPages }}</span>
+        {% if pagination.page < pagination.totalPages %}
+            <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_admin_voucher_index', app.request.query.all|merge({page: nextPage})) }}" data-action="click->tournaments#paginate">Next</a>
+        {% endif %}
+    {% endif %}
+</div>
+</div>
+{% endblock %}

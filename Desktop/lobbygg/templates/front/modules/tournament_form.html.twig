@@ -1,0 +1,52 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Lobby.gg - {{ mode == 'edit' ? 'Edit' : 'Create' }} Tournament{% endblock %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1 class="page-title">{{ mode == 'edit' ? 'Edit Tournament' : 'Create Tournament' }}</h1>
+      <p class="page-sub">Manage tournament settings and schedule.</p>
+    </div>
+    {% if mode == 'create' and is_granted('ROLE_ADMIN') %}
+      <div class="page-actions">
+        <a class="btn btn-ghost" href="{{ path('front_tournaments_new', {ai: 1}) }}">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> AI Draft
+        </a>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="grid">
+    <div class="col span-8">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-sliders"></i> Tournament Form</h2>
+        </div>
+
+        {{ form_start(form) }}
+          <div style="display:grid; gap:14px;">
+            {{ form_row(form.title) }}
+            {{ form_row(form.description) }}
+            {{ form_row(form.startDate) }}
+            {{ form_row(form.endDate) }}
+            {{ form_row(form.maxPlayers) }}
+            {{ form_row(form.mode) }}
+            {{ form_row(form.entryFee) }}
+            {{ form_row(form.isAiGenerated) }}
+            {{ form_row(form.status) }}
+          </div>
+          <div class="row-actions" style="margin-top:20px;">
+            <button class="btn btn-primary" type="submit">
+              <i class="fa-solid fa-check"></i> {{ mode == 'edit' ? 'Update' : 'Create' }}
+            </button>
+            <a class="btn btn-ghost" href="{{ path('front_tournaments') }}">
+              <i class="fa-solid fa-arrow-left"></i> Back
+            </a>
+          </div>
+        {{ form_end(form) }}
+      </div>
+    </div>
+  </section>
+{% endblock %}
+

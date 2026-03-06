@@ -1,0 +1,390 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}AdminLTE | Tournament Dashboard{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="{{ asset('admin_assets/css/adminlte.min.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="app-wrapper">
+      <nav class="app-header navbar navbar-expand bg-body">
+        <div class="container-fluid">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button">
+                <i class="bi bi-list"></i>
+              </a>
+            </li>
+            <li class="nav-item d-none d-md-block">
+              <a href="{{ path('tournament_frontoffice') }}" class="nav-link">Frontoffice</a>
+            </li>
+          </ul>
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ path('tournament_frontoffice') }}">
+                <i class="bi bi-box-arrow-up-right me-1"></i>Open User View
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+        <div class="sidebar-brand">
+          <a href="{{ path('tournament_dashboard') }}" class="brand-link">
+            <img src="{{ asset('admin_assets/assets/img/AdminLTELogo.png') }}" alt="AdminLTE Logo" class="brand-image opacity-75 shadow">
+            <span class="brand-text fw-light">Tournament Admin</span>
+          </a>
+        </div>
+        <div class="sidebar-wrapper">
+          <nav class="mt-2">
+            <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="navigation" data-accordion="false">
+              <li class="nav-item menu-open">
+                <a href="#" class="nav-link active">
+                  <i class="nav-icon bi bi-trophy"></i>
+                  <p>
+                    Tournaments
+                    <i class="nav-arrow bi bi-chevron-right"></i>
+                  </p>
+                </a>
+                <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                    <a href="{{ path('tournament_dashboard') }}" class="nav-link active">
+                      <i class="nav-icon bi bi-circle"></i>
+                      <p>Dashboard</p>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{{ path('tournament_frontoffice') }}" class="nav-link">
+                      <i class="nav-icon bi bi-circle"></i>
+                      <p>Frontoffice</p>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </aside>
+
+      <main class="app-main">
+        <div class="app-content-header">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-sm-6"><h3 class="mb-0">Tournament Management</h3></div>
+              <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                  <li class="breadcrumb-item"><a href="{{ path('tournament_frontoffice') }}">Frontoffice</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="app-content">
+          <div class="container-fluid">
+            <div id="messageBox"></div>
+
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card card-primary card-outline mb-4">
+                  <div class="card-header">
+                    <div class="card-title" id="formTitle">Create Tournament</div>
+                  </div>
+                  <form id="tournamentForm">
+                    <input type="hidden" id="tournament_id" name="id">
+                    <div class="card-body">
+                      <div class="row g-3">
+                        <div class="col-md-6">
+                          <label for="name" class="form-label">Name</label>
+                          <input type="text" class="form-control" id="name" name="name" maxlength="100" required>
+                        </div>
+                        <div class="col-md-6">
+                          <label for="status" class="form-label">Status</label>
+                          <select class="form-select" id="status" name="status" required>
+                            <option value="upcoming">Upcoming</option>
+                            <option value="ongoing">Ongoing</option>
+                            <option value="finished">Finished</option>
+                          </select>
+                        </div>
+                        <div class="col-md-6">
+                          <label for="start_datetime" class="form-label">Start Datetime</label>
+                          <input type="datetime-local" class="form-control" id="start_datetime" name="start_datetime" required>
+                        </div>
+                        <div class="col-md-6">
+                          <label for="end_datetime" class="form-label">End Datetime</label>
+                          <input type="datetime-local" class="form-control" id="end_datetime" name="end_datetime">
+                        </div>
+                        <div class="col-md-6">
+                          <label for="region" class="form-label">Region</label>
+                          <input type="text" class="form-control" id="region" name="region" maxlength="60">
+                        </div>
+                        <div class="col-md-6">
+                          <label for="mode" class="form-label">Mode</label>
+                          <input type="text" class="form-control" id="mode" name="mode" maxlength="60">
+                        </div>
+                        <div class="col-md-6">
+                          <label for="max_teams" class="form-label">Max Teams</label>
+                          <input type="number" class="form-control" id="max_teams" name="max_teams" min="1" required>
+                        </div>
+                        <div class="col-md-12">
+                          <label for="description" class="form-label">Description</label>
+                          <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="card-footer">
+                      <button type="submit" class="btn btn-primary" id="submitBtn">Create Tournament</button>
+                      <button type="button" class="btn btn-secondary" id="resetBtn">Reset</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="card-header">
+                    <div class="row align-items-center">
+                      <div class="col-md-6">
+                        <h3 class="card-title">Tournaments List</h3>
+                      </div>
+                      <div class="col-md-6">
+                        <form method="get" class="row g-2 justify-content-end">
+                          <div class="col-auto">
+                            <input type="text" name="search" class="form-control form-control-sm" placeholder="Search..." value="{{ filters.search }}">
+                          </div>
+                          <div class="col-auto">
+                            <select name="status" class="form-select form-select-sm">
+                              <option value="">All Status</option>
+                              {% for status in filterOptions.status %}
+                                <option value="{{ status }}" {{ filters.status == status ? 'selected' : '' }}>{{ status }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                          <div class="col-auto">
+                            <select name="region" class="form-select form-select-sm">
+                              <option value="">All Regions</option>
+                              {% for region in filterOptions.region %}
+                                <option value="{{ region }}" {{ filters.region == region ? 'selected' : '' }}>{{ region }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                          <div class="col-auto">
+                            <select name="mode" class="form-select form-select-sm">
+                              <option value="">All Modes</option>
+                              {% for mode in filterOptions.mode %}
+                                <option value="{{ mode }}" {{ filters.mode == mode ? 'selected' : '' }}>{{ mode }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                          <div class="col-auto">
+                            <select name="sort" class="form-select form-select-sm">
+                              <option value="created_at" {{ sort == 'created_at' ? 'selected' : '' }}>Sort by Created</option>
+                              <option value="start_datetime" {{ sort == 'start_datetime' ? 'selected' : '' }}>Sort by Date</option>
+                              <option value="name" {{ sort == 'name' ? 'selected' : '' }}>Sort by Name</option>
+                              <option value="status" {{ sort == 'status' ? 'selected' : '' }}>Sort by Status</option>
+                            </select>
+                          </div>
+                          <div class="col-auto">
+                            <select name="order" class="form-select form-select-sm">
+                              <option value="desc" {{ order == 'desc' ? 'selected' : '' }}>Desc</option>
+                              <option value="asc" {{ order == 'asc' ? 'selected' : '' }}>Asc</option>
+                            </select>
+                          </div>
+                          <div class="col-auto">
+                            <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+                            <a href="{{ path('tournament_dashboard') }}" class="btn btn-sm btn-secondary">Clear</a>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card-body table-responsive p-0">
+                    <table class="table table-hover text-nowrap">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Name</th>
+                          <th>Status</th>
+                          <th>Start</th>
+                          <th>Region</th>
+                          <th>Mode</th>
+                          <th>Teams</th>
+                          <th>Created</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for t in tournaments %}
+                          <tr
+                            data-id="{{ t.id }}"
+                            data-name="{{ t.name }}"
+                            data-status="{{ t.status }}"
+                            data-start="{{ t.start_datetime|date('Y-m-d\\TH:i') }}"
+                            data-end="{{ t.end_datetime ? t.end_datetime|date('Y-m-d\\TH:i') : '' }}"
+                            data-region="{{ t.region ?? '' }}"
+                            data-mode="{{ t.mode ?? '' }}"
+                            data-max="{{ t.max_teams }}"
+                            data-description="{{ t.description }}"
+                          >
+                            <td>{{ t.id }}</td>
+                            <td>{{ t.name }}</td>
+                            <td>
+                              <span class="badge {{ t.status == 'ongoing' ? 'text-bg-success' : (t.status == 'finished' ? 'text-bg-secondary' : 'text-bg-primary') }}">
+                                {{ t.status }}
+                              </span>
+                            </td>
+                            <td>{{ t.start_datetime|date('d M Y H:i') }}</td>
+                            <td>{{ t.region ?? '-' }}</td>
+                            <td>{{ t.mode ?? '-' }}</td>
+                            <td>{{ t.registered_teams }}/{{ t.max_teams }}</td>
+                            <td>{{ t.created_at|date('d M Y H:i') }}</td>
+                            <td>
+                              <button type="button" class="btn btn-sm btn-secondary tm-btn-edit">Edit</button>
+                              <button type="button" class="btn btn-sm btn-danger tm-btn-delete">Delete</button>
+                              <button type="button" class="btn btn-sm btn-primary tm-btn-view">View</button>
+                            </td>
+                          </tr>
+                        {% else %}
+                          <tr><td colspan="9">No tournaments found.</td></tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer class="app-footer">
+        <div class="float-end d-none d-sm-inline">AdminLTE-based tournaments module</div>
+        <strong>Lobby.gg Tournament Dashboard</strong>
+      </footer>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+  <script src="{{ asset('assets/js/jquery/jquery-3.3.1.min.js') }}"></script>
+  <script src="{{ asset('assets/js/bootstrap/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ asset('admin_assets/js/adminlte.min.js') }}"></script>
+  <script>
+    document.body.classList.add('layout-fixed', 'sidebar-expand-lg', 'bg-body-tertiary');
+
+    const form = document.getElementById('tournamentForm');
+    const messageBox = document.getElementById('messageBox');
+    const submitBtn = document.getElementById('submitBtn');
+    const formTitle = document.getElementById('formTitle');
+    const resetBtn = document.getElementById('resetBtn');
+    const idField = document.getElementById('tournament_id');
+
+    function showMessage(msg, ok = true) {
+      messageBox.innerHTML = '<div class="alert ' + (ok ? 'alert-success' : 'alert-danger') + '">' + msg + '</div>';
+    }
+
+    function resetForm() {
+      form.reset();
+      idField.value = '';
+      formTitle.textContent = 'Create Tournament';
+      submitBtn.textContent = 'Create Tournament';
+    }
+
+    async function submitForm(event) {
+      event.preventDefault();
+      const data = new FormData(form);
+      const isUpdate = !!idField.value;
+      const endpoint = isUpdate ? '{{ path('update_tournament_api') }}' : '{{ path('create_tournament_api') }}';
+      const payload = new URLSearchParams();
+      for (const [k, v] of data.entries()) payload.set(k, v);
+
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: payload.toString()
+        });
+        const json = await response.json();
+        showMessage(json.success ? json.message : (json.message + (json.data?.errors ? ' ' + json.data.errors.join(' ') : '')), json.success);
+        if (json.success) setTimeout(() => window.location.reload(), 450);
+      } catch (e) {
+        showMessage('Request failed due to a network error.', false);
+      }
+    }
+
+    async function deleteTournament(id) {
+      if (!confirm('Delete tournament #' + id + '?')) return;
+      const payload = new URLSearchParams();
+      payload.set('id', id);
+
+      try {
+        const response = await fetch('{{ path('delete_tournament_api') }}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: payload.toString()
+        });
+        const json = await response.json();
+        showMessage(json.message, json.success);
+        if (json.success) setTimeout(() => window.location.reload(), 350);
+      } catch (e) {
+        showMessage('Delete failed due to a network error.', false);
+      }
+    }
+
+    async function viewTournament(id) {
+      try {
+        const response = await fetch('{{ path('get_tournament_api') }}?id=' + encodeURIComponent(id));
+        const json = await response.json();
+        if (!json.success) {
+          showMessage(json.message, false);
+          return;
+        }
+        const t = json.data.tournament;
+        alert(
+          'Tournament #' + t.id + '\n' +
+          'Name: ' + t.name + '\n' +
+          'Status: ' + t.status + '\n' +
+          'Start: ' + t.start_datetime + '\n' +
+          'End: ' + (t.end_datetime || '-') + '\n' +
+          'Region: ' + (t.region || '-') + '\n' +
+          'Mode: ' + (t.mode || '-') + '\n' +
+          'Teams: ' + t.registered_teams + '/' + t.max_teams + '\n' +
+          'Created: ' + t.created_at + '\n\n' +
+          t.description
+        );
+      } catch (e) {
+        showMessage('View failed due to a network error.', false);
+      }
+    }
+
+    form.addEventListener('submit', submitForm);
+    resetBtn.addEventListener('click', resetForm);
+
+    document.querySelectorAll('tr[data-id]').forEach((row) => {
+      row.querySelector('.tm-btn-edit').addEventListener('click', () => {
+        idField.value = row.dataset.id;
+        document.getElementById('name').value = row.dataset.name;
+        document.getElementById('status').value = row.dataset.status;
+        document.getElementById('start_datetime').value = row.dataset.start;
+        document.getElementById('end_datetime').value = row.dataset.end;
+        document.getElementById('region').value = row.dataset.region;
+        document.getElementById('mode').value = row.dataset.mode;
+        document.getElementById('max_teams').value = row.dataset.max;
+        document.getElementById('description').value = row.dataset.description;
+        formTitle.textContent = 'Edit Tournament #' + row.dataset.id;
+        submitBtn.textContent = 'Update Tournament';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      row.querySelector('.tm-btn-delete').addEventListener('click', () => deleteTournament(row.dataset.id));
+      row.querySelector('.tm-btn-view').addEventListener('click', () => viewTournament(row.dataset.id));
+    });
+  </script>
+{% endblock %}
+

@@ -1,0 +1,101 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Tournament Analytics{% endblock %}
+{% block content_title %}Tournament Analytics{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-3">
+    <div class="col-md-3"><div class="card p-3"><div class="text-muted">Total Revenue</div><div id="kpiRevenue" class="fs-4 fw-bold">0</div></div></div>
+    <div class="col-md-3"><div class="card p-3"><div class="text-muted">Total Tournaments</div><div id="kpiTournaments" class="fs-4 fw-bold">0</div></div></div>
+    <div class="col-md-3"><div class="card p-3"><div class="text-muted">Total Players</div><div id="kpiPlayers" class="fs-4 fw-bold">0</div></div></div>
+    <div class="col-md-3"><div class="card p-3"><div class="text-muted">Average Fill Rate</div><div id="kpiFillRate" class="fs-4 fw-bold">0%</div></div></div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6"><div class="card p-3"><h5>Revenue per Tournament</h5><canvas id="chartRevenue"></canvas></div></div>
+    <div class="col-lg-6"><div class="card p-3"><h5>Player Growth / Month</h5><canvas id="chartGrowth"></canvas></div></div>
+    <div class="col-lg-6"><div class="card p-3"><h5>Voucher Sell Rate</h5><canvas id="chartSellRate"></canvas></div></div>
+    <div class="col-lg-6"><div class="card p-3"><h5>Top 5 Revenue Tournaments</h5><ul id="top5List" class="mb-0"></ul></div></div>
+</div>
+{% endblock %}
+
+{% block admin_javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      (function () {
+        let revenueChart;
+        let growthChart;
+        let sellRateChart;
+
+        function createOrUpdateCharts(payload) {
+          const revenueLabels = payload.revenuePerTournament.map(r => r.title);
+          const revenueData = payload.revenuePerTournament.map(r => Number(r.revenue || 0));
+
+          if (!revenueChart) {
+            revenueChart = new Chart(document.getElementById('chartRevenue'), {
+              type: 'bar',
+              data: {labels: revenueLabels, datasets: [{label: 'Revenue', data: revenueData}]}
+            });
+          } else {
+            revenueChart.data.labels = revenueLabels;
+            revenueChart.data.datasets[0].data = revenueData;
+            revenueChart.update();
+          }
+
+          const growthLabels = payload.monthlyGrowth.map(m => m.month);
+          const growthData = payload.monthlyGrowth.map(m => Number(m.players || 0));
+          if (!growthChart) {
+            growthChart = new Chart(document.getElementById('chartGrowth'), {
+              type: 'line',
+              data: {labels: growthLabels, datasets: [{label: 'Players', data: growthData}]}
+            });
+          } else {
+            growthChart.data.labels = growthLabels;
+            growthChart.data.datasets[0].data = growthData;
+            growthChart.update();
+          }
+
+          if (!sellRateChart) {
+            sellRateChart = new Chart(document.getElementById('chartSellRate'), {
+              type: 'pie',
+              data: {
+                labels: ['Sell Rate', 'Remaining'],
+                datasets: [{data: [Number(payload.voucherSellRate || 0), Math.max(0, 100 - Number(payload.voucherSellRate || 0))]}]
+              }
+            });
+          } else {
+            sellRateChart.data.datasets[0].data = [Number(payload.voucherSellRate || 0), Math.max(0, 100 - Number(payload.voucherSellRate || 0))];
+            sellRateChart.update();
+          }
+        }
+
+        function render(payload) {
+          document.getElementById('kpiRevenue').textContent = Number(payload.totalRevenue || 0).toFixed(2);
+          document.getElementById('kpiTournaments').textContent = payload.totalTournaments || 0;
+          document.getElementById('kpiPlayers').textContent = payload.totalPlayers || 0;
+          document.getElementById('kpiFillRate').textContent = Number(payload.averageFillRate || 0).toFixed(2) + '%';
+
+          const top5 = document.getElementById('top5List');
+          top5.innerHTML = '';
+          (payload.top5HighestRevenue || []).forEach(function (item) {
+            const li = document.createElement('li');
+            li.textContent = item.title + ' - ' + Number(item.revenue || 0).toFixed(2);
+            top5.appendChild(li);
+          });
+
+          createOrUpdateCharts(payload);
+        }
+
+        async function loadAnalytics() {
+          const res = await fetch('{{ path('app_admin_analytics') }}');
+          const payload = await res.json();
+          render(payload);
+        }
+
+        loadAnalytics();
+        setInterval(loadAnalytics, 30000);
+      })();
+    </script>
+{% endblock %}
+

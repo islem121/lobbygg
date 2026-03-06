@@ -13,13 +13,13 @@ class Order
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(name: 'order_id')]
     private ?int $id = null;
 
     #[ORM\Column]
     private ?int $quantity = null;
 
-    #[ORM\Column]
+    #[ORM\Column(name: 'order_date')]
     private ?\DateTimeImmutable $orderDate = null;
 
     #[ORM\Column(length: 50)]
@@ -32,11 +32,11 @@ class Order
     private ?string $paymentIntentId = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'product_id', nullable: false)]
     private ?Product $product = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
     private ?User $user = null;
 
     public function getId(): ?int

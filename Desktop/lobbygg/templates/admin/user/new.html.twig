@@ -1,0 +1,23 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Nouvel Utilisateur{% endblock %}
+{% block content_title %}Créer un Utilisateur{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_user_index') }}">Utilisateurs</a></li>
+    <li class="breadcrumb-item active">Nouveau</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Informations de l'utilisateur</h3>
+            </div>
+            {{ include('admin/user/_form.html.twig') }}
+        </div>
+    </div>
+</div>
+{% endblock %}

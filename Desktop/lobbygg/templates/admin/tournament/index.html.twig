@@ -1,0 +1,114 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Tournament Management{% endblock %}
+{% block content_title %}Tournaments{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin') }}">Home</a></li>
+    <li class="breadcrumb-item active">Tournaments</li>
+{% endblock %}
+
+{% block content %}
+<div class="card" data-controller="tournaments" data-tournaments-endpoint-value="{{ path('app_admin_tournament_ajax_list') }}">
+    <div class="card-header">
+        <h3 class="card-title">Tournaments List</h3>
+        <div class="card-tools">
+            <a href="{{ path('app_admin_tournament_export_pdf', app.request.query.all) }}" class="btn btn-outline-secondary btn-sm me-2">
+                <i class="bi bi-file-earmark-pdf"></i> Export PDF
+            </a>
+            <a href="{{ path('app_admin_tournament_new') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i> New Tournament
+            </a>
+            <a href="{{ path('app_admin_tournament_new', {ai: 1}) }}" class="btn btn-info btn-sm">
+                <i class="bi bi-stars"></i> AI Tournament
+            </a>
+        </div>
+    </div>
+    <div class="card-body border-bottom">
+        <form method="get" class="row g-2" data-tournaments-target="form" data-action="submit->tournaments#filter change->tournaments#filter">
+            <div class="col-md-2">
+                <input type="text" class="form-control" name="q" placeholder="Search title/description" value="{{ filters.q ?? '' }}" data-tournaments-target="searchInput">
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" name="status">
+                    <option value="">All statuses</option>
+                    {% for value in ['upcoming', 'live', 'finished', 'cancelled'] %}
+                        <option value="{{ value }}" {{ (filters.status ?? '') == value ? 'selected' : '' }}>{{ value|upper }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-1">
+                <select class="form-select" name="mode">
+                    <option value="">All modes</option>
+                    {% for value in ['solo', 'duo', 'squad'] %}
+                        <option value="{{ value }}" {{ (filters.mode ?? '') == value ? 'selected' : '' }}>{{ value|upper }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" class="form-control" name="date_from" value="{{ filters.dateFrom ?? '' }}">
+            </div>
+            <div class="col-md-2">
+                <input type="date" class="form-control" name="date_to" value="{{ filters.dateTo ?? '' }}">
+            </div>
+            <div class="col-md-1">
+                <select class="form-select" name="sort_by">
+                    <option value="startDate" {{ sort.by == 'startDate' ? 'selected' : '' }}>Start</option>
+                    <option value="endDate" {{ sort.by == 'endDate' ? 'selected' : '' }}>End</option>
+                    <option value="title" {{ sort.by == 'title' ? 'selected' : '' }}>Title</option>
+                    <option value="status" {{ sort.by == 'status' ? 'selected' : '' }}>Status</option>
+                    <option value="maxPlayers" {{ sort.by == 'maxPlayers' ? 'selected' : '' }}>Slots</option>
+                    <option value="participantsCount" {{ sort.by == 'participantsCount' ? 'selected' : '' }}>Participants</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <select class="form-select" name="sort_dir">
+                    <option value="asc" {{ sort.dir == 'asc' ? 'selected' : '' }}>ASC</option>
+                    <option value="desc" {{ sort.dir == 'desc' ? 'selected' : '' }}>DESC</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button class="btn btn-primary w-100" type="submit">Apply</button>
+            </div>
+            <div class="col-md-12">
+                <a href="{{ path('app_admin_tournament_index') }}" class="btn btn-link btn-sm p-0">Reset filters</a>
+            </div>
+        </form>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Mode</th>
+                    <th>Entry Fee</th>
+                    <th>Prize Pool</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Max Players</th>
+                    <th>Participants</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody data-tournaments-target="results">
+              {% include 'admin/tournament/_table_rows.html.twig' with { rows: rows } %}
+            </tbody>
+        </table>
+        <div class="p-3 d-flex gap-2 align-items-center" data-tournaments-target="pagination">
+        {% if pagination.totalPages > 1 %}
+                {% set prevPage = pagination.page - 1 %}
+                {% set nextPage = pagination.page + 1 %}
+                {% if pagination.page > 1 %}
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_admin_tournament_index', app.request.query.all|merge({page: prevPage})) }}" data-action="click->tournaments#paginate">Prev</a>
+                {% endif %}
+                <span>Page {{ pagination.page }} / {{ pagination.totalPages }}</span>
+                {% if pagination.page < pagination.totalPages %}
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_admin_tournament_index', app.request.query.all|merge({page: nextPage})) }}" data-action="click->tournaments#paginate">Next</a>
+                {% endif %}
+        {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,372 @@
+<div class="floating-tchat" data-tchat-root data-tournament-id="{{ chatbot_tournament_id is defined and chatbot_tournament_id ? chatbot_tournament_id : '' }}">
+  <button class="floating-tchat-toggle" type="button" data-tchat-toggle aria-label="Open tournament chatbot">
+    <i class="fa-solid fa-robot"></i>
+  </button>
+
+  <div class="floating-tchat-panel" data-tchat-panel hidden>
+    <div class="floating-tchat-head">
+      <strong><i class="fa-solid fa-robot"></i> Tournament Assistant</strong>
+      <div class="tchat-head-actions">
+        <button type="button" class="tchat-refresh-btn" data-tchat-refresh aria-label="Refresh chatbot" title="Refresh chat">
+          <i class="fa-solid fa-rotate-right"></i>
+        </button>
+        <button type="button" data-tchat-close aria-label="Close chatbot">&times;</button>
+      </div>
+    </div>
+
+    <div class="floating-tchat-history" data-tchat-history>
+      <div class="tchat-msg tchat-msg-ai">Hi, I answer tournament questions. You can also say hello.</div>
+    </div>
+
+    <div class="floating-tchat-input">
+      <input type="text" class="form-control" data-tchat-input placeholder="Ask about tournaments..." />
+      <select class="form-control tchat-lang" data-tchat-lang aria-label="Voice language">
+        <option value="en-US">EN</option>
+        <option value="fr-FR">FR</option>
+      </select>
+      <button class="btn btn-ghost tchat-mic-btn" type="button" data-tchat-mic aria-label="Voice input" title="Voice input">
+        <i class="fa-solid fa-microphone"></i>
+      </button>
+      <button class="btn btn-primary" type="button" data-tchat-send>Send</button>
+    </div>
+
+    <div class="tchat-status" data-tchat-status></div>
+  </div>
+</div>
+
+<style>
+  .floating-tchat {
+    position: fixed;
+    right: 20px;
+    bottom: calc(92px + env(safe-area-inset-bottom));
+    z-index: 2200;
+  }
+  .floating-tchat-toggle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 12px 30px rgba(99, 102, 241, .35);
+    transition: transform .2s ease;
+  }
+  .floating-tchat-toggle:hover { transform: scale(1.08); }
+  .floating-tchat-panel {
+    width: min(380px, calc(100vw - 24px));
+    margin-top: 10px;
+    background: rgba(15, 18, 30, .96);
+    border: 1px solid rgba(139, 92, 246, .4);
+    border-radius: 12px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+  .floating-tchat-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(139, 92, 246, .25);
+  }
+  .floating-tchat-head button {
+    border: none;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+  }
+  .tchat-head-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tchat-refresh-btn {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 13px;
+    color: rgba(255,255,255,.9);
+    background: rgba(255,255,255,.08) !important;
+  }
+  .tchat-refresh-btn:hover {
+    background: rgba(255,255,255,.16) !important;
+  }
+  .floating-tchat-history {
+    height: 240px;
+    overflow-y: auto;
+    padding: 10px;
+    display: grid;
+    gap: 8px;
+    background: rgba(0, 0, 0, .2);
+  }
+  .tchat-msg {
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: .9rem;
+    line-height: 1.35;
+    max-width: 90%;
+  }
+  .tchat-msg-user { background: rgba(99, 102, 241, .28); justify-self: end; }
+  .tchat-msg-ai { background: rgba(255, 255, 255, .08); justify-self: start; }
+  .tchat-msg-error { background: rgba(239, 68, 68, .22); justify-self: start; }
+  .floating-tchat-input {
+    display: grid;
+    grid-template-columns: 1fr 70px auto auto;
+    gap: 8px;
+    padding: 10px;
+  }
+  .tchat-lang { min-width: 0; }
+  .tchat-mic-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tchat-mic-btn.is-listening {
+    border-color: rgba(239, 68, 68, .8);
+    color: #fff;
+    background: rgba(239, 68, 68, .22);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, .22);
+  }
+  .tchat-status {
+    min-height: 22px;
+    padding: 0 10px 10px;
+    font-size: .82rem;
+    color: rgba(255,255,255,.72);
+  }
+  @media (max-width: 480px) {
+    .floating-tchat { right: 12px; bottom: calc(86px + env(safe-area-inset-bottom)); }
+  }
+</style>
+
+<script>
+  (function () {
+    const root = document.querySelector('[data-tchat-root]');
+    if (!root) return;
+
+    const panel = root.querySelector('[data-tchat-panel]');
+    const toggle = root.querySelector('[data-tchat-toggle]');
+    const closeBtn = root.querySelector('[data-tchat-close]');
+    const history = root.querySelector('[data-tchat-history]');
+    const input = root.querySelector('[data-tchat-input]');
+    const sendBtn = root.querySelector('[data-tchat-send]');
+    const status = root.querySelector('[data-tchat-status]');
+    const micBtn = root.querySelector('[data-tchat-mic]');
+    const refreshBtn = root.querySelector('[data-tchat-refresh]');
+    const langSelect = root.querySelector('[data-tchat-lang]');
+    const tournamentId = root.getAttribute('data-tournament-id');
+
+    const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    let isListening = false;
+    let partialTranscript = '';
+
+    // Allowed casual intents and tournament scope.
+    const greetingKeywords = ['hello', 'hi', 'hey', 'good morning', 'good evening', 'how are you', 'bonjour', 'salut'];
+    const tournamentKeywords = [
+      'tournament', 'tournoi', 'join', 'register', 'participant', 'participants', 'entry fee',
+      'fee', 'voucher', 'prize pool', 'status', 'upcoming', 'ongoing', 'finished',
+      'mode', 'solo', 'duo', 'squad', 'date', 'dates'
+    ];
+
+    const appendMessage = (text, cls) => {
+      const div = document.createElement('div');
+      div.className = 'tchat-msg ' + cls;
+      div.textContent = text;
+      history.appendChild(div);
+      history.scrollTop = history.scrollHeight;
+    };
+
+    const setStatus = (text) => {
+      status.textContent = text || '';
+    };
+
+    const isGreeting = (text) => {
+      const v = (text || '').toLowerCase();
+      return greetingKeywords.some((k) => v.includes(k));
+    };
+
+    const isTournamentQuestion = (text) => {
+      const v = (text || '').toLowerCase();
+      return tournamentKeywords.some((k) => v.includes(k));
+    };
+
+    // Function requested: handles UI send flow.
+    const sendMessage = async (text) => {
+      const question = (text || '').trim();
+      if (!question) {
+        setStatus('Please enter a message.');
+        return;
+      }
+
+      appendMessage(question, 'tchat-msg-user');
+      input.value = '';
+      setStatus('Processing...');
+
+      const answer = await getBotResponse(question);
+      appendMessage(answer, 'tchat-msg-ai');
+      setStatus('');
+    };
+
+    // Function requested: keeps strict domain restriction + greeting support.
+    const getBotResponse = async (text) => {
+      if (isGreeting(text)) {
+        return 'Hello! I can help with tournaments, participants, dates, fees, vouchers and prize pool.';
+      }
+
+      if (!isTournamentQuestion(text)) {
+        return 'I can only answer questions about tournaments. Please ask something related to tournaments.';
+      }
+
+      // Tournament question: call backend API first.
+      try {
+        const payload = { question: text };
+        if (tournamentId) payload.tournamentId = parseInt(tournamentId, 10);
+
+        const res = await fetch('/api/chatbot/tournament', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok && data && data.success && data.answer) return data.answer;
+        if (data && (data.answer || data.error)) return data.answer || data.error;
+      } catch (e) {
+        // Silent fallback below.
+      }
+
+      // Internal fallback for tournament-only responses when API is unavailable.
+      return 'Tournament assistant is temporarily unavailable. You can ask about joining, fees, vouchers, prize pool, dates, and status.';
+    };
+
+    const resetChat = () => {
+      history.innerHTML = '';
+      appendMessage('Hi, I answer tournament questions. You can also say hello.', 'tchat-msg-ai');
+      input.value = '';
+      setStatus('');
+    };
+
+    const initVoice = () => {
+      if (!micBtn) return;
+      if (!SpeechRecognitionCtor || typeof SpeechRecognitionCtor !== 'function') {
+        micBtn.disabled = true;
+        micBtn.title = 'Voice input is not supported in this browser.';
+        return;
+      }
+      if (!window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        micBtn.disabled = true;
+        micBtn.title = 'Voice input requires HTTPS (or localhost).';
+        setStatus('Voice requires HTTPS or localhost.');
+        return;
+      }
+
+      recognition = new SpeechRecognitionCtor();
+      recognition.lang = langSelect && langSelect.value ? langSelect.value : 'en-US';
+      recognition.interimResults = true;
+      recognition.continuous = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        isListening = true;
+        partialTranscript = '';
+        micBtn.classList.add('is-listening');
+        setStatus('Listening... hold mic while speaking.');
+      };
+
+      recognition.onresult = (event) => {
+        let live = '';
+        for (let i = event.resultIndex; i < event.results.length; i += 1) {
+          const item = event.results[i];
+          const text = item && item[0] ? String(item[0].transcript || '') : '';
+          if (!text) continue;
+          if (item.isFinal) partialTranscript += ' ' + text;
+          else live += text;
+        }
+        const preview = (partialTranscript + ' ' + live).trim();
+        if (preview) input.value = preview;
+      };
+
+      recognition.onerror = (event) => {
+        const code = event && event.error ? event.error : 'unknown';
+        if (code === 'not-allowed' || code === 'service-not-allowed') {
+          setStatus('Microphone permission denied. Enable mic in browser settings.');
+        } else if (code === 'audio-capture') {
+          setStatus('No microphone detected on this device.');
+        } else if (code === 'no-speech') {
+          setStatus('No speech detected. Speak closer to mic and retry.');
+        } else if (code === 'network') {
+          setStatus('Speech service network error. Check internet/VPN/firewall.');
+        } else {
+          setStatus('Voice recognition error (' + code + ').');
+        }
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        micBtn.classList.remove('is-listening');
+        const finalText = (partialTranscript || input.value || '').trim();
+        if (finalText) {
+          input.value = finalText;
+          partialTranscript = '';
+          setStatus('Processing...');
+          sendMessage(finalText);
+        } else if (status.textContent.indexOf('error') === -1) {
+          setStatus('No speech captured.');
+        }
+      };
+
+      const startListen = async () => {
+        if (isListening) return;
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach((t) => t.stop());
+          } catch (err) {
+            setStatus('Microphone permission denied.');
+            return;
+          }
+        }
+        recognition.lang = langSelect && langSelect.value ? langSelect.value : 'en-US';
+        try {
+          recognition.start();
+        } catch (err) {
+          setStatus('Cannot start voice recognition.');
+        }
+      };
+
+      const stopListen = () => {
+        if (recognition && isListening) recognition.stop();
+      };
+
+      micBtn.addEventListener('mousedown', startListen);
+      micBtn.addEventListener('touchstart', startListen, { passive: true });
+      micBtn.addEventListener('mouseup', stopListen);
+      micBtn.addEventListener('mouseleave', stopListen);
+      micBtn.addEventListener('touchend', stopListen);
+      micBtn.addEventListener('click', (ev) => ev.preventDefault());
+    };
+
+    toggle.addEventListener('click', () => { panel.hidden = !panel.hidden; });
+    closeBtn.addEventListener('click', () => { panel.hidden = true; });
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', resetChat);
+    }
+    sendBtn.addEventListener('click', () => sendMessage(input.value));
+    input.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter') {
+        ev.preventDefault();
+        sendMessage(input.value);
+      }
+    });
+
+    initVoice();
+  })();
+</script>
