@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="card">
+<div class="card" data-controller="tournaments" data-tournaments-endpoint-value="{{ path('app_admin_tournament_ajax_list') }}">
     <div class="card-header">
         <h3 class="card-title">Tournaments List</h3>
         <div class="card-tools">
@@ -25,9 +25,9 @@
         </div>
     </div>
     <div class="card-body border-bottom">
-        <form method="get" class="row g-2">
+        <form method="get" class="row g-2" data-tournaments-target="form" data-action="submit->tournaments#filter change->tournaments#filter">
             <div class="col-md-2">
-                <input type="text" class="form-control" name="q" placeholder="Search title/description" value="{{ filters.q ?? '' }}">
+                <input type="text" class="form-control" name="q" placeholder="Search title/description" value="{{ filters.q ?? '' }}" data-tournaments-target="searchInput">
             </div>
             <div class="col-md-2">
                 <select class="form-select" name="status">
@@ -92,51 +92,23 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
-            {% for row in rows %}
-                {% set tournament = row[0] %}
-                <tr>
-                    <td>{{ tournament.id }}</td>
-                    <td>{{ tournament.title }}</td>
-                    <td><span class="badge bg-info">{{ tournament.status }}</span></td>
-                    <td>{{ tournament.mode|upper }}</td>
-                    <td>{{ tournament.entryFee|number_format(2, '.', ',') }}</td>
-                    <td>{{ tournament.entryFee > 0 ? (tournament.entryFee * row.participantsCount)|number_format(2, '.', ',') : '-' }}</td>
-                    <td>{{ tournament.startDate ? tournament.startDate|date('d/m/Y H:i') : '-' }}</td>
-                    <td>{{ tournament.endDate ? tournament.endDate|date('d/m/Y') : '-' }}</td>
-                    <td>{{ tournament.maxPlayers }}</td>
-                    <td>{{ row.participantsCount }}</td>
-                    <td>
-                        <div class="btn-group">
-                            <a href="{{ path('app_admin_tournament_show', {'id': tournament.id}) }}" class="btn btn-info btn-sm">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a href="{{ path('app_admin_tournament_edit', {'id': tournament.id}) }}" class="btn btn-warning btn-sm">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-            {% else %}
-                <tr>
-                    <td colspan="11" class="text-center">No tournaments found</td>
-                </tr>
-            {% endfor %}
+            <tbody data-tournaments-target="results">
+              {% include 'admin/tournament/_table_rows.html.twig' with { rows: rows } %}
             </tbody>
         </table>
+        <div class="p-3 d-flex gap-2 align-items-center" data-tournaments-target="pagination">
         {% if pagination.totalPages > 1 %}
-            <div class="p-3 d-flex gap-2 align-items-center">
                 {% set prevPage = pagination.page - 1 %}
                 {% set nextPage = pagination.page + 1 %}
                 {% if pagination.page > 1 %}
-                    <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_admin_tournament_index', app.request.query.all|merge({page: prevPage})) }}">Prev</a>
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_admin_tournament_index', app.request.query.all|merge({page: prevPage})) }}" data-action="click->tournaments#paginate">Prev</a>
                 {% endif %}
                 <span>Page {{ pagination.page }} / {{ pagination.totalPages }}</span>
                 {% if pagination.page < pagination.totalPages %}
-                    <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_admin_tournament_index', app.request.query.all|merge({page: nextPage})) }}">Next</a>
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_admin_tournament_index', app.request.query.all|merge({page: nextPage})) }}" data-action="click->tournaments#paginate">Next</a>
                 {% endif %}
-            </div>
         {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -3,7 +3,6 @@
 namespace App\Service;
 
 use App\Entity\Tournament;
-use App\Entity\TournamentNotification;
 use App\Entity\TournamentParticipation;
 use App\Entity\User;
 use App\Entity\WaitingListEntry;
@@ -16,7 +15,8 @@ class WaitingListService
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly WaitingListEntryRepository $waitingListRepository,
-        private readonly TournamentParticipationRepository $participationRepository
+        private readonly TournamentParticipationRepository $participationRepository,
+        private readonly TournamentNotificationService $notificationService
     ) {
     }
 
@@ -72,14 +72,13 @@ class WaitingListService
         $participation->setStatus('registered');
         $this->entityManager->persist($participation);
 
-        $notification = new TournamentNotification();
-        $notification->setUser($next->getUser());
-        $notification->setTournament($tournament);
-        $notification->setMessage('You have been promoted from waiting list to active player.');
-        $this->entityManager->persist($notification);
-
         $this->entityManager->remove($next);
         $this->entityManager->flush();
+        $this->notificationService->notifyUser(
+            $participation->getUser(),
+            $tournament,
+            'You have been promoted from waiting list to active player.'
+        );
         $this->reindexPositions($tournament);
 
         return $participation->getUser();
@@ -113,4 +112,3 @@ class WaitingListService
         $this->entityManager->flush();
     }
 }
-

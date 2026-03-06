@@ -1,0 +1,12 @@
+{% for voucher in vouchers %}
+  <tr>
+    <td>{{ voucher.id }}</td>
+    <td><code>{{ voucher.code }}</code></td>
+    <td>{{ voucher.user ? voucher.user.email : 'Unknown' }}</td>
+    <td>{{ voucher.tournament ? voucher.tournament.title : 'Unknown' }}</td>
+    <td>{{ voucher.amount|number_format(2, '.', ',') }}</td>
+    <td>{{ voucher.purchasedAt ? voucher.purchasedAt|date('Y-m-d H:i') : '-' }}</td>
+  </tr>
+{% else %}
+  <tr><td colspan="6" class="text-center">No vouchers found.</td></tr>
+{% endfor %}

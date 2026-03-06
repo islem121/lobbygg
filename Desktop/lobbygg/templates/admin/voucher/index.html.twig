@@ -9,12 +9,16 @@
 {% endblock %}
 
 {% block content %}
+<div data-controller="tournaments" data-tournaments-endpoint-value="{{ path('app_admin_voucher_ajax_list') }}">
 <div class="card mb-3">
     <div class="card-header">
         <h3 class="card-title">Filter</h3>
     </div>
     <div class="card-body">
-        <form method="get" class="row g-2">
+        <form method="get" class="row g-2" data-tournaments-target="form" data-action="submit->tournaments#filter change->tournaments#filter">
+            <div class="col-md-4">
+                <input class="form-control" type="text" name="q" value="{{ q ?? '' }}" placeholder="Code / user / tournament" data-tournaments-target="searchInput">
+            </div>
             <div class="col-md-4">
                 <select class="form-select" name="tournament">
                     <option value="">All tournaments</option>
@@ -48,18 +52,8 @@
                     <th>Current PrizePool</th>
                 </tr>
             </thead>
-            <tbody>
-                {% for row in summaryRows %}
-                    <tr>
-                        <td>{{ row.tournamentTitle }}</td>
-                        <td>{{ row.entryFee|number_format(2, '.', ',') }}</td>
-                        <td>{{ row.soldVouchers }}</td>
-                        <td>{{ row.maxPlayers }}</td>
-                        <td>{{ (row.entryFee * row.soldVouchers)|number_format(2, '.', ',') }}</td>
-                    </tr>
-                {% else %}
-                    <tr><td colspan="5" class="text-center">No voucher sales found.</td></tr>
-                {% endfor %}
+            <tbody data-tournaments-target="summary">
+                {% include 'admin/voucher/_summary_rows.html.twig' with { summaryRows: summaryRows } %}
             </tbody>
         </table>
     </div>
@@ -81,22 +75,24 @@
                     <th>Purchased</th>
                 </tr>
             </thead>
-            <tbody>
-                {% for voucher in vouchers %}
-                    <tr>
-                        <td>{{ voucher.id }}</td>
-                        <td><code>{{ voucher.code }}</code></td>
-                        <td>{{ voucher.user ? voucher.user.email : 'Unknown' }}</td>
-                        <td>{{ voucher.tournament ? voucher.tournament.title : 'Unknown' }}</td>
-                        <td>{{ voucher.amount|number_format(2, '.', ',') }}</td>
-                        <td>{{ voucher.purchasedAt ? voucher.purchasedAt|date('Y-m-d H:i') : '-' }}</td>
-                    </tr>
-                {% else %}
-                    <tr><td colspan="6" class="text-center">No vouchers found.</td></tr>
-                {% endfor %}
+            <tbody data-tournaments-target="results">
+                {% include 'admin/voucher/_voucher_rows.html.twig' with { vouchers: vouchers } %}
             </tbody>
         </table>
     </div>
 </div>
+<div class="p-3 d-flex gap-2 align-items-center" data-tournaments-target="pagination">
+    {% if pagination.totalPages > 1 %}
+        {% set prevPage = pagination.page - 1 %}
+        {% set nextPage = pagination.page + 1 %}
+        {% if pagination.page > 1 %}
+            <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_admin_voucher_index', app.request.query.all|merge({page: prevPage})) }}" data-action="click->tournaments#paginate">Prev</a>
+        {% endif %}
+        <span>Page {{ pagination.page }} / {{ pagination.totalPages }}</span>
+        {% if pagination.page < pagination.totalPages %}
+            <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_admin_voucher_index', app.request.query.all|merge({page: nextPage})) }}" data-action="click->tournaments#paginate">Next</a>
+        {% endif %}
+    {% endif %}
+</div>
+</div>
 {% endblock %}
-

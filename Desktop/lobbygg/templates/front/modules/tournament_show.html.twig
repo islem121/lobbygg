@@ -1,8 +1,25 @@
 {% extends 'front/base.html.twig' %}
 
 {% block title %}Lobby.gg - {{ tournament.title }}{% endblock %}
+{% block meta_description %}Check out this tournament: {{ tournament.title }} on {{ tournament.startDate ? tournament.startDate|date('Y-m-d H:i') : 'TBA' }}. Join or follow the event!{% endblock %}
+{% block social_meta %}
+  {% set tournamentPageUrl = tournamentPublicUrl|default(absolute_url(path('front_tournaments_show', {id: tournament.id}))) %}
+  {% set tournamentDescription = facebookShareQuote|default('Check out this tournament: ' ~ tournament.title ~ ' on ' ~ (tournament.startDate ? tournament.startDate|date('Y-m-d H:i') : 'TBA') ~ '. Join or follow the event!') %}
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Lobby.gg" />
+  <meta property="og:title" content="{{ tournament.title }}" />
+  <meta property="og:description" content="{{ tournamentDescription }}" />
+  <meta property="og:url" content="{{ tournamentPageUrl }}" />
+  <meta property="og:image" content="{{ absolute_url(asset('assets/images/logo-512x512.png')) }}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{ tournament.title }}" />
+  <meta name="twitter:description" content="{{ tournamentDescription }}" />
+  <meta name="twitter:image" content="{{ absolute_url(asset('assets/images/logo-512x512.png')) }}" />
+{% endblock %}
 
 {% block content %}
+  {% set tournamentPageUrl = tournamentPublicUrl|default(absolute_url(path('front_tournaments_show', {id: tournament.id}))) %}
+  {% set facebookQuote = facebookShareQuote|default('Check out this tournament: ' ~ tournament.title ~ ' on ' ~ (tournament.startDate ? tournament.startDate|date('Y-m-d H:i') : 'TBA') ~ '. Join or follow the event!') %}
   <section class="page-head">
     <div>
       <h1 class="page-title">{{ tournament.title }}</h1>
@@ -83,8 +100,24 @@
               <input type="hidden" name="_token" value="{{ csrf_token('share_tournament_feed_' ~ tournament.id) }}">
               <button class="btn btn-ghost" type="submit"><i class="fa-solid fa-share-nodes"></i> Share to Feed</button>
             </form>
-            <a class="btn btn-ghost" target="_blank" href="{{ path('front_tournaments_share_external', {id: tournament.id, platform: 'facebook'}) }}"><i class="fa-brands fa-facebook"></i></a>
-            <a class="btn btn-ghost" href="{{ path('front_tournaments_share_external', {id: tournament.id, platform: 'instagram'}) }}"><i class="fa-brands fa-instagram"></i></a>
+            <a
+              class="btn btn-ghost"
+              href="{{ path('front_tournaments_share_external', {id: tournament.id, platform: 'facebook'}) }}"
+              data-facebook-share="1"
+              data-share-target="{{ path('front_tournaments_share_external', {id: tournament.id, platform: 'facebook'})|e('html_attr') }}"
+              data-share-url="{{ tournamentPageUrl|e('html_attr') }}"
+              data-share-quote="{{ facebookQuote|e('html_attr') }}"
+              data-share-platform="facebook"
+              data-share-text="{{ shareText|e('html_attr') }}"
+            ><i class="fa-brands fa-facebook"></i> Share on Facebook</a>
+            <a
+              class="btn btn-ghost"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="https://www.instagram.com/"
+              data-share-platform="instagram"
+              data-share-text="{{ shareText|e('html_attr') }}"
+            ><i class="fa-brands fa-instagram"></i></a>
           {% endif %}
         </div>
       </div>
@@ -119,6 +152,49 @@
               </div>
             {% endfor %}
           </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="col span-12">
+      <div class="panel show-panel">
+        <div class="panel-head">
+          <h2 class="panel-title"><i class="fa-solid fa-brain"></i> AI Prediction</h2>
+        </div>
+        {% if prediction %}
+          <ul class="show-stats" style="margin-bottom:10px;">
+            <li><span>Full Probability</span><strong>{{ prediction.probabilityFull|number_format(2, '.', ',') }}%</strong></li>
+            <li><span>Hours To Full</span><strong>{{ prediction.estimatedHoursToFull is not null ? prediction.estimatedHoursToFull|number_format(2, '.', ',') : 'N/A' }}</strong></li>
+            <li><span>Predicted Prize Pool</span><strong>{{ prediction.predictedPrizePool|number_format(2, '.', ',') }}</strong></li>
+          </ul>
+          {% if prediction.topPlayers is not empty %}
+            <div style="overflow:auto;">
+              <table style="width:100%; border-collapse: collapse;">
+                <thead>
+                  <tr>
+                    <th style="text-align:left; padding:8px;">Predicted Rank</th>
+                    <th style="text-align:left; padding:8px;">Player</th>
+                    <th style="text-align:left; padding:8px;">Win Rate</th>
+                    <th style="text-align:left; padding:8px;">Rating</th>
+                    <th style="text-align:left; padding:8px;">Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {% for row in prediction.topPlayers %}
+                  <tr>
+                    <td style="padding:8px;">#{{ loop.index }}</td>
+                    <td style="padding:8px;">{{ row.username }}</td>
+                    <td style="padding:8px;">{{ row.winRate|number_format(2, '.', ',') }}%</td>
+                    <td style="padding:8px;">{{ row.rating }}</td>
+                    <td style="padding:8px;">{{ row.score|number_format(2, '.', ',') }}</td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% endif %}
+        {% else %}
+          <p>Prediction unavailable.</p>
         {% endif %}
       </div>
     </div>
@@ -304,5 +380,124 @@
       })();
     </script>
   {% endif %}
+  <script>
+    (function () {
+      const popupFeatures = 'width=600,height=400,menubar=no,toolbar=no,status=no,scrollbars=yes,resizable=yes';
+      const showShareHint = function () {
+        let hint = document.getElementById('facebook-share-hint');
+        if (!hint) {
+          hint = document.createElement('div');
+          hint.id = 'facebook-share-hint';
+          hint.style.position = 'fixed';
+          hint.style.right = '16px';
+          hint.style.bottom = '16px';
+          hint.style.zIndex = '9999';
+          hint.style.padding = '10px 12px';
+          hint.style.borderRadius = '8px';
+          hint.style.background = 'rgba(20,20,35,.95)';
+          hint.style.border = '1px solid rgba(255,255,255,.18)';
+          hint.style.color = '#fff';
+          hint.style.fontSize = '13px';
+          hint.style.boxShadow = '0 10px 30px rgba(0,0,0,.25)';
+          document.body.appendChild(hint);
+        }
+        hint.textContent = 'Text copied. Press Ctrl+V in Facebook.';
+        hint.style.display = 'block';
+        clearTimeout(window.__fbShareHintTimer);
+        window.__fbShareHintTimer = setTimeout(function () {
+          hint.style.display = 'none';
+        }, 3200);
+      };
+
+      const copyText = async function (text) {
+        if (!text) return;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+            return;
+          }
+        } catch (e) {}
+
+        const fallback = document.createElement('textarea');
+        fallback.value = text;
+        fallback.setAttribute('readonly', '');
+        fallback.style.position = 'absolute';
+        fallback.style.left = '-9999px';
+        document.body.appendChild(fallback);
+        fallback.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(fallback);
+      };
+
+      document.addEventListener('click', function (event) {
+        const trigger = event.target.closest('[data-facebook-share]');
+        if (!trigger) {
+          return;
+        }
+
+        event.preventDefault();
+        const shareQuote = trigger.getAttribute('data-share-quote') || '';
+        copyText(shareQuote);
+        showShareHint();
+        const shareTarget = trigger.getAttribute('data-share-target') || '';
+        if (shareTarget) {
+          const popupToRoute = window.open(shareTarget, 'facebook-share', popupFeatures);
+          if (popupToRoute && typeof popupToRoute.focus === 'function') {
+            popupToRoute.focus();
+          }
+          return;
+        }
+
+        const shareUrl = trigger.getAttribute('data-share-url') || '';
+        const fallbackQuote = trigger.getAttribute('data-share-quote') || '';
+        if (!shareUrl) {
+          return;
+        }
+
+        const facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u='
+          + encodeURIComponent(shareUrl)
+          + '&quote='
+          + encodeURIComponent(fallbackQuote);
+
+        const popup = window.open(facebookUrl, 'facebook-share', popupFeatures);
+        if (popup && typeof popup.focus === 'function') {
+          popup.focus();
+        }
+      });
+    })();
+  </script>
+  <script>
+    (function () {
+      const shareButtons = document.querySelectorAll('[data-share-platform][data-share-text]');
+      if (!shareButtons.length) return;
+
+      const copyText = async function (text) {
+        if (!text) return;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+            return;
+          }
+        } catch (e) {}
+
+        const fallback = document.createElement('textarea');
+        fallback.value = text;
+        fallback.setAttribute('readonly', '');
+        fallback.style.position = 'absolute';
+        fallback.style.left = '-9999px';
+        document.body.appendChild(fallback);
+        fallback.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(fallback);
+      };
+
+      shareButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const shareText = btn.getAttribute('data-share-text') || '';
+          copyText(shareText);
+        });
+      });
+    })();
+  </script>
 {% endblock %}
 

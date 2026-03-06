@@ -56,6 +56,101 @@ class VoucherRepository extends ServiceEntityRepository
     }
 
     /**
+     * @return array<int, Voucher>
+     */
+    public function findByUserFiltered(
+        User $user,
+        ?string $query = null,
+        ?int $tournamentId = null,
+        ?int $limit = null,
+        int $offset = 0
+    ): array {
+        $qb = $this->createQueryBuilder('v')
+            ->innerJoin('v.tournament', 't')->addSelect('t')
+            ->andWhere('v.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('v.purchasedAt', 'DESC');
+
+        if ($query !== null && $query !== '') {
+            $qb->andWhere('v.code LIKE :query OR t.title LIKE :query')
+                ->setParameter('query', '%'.$query.'%');
+        }
+        if ($tournamentId !== null) {
+            $qb->andWhere('t.id = :tournamentId')->setParameter('tournamentId', $tournamentId);
+        }
+        if ($limit !== null) {
+            $qb->setMaxResults($limit)->setFirstResult($offset);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function countByUserFiltered(User $user, ?string $query = null, ?int $tournamentId = null): int
+    {
+        $qb = $this->createQueryBuilder('v')
+            ->select('COUNT(v.id)')
+            ->innerJoin('v.tournament', 't')
+            ->andWhere('v.user = :user')
+            ->setParameter('user', $user);
+
+        if ($query !== null && $query !== '') {
+            $qb->andWhere('v.code LIKE :query OR t.title LIKE :query')
+                ->setParameter('query', '%'.$query.'%');
+        }
+        if ($tournamentId !== null) {
+            $qb->andWhere('t.id = :tournamentId')->setParameter('tournamentId', $tournamentId);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @return array<int, Voucher>
+     */
+    public function findAdminFiltered(
+        ?string $query = null,
+        ?int $tournamentId = null,
+        ?int $limit = null,
+        int $offset = 0
+    ): array {
+        $qb = $this->createQueryBuilder('v')
+            ->leftJoin('v.user', 'u')->addSelect('u')
+            ->leftJoin('v.tournament', 't')->addSelect('t')
+            ->orderBy('v.id', 'DESC');
+
+        if ($query !== null && $query !== '') {
+            $qb->andWhere('v.code LIKE :query OR u.email LIKE :query OR t.title LIKE :query')
+                ->setParameter('query', '%'.$query.'%');
+        }
+        if ($tournamentId !== null) {
+            $qb->andWhere('t.id = :tournamentId')->setParameter('tournamentId', $tournamentId);
+        }
+        if ($limit !== null) {
+            $qb->setMaxResults($limit)->setFirstResult($offset);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function countAdminFiltered(?string $query = null, ?int $tournamentId = null): int
+    {
+        $qb = $this->createQueryBuilder('v')
+            ->select('COUNT(v.id)')
+            ->leftJoin('v.user', 'u')
+            ->leftJoin('v.tournament', 't');
+
+        if ($query !== null && $query !== '') {
+            $qb->andWhere('v.code LIKE :query OR u.email LIKE :query OR t.title LIKE :query')
+                ->setParameter('query', '%'.$query.'%');
+        }
+        if ($tournamentId !== null) {
+            $qb->andWhere('t.id = :tournamentId')->setParameter('tournamentId', $tournamentId);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
      * @return array<int, array{
      *     tournamentId: int,
      *     tournamentTitle: string,

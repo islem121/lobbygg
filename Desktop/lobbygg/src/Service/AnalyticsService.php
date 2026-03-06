@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Dto\AnalyticsDto;
+use App\Repository\LeaderboardEntryRepository;
 use App\Repository\TournamentParticipationRepository;
 use App\Repository\TournamentRepository;
 use App\Repository\VoucherRepository;
@@ -14,7 +15,8 @@ class AnalyticsService
         private readonly EntityManagerInterface $entityManager,
         private readonly TournamentRepository $tournamentRepository,
         private readonly TournamentParticipationRepository $participationRepository,
-        private readonly VoucherRepository $voucherRepository
+        private readonly VoucherRepository $voucherRepository,
+        private readonly LeaderboardEntryRepository $leaderboardRepository
     ) {
     }
 
@@ -24,6 +26,7 @@ class AnalyticsService
         $totalTournaments = count($tournaments);
 
         $totalRevenue = 0.0;
+        $totalPrizePools = 0.0;
         $revenuePerTournament = [];
         $mostPopularTournament = null;
         $maxParticipants = -1;
@@ -36,6 +39,7 @@ class AnalyticsService
             $maxPlayers = max(1, (int) $tournament->getMaxPlayers());
             $revenue = (float) $tournament->getEntryFee() * $sold;
             $totalRevenue += $revenue;
+            $totalPrizePools += $revenue;
 
             $revenuePerTournament[] = [
                 'tournamentId' => (int) $tournament->getId(),
@@ -68,17 +72,32 @@ class AnalyticsService
 
         $averageFillRate = $totalTournaments > 0 ? round($totalFillPercentage / $totalTournaments, 2) : 0.0;
         $voucherSellRate = $totalTournaments > 0 ? round($totalSellRate / $totalTournaments, 2) : 0.0;
+        $globalRows = $this->leaderboardRepository->getGlobalLeaderboardRows(5);
+        $topPlayers = array_map(static fn (array $row): array => [
+            'username' => (string) $row['username'],
+            'totalPoints' => (int) $row['totalPoints'],
+            'totalWins' => (int) $row['totalWins'],
+        ], $globalRows);
+        $voucherSales = array_slice(array_map(static fn (array $row): array => [
+            'tournamentId' => (int) $row['tournamentId'],
+            'title' => (string) $row['tournamentTitle'],
+            'sold' => (int) $row['soldVouchers'],
+        ], $this->voucherRepository->getSalesSummaryByTournament(null)), 0, 10);
 
         return new AnalyticsDto(
             totalRevenue: round($totalRevenue, 2),
             totalTournaments: $totalTournaments,
+            activeTournaments: $this->tournamentRepository->countOngoingTournaments(),
             totalPlayers: $this->countDistinctPlayers(),
+            totalPrizePools: round($totalPrizePools, 2),
             mostPopularTournament: $mostPopularTournament,
             revenuePerTournament: $revenuePerTournament,
             monthlyGrowth: $this->monthlyPlayerGrowth(),
             averageFillRate: $averageFillRate,
             voucherSellRate: $voucherSellRate,
-            top5HighestRevenue: $top5
+            top5HighestRevenue: $top5,
+            topPlayers: $topPlayers,
+            voucherSales: $voucherSales
         );
     }
 
@@ -110,4 +129,3 @@ class AnalyticsService
         ], $rows);
     }
 }
-

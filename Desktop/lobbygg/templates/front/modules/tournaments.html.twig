@@ -3,13 +3,20 @@
 {% block title %}Lobby.gg - Tournaments{% endblock %}
 
 {% block content %}
-  <div class="tournaments-page">
+  <div
+    class="tournaments-page"
+    data-controller="tournaments"
+    data-tournaments-endpoint-value="{{ path('front_tournaments_ajax_list') }}"
+  >
   <section class="page-head">
     <div>
       <h1 class="page-title">Tournaments</h1>
       <p class="page-sub">Manage tournaments, join events, and track participants in real time.</p>
     </div>
     <div class="page-actions">
+      {% if is_granted('ROLE_USER') %}
+        <a class="btn btn-ghost" href="{{ path('front_tournament_vouchers') }}"><i class="fa-solid fa-ticket"></i> My Vouchers</a>
+      {% endif %}
       {% if is_granted('ROLE_ADMIN') %}
         <a class="btn btn-primary" href="{{ path('front_tournaments_new') }}"><i class="fa-solid fa-plus"></i> New Tournament</a>
         <a class="btn btn-ghost" href="{{ path('front_tournaments_new', {ai: 1}) }}"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Tournament</a>
@@ -21,11 +28,11 @@
     <div class="col span-12">
       <div class="tour-center">
         <div class="panel tournaments-list-panel">
-          <form method="get" class="tour-filters">
+          <form method="get" class="tour-filters" data-tournaments-target="form" data-action="submit->tournaments#filter change->tournaments#filter">
             <div class="tour-filters-row">
               <div class="tour-field tour-field-search">
                 <label>Search</label>
-                <input class="form-control" type="text" name="q" placeholder="Title or description" value="{{ filters.q ?? '' }}">
+                <input class="form-control" type="text" name="q" placeholder="Title or description" value="{{ filters.q ?? '' }}" data-tournaments-target="searchInput">
               </div>
               <div class="tour-field">
                 <label>Status</label>
@@ -92,75 +99,39 @@
           <div class="panel-head">
             <h2 class="panel-title"><i class="fa-solid fa-trophy"></i> All Tournaments</h2>
           </div>
-          {% if tournaments is empty %}
-            <p>No tournaments found.</p>
-          {% else %}
-            <div class="tour-grid-wrap">
-              <div class="tournament-grid">
-                {% for row in tournaments %}
-                  {% set t = row.entity %}
-                  {% set desc = t.description|default('No description') %}
-                  <article class="tournament-card tg-hover" style="aspect-ratio:1/1; width:100%; overflow:hidden;">
-                    <div class="tour-accent"></div>
-                    <div class="tour-top">
-                      <h3 class="tour-name" title="{{ t.title }}">{{ t.title }}</h3>
-                      <div class="tg-pill tg-pill-{{ t.status }}">{{ t.status|upper }}</div>
-                    </div>
+          <div data-tournaments-target="results">
+            {% include 'front/modules/_tournaments_results.html.twig' with { tournaments: tournaments } %}
+          </div>
 
-                    <div class="tour-meta">
-                      <div class="tour-meta-item"><i class="fa-solid fa-gamepad"></i><span>{{ t.mode|upper }}</span></div>
-                      <div class="tour-meta-item"><i class="fa-solid fa-users"></i><span>{{ row.participantsCount }}/{{ t.maxPlayers }}</span></div>
-                      <div class="tour-meta-item"><i class="fa-solid fa-coins"></i><span>{{ t.entryFee > 0 ? t.entryFee ~ ' DT' : 'FREE' }}</span></div>
-                      <div class="tour-meta-item"><i class="fa-solid fa-calendar"></i><span>{{ t.startDate ? t.startDate|date('d/m H:i') : 'N/A' }}</span></div>
-                    </div>
-
-                    <p class="tour-description">{{ desc }}</p>
-
-                    <div class="tour-footer">
-                      <div class="tour-countdown" data-start="{{ t.startDate ? t.startDate|date('c') : '' }}"></div>
-                      <div class="tour-actions">
-                        <a class="btn btn-mini btn-ghost" href="{{ path('front_tournaments_show', {id: t.id}) }}" title="View"><i class="fa-solid fa-eye"></i></a>
-                        {% if is_granted('ROLE_USER') %}
-                          {% if row.isJoined %}
-                            <form method="post" action="{{ path('front_tournaments_leave', {id: t.id}) }}" class="inline-form">
-                              <input type="hidden" name="_token" value="{{ csrf_token('leave_tournament_' ~ t.id) }}">
-                              <button class="btn btn-mini btn-ghost" type="submit" title="Leave"><i class="fa-solid fa-right-from-bracket"></i></button>
-                            </form>
-                          {% else %}
-                            <form method="post" action="{{ path('front_tournaments_join', {id: t.id}) }}" class="inline-form">
-                              <input type="hidden" name="_token" value="{{ csrf_token('join_tournament_' ~ t.id) }}">
-                              <button class="btn btn-mini btn-primary" type="submit" title="Join"><i class="fa-solid fa-bolt"></i></button>
-                            </form>
-                          {% endif %}
-                        {% endif %}
-                        {% if is_granted('ROLE_ADMIN') %}
-                          <a class="btn btn-mini btn-ghost" href="{{ path('front_tournaments_edit', {id: t.id}) }}" title="Edit"><i class="fa-solid fa-pen"></i></a>
-                          <form method="post" action="{{ path('front_tournaments_delete', {id: t.id}) }}" class="inline-form" onsubmit="return confirm('Delete tournament?');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete_tournament_' ~ t.id) }}">
-                            <button class="btn btn-mini btn-ghost" type="submit" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                          </form>
-                        {% endif %}
-                      </div>
-                    </div>
-                  </article>
-                {% endfor %}
-              </div>
-            </div>
-          {% endif %}
-
-          {% if pagination.totalPages > 1 %}
-            <div class="tour-pagination">
+          <div class="tour-pagination" data-tournaments-target="pagination">
+            {% if pagination.totalPages > 1 %}
               {% set prevPage = pagination.page - 1 %}
               {% set nextPage = pagination.page + 1 %}
               {% if pagination.page > 1 %}
-                <a class="btn btn-mini btn-ghost" href="{{ path('front_tournaments', app.request.query.all|merge({page: prevPage})) }}">&larr; Prev</a>
+                <a class="btn btn-mini btn-ghost" href="{{ path('front_tournaments', app.request.query.all|merge({page: prevPage})) }}" data-action="click->tournaments#paginate">&larr; Prev</a>
               {% endif %}
               <span class="tour-page-info">Page {{ pagination.page }} / {{ pagination.totalPages }}</span>
               {% if pagination.page < pagination.totalPages %}
-                <a class="btn btn-mini btn-ghost" href="{{ path('front_tournaments', app.request.query.all|merge({page: nextPage})) }}">Next &rarr;</a>
+                <a class="btn btn-mini btn-ghost" href="{{ path('front_tournaments', app.request.query.all|merge({page: nextPage})) }}" data-action="click->tournaments#paginate">Next &rarr;</a>
               {% endif %}
-            </div>
-          {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="col span-12">
+      <div class="tour-center">
+        <div class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title"><i class="fa-solid fa-earth-africa"></i> External Tournaments &#127757;</h2>
+          </div>
+          <p id="external-events-notice" style="margin: 0 0 12px; color: rgba(255,255,255,.7);"></p>
+          <div id="external-tournaments" class="external-tournaments-grid">
+            <p>No external tournaments available.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -294,10 +265,49 @@
   }
   .tournaments-page .tour-actions { display: flex; gap: 6px; flex: 0 0 auto; }
   .tournaments-page .tour-actions .btn-mini { width: 32px; height: 32px; padding: 0; display:flex; align-items:center; justify-content:center; border-radius: 6px; }
+  .tournaments-page .tour-actions .btn-facebook-share {
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .72rem;
+    white-space: nowrap;
+  }
   .tournaments-page .inline-form { display: inline; }
 
   .tournaments-page .tour-pagination { display:flex; justify-content:center; align-items:center; gap:16px; margin-top: 24px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.1); }
   .tournaments-page .tour-page-info { font-size: .9rem; color: rgba(255,255,255,.65); }
+  .tournaments-page .external-tournaments-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .tournaments-page .external-card {
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: linear-gradient(165deg, rgba(26,26,44,.95), rgba(19,19,31,.94));
+    padding: 14px;
+    display: grid;
+    gap: 10px;
+  }
+  .tournaments-page .external-card-title {
+    margin: 0;
+    font-size: .98rem;
+    line-height: 1.3;
+  }
+  .tournaments-page .external-meta {
+    display: grid;
+    gap: 4px;
+    font-size: .84rem;
+    color: rgba(255,255,255,.76);
+  }
+  .tournaments-page .external-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
 
   /* Remove the big wrapper-card look around tournament cards */
   .tournaments-page .tournaments-list-panel {
@@ -313,6 +323,10 @@
     .tournaments-page .tour-filters-row { flex-direction: column; align-items: stretch; }
     .tournaments-page .tour-field { max-width: 100%; }
     .tournaments-page .tour-filter-actions { margin-left: 0; }
+    .tournaments-page .external-tournaments-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 1100px) {
+    .tournaments-page .external-tournaments-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   .tournaments-page,
 .tournaments-page .content-wrapper,
@@ -363,5 +377,163 @@
     updateCountdowns();
     setInterval(updateCountdowns, 60000);
   })();
+
+  (function () {
+    const popupFeatures = 'width=600,height=400,menubar=no,toolbar=no,status=no,scrollbars=yes,resizable=yes';
+    const showShareHint = function () {
+      let hint = document.getElementById('facebook-share-hint');
+      if (!hint) {
+        hint = document.createElement('div');
+        hint.id = 'facebook-share-hint';
+        hint.style.position = 'fixed';
+        hint.style.right = '16px';
+        hint.style.bottom = '16px';
+        hint.style.zIndex = '9999';
+        hint.style.padding = '10px 12px';
+        hint.style.borderRadius = '8px';
+        hint.style.background = 'rgba(20,20,35,.95)';
+        hint.style.border = '1px solid rgba(255,255,255,.18)';
+        hint.style.color = '#fff';
+        hint.style.fontSize = '13px';
+        hint.style.boxShadow = '0 10px 30px rgba(0,0,0,.25)';
+        document.body.appendChild(hint);
+      }
+      hint.textContent = 'Text copied. Press Ctrl+V in Facebook.';
+      hint.style.display = 'block';
+      clearTimeout(window.__fbShareHintTimer);
+      window.__fbShareHintTimer = setTimeout(function () {
+        hint.style.display = 'none';
+      }, 3200);
+    };
+
+    const copyText = async function (text) {
+      if (!text) return;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+          return;
+        }
+      } catch (e) {}
+
+      const fallback = document.createElement('textarea');
+      fallback.value = text;
+      fallback.setAttribute('readonly', '');
+      fallback.style.position = 'absolute';
+      fallback.style.left = '-9999px';
+      document.body.appendChild(fallback);
+      fallback.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(fallback);
+    };
+
+    document.addEventListener('click', function (event) {
+      const trigger = event.target.closest('[data-facebook-share]');
+      if (!trigger) {
+        return;
+      }
+
+      event.preventDefault();
+
+      const shareUrl = trigger.getAttribute('data-share-url') || '';
+      const shareQuote = trigger.getAttribute('data-share-quote') || '';
+      const shareTarget = trigger.getAttribute('data-share-target') || '';
+      copyText(shareQuote);
+      showShareHint();
+      if (shareTarget) {
+        const popup = window.open(shareTarget, 'facebook-share', popupFeatures);
+        if (popup && typeof popup.focus === 'function') {
+          popup.focus();
+        }
+        return;
+      }
+
+      if (!shareUrl) {
+        return;
+      }
+
+      const facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u='
+        + encodeURIComponent(shareUrl)
+        + '&quote='
+        + encodeURIComponent(shareQuote);
+
+      const popup = window.open(facebookUrl, 'facebook-share', popupFeatures);
+      if (popup && typeof popup.focus === 'function') {
+        popup.focus();
+      }
+    });
+  })();
+
+  (function () {
+    const grid = document.getElementById('external-tournaments');
+    const notice = document.getElementById('external-events-notice');
+    if (!grid || !notice) return;
+
+    const escapeHtml = function (value) {
+      const map = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'};
+      return String(value || '').replace(/[&<>"']/g, function (ch) { return map[ch]; });
+    };
+
+    const setNotice = function (message, isError) {
+      notice.textContent = message || '';
+      notice.style.color = isError ? '#ff6b81' : 'rgba(255,255,255,.7)';
+    };
+
+    const bindFavoriteButtons = function () {
+      grid.querySelectorAll('[data-external-favorite]').forEach(function (button) {
+        button.addEventListener('click', async function () {
+          const title = button.getAttribute('data-title') || 'Tournament';
+          alert(`Added to favorites: ${title}`);
+        });
+      });
+    };
+
+    // Render scraped events from /api/external-tournaments into discovery cards.
+    const renderExternalTournaments = function (events) {
+      if (!Array.isArray(events) || events.length === 0) {
+        grid.innerHTML = '<p>No external tournaments available.</p>';
+        return;
+      }
+
+      grid.innerHTML = events.map(function (event) {
+        return `
+          <article class="external-card">
+            <h3 class="external-card-title">${escapeHtml(event.title)}</h3>
+            <div class="external-meta">
+              <div><strong>Game:</strong> ${escapeHtml(event.game || 'N/A')}</div>
+              <div><strong>Date:</strong> ${escapeHtml(event.date || event.startDate || 'TBA')}</div>
+              <div><strong>Prize Pool:</strong> ${escapeHtml(event.prizePool || 'N/A')}</div>
+              <div><strong>Platform:</strong> ${escapeHtml(event.platform || event.source || 'Unknown')}</div>
+            </div>
+            <div class="external-actions">
+              <a class="btn btn-mini btn-ghost" target="_blank" rel="noopener noreferrer" href="${escapeHtml(event.url)}">View Tournament</a>
+              <button class="btn btn-mini btn-primary" type="button" data-external-favorite data-title="${escapeHtml(event.title)}">Add to favorites</button>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      bindFavoriteButtons();
+    };
+
+    // Frontend load flow for scraped tournaments API.
+    const loadExternalEvents = async function () {
+      try {
+        const response = await fetch('{{ path('api_external_tournaments') }}', {
+          headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await response.json();
+        const events = Array.isArray(data) ? data : [];
+        setNotice(events.length > 0 ? 'Loaded external tournaments.' : '', false);
+        renderExternalTournaments(events);
+      } catch (e) {
+        grid.innerHTML = '<p>No external tournaments available.</p>';
+        setNotice('Could not load external tournaments right now.', true);
+      }
+    };
+
+    loadExternalEvents();
+  })();
 </script>
 {% endblock %}
+
+

@@ -7,10 +7,14 @@ use App\Form\TournamentType;
 use App\Repository\TournamentRepository;
 use App\Service\TournamentAiGeneratorService;
 use App\Service\LeaderboardService;
+use App\Service\TournamentFinalizationService;
+use App\Service\TournamentMatchmakingService;
+use App\Service\TournamentNotificationService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -21,49 +25,39 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class TournamentController extends AbstractController
 {
     #[Route('/', name: 'app_admin_tournament_index', methods: ['GET'])]
+    #[Route('/ajax', name: 'app_admin_tournament_index_legacy', methods: ['GET'])]
     public function index(Request $request, TournamentRepository $tournamentRepository): Response
     {
-        [$filters, $sort] = $this->extractListParams($request);
-        $page = max(1, (int) $request->query->get('page', 1));
-        $perPage = 10;
-        $totalItems = $tournamentRepository->countFiltered(
-            $filters['q'],
-            $filters['status'],
-            $filters['dateFrom'],
-            $filters['dateTo'],
-            $filters['mode']
-        );
-        $totalPages = max(1, (int) ceil($totalItems / $perPage));
-        $page = min($page, $totalPages);
-
-        $rows = $tournamentRepository->findWithParticipantsCountFiltered(
-            $filters['q'],
-            $filters['status'],
-            $filters['dateFrom'],
-            $filters['dateTo'],
-            $filters['mode'],
-            $sort['by'],
-            $sort['dir'],
-            $perPage,
-            ($page - 1) * $perPage
-        );
+        $listData = $this->buildListData($request, $tournamentRepository, 10);
 
         return $this->render('admin/tournament/index.html.twig', [
-            'rows' => $rows,
+            'rows' => $listData['rows'],
             'filters' => [
-                'q' => $filters['q'],
-                'status' => $filters['status'],
-                'mode' => $filters['mode'],
-                'dateFrom' => $filters['dateFromRaw'],
-                'dateTo' => $filters['dateToRaw'],
+                'q' => $listData['filters']['q'],
+                'status' => $listData['filters']['status'],
+                'mode' => $listData['filters']['mode'],
+                'dateFrom' => $listData['filters']['dateFromRaw'],
+                'dateTo' => $listData['filters']['dateToRaw'],
             ],
-            'sort' => $sort,
+            'sort' => $listData['sort'],
+            'pagination' => $listData['pagination'],
+        ]);
+    }
+
+    #[Route('/ajax-list', name: 'app_admin_tournament_ajax_list', methods: ['GET'])]
+    public function ajaxList(Request $request, TournamentRepository $tournamentRepository): JsonResponse
+    {
+        $listData = $this->buildListData($request, $tournamentRepository, 10);
+
+        return $this->json([
+            'success' => true,
             'pagination' => [
-                'page' => $page,
-                'perPage' => $perPage,
-                'totalItems' => $totalItems,
-                'totalPages' => $totalPages,
+                'page' => $listData['pagination']['page'],
+                'totalPages' => $listData['pagination']['totalPages'],
             ],
+            'html' => $this->renderView('admin/tournament/_table_rows.html.twig', [
+                'rows' => $listData['rows'],
+            ]),
         ]);
     }
 
@@ -165,6 +159,52 @@ class TournamentController extends AbstractController
         return $this->render('admin/tournament/show.html.twig', [
             'tournament' => $tournament,
         ]);
+    }
+
+    #[Route('/{id}/generate-matches', name: 'app_admin_tournament_generate_matches', methods: ['POST'])]
+    public function generateMatches(
+        Request $request,
+        Tournament $tournament,
+        TournamentMatchmakingService $matchmakingService
+    ): Response {
+        if (!$this->isCsrfTokenValid('generate_matches_'.$tournament->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid CSRF token.');
+            return $this->redirectToRoute('app_admin_tournament_show', ['id' => $tournament->getId()]);
+        }
+
+        $result = $matchmakingService->generateMatchesForTournament($tournament);
+        $this->addFlash(
+            $result['success'] ? 'success' : 'error',
+            sprintf('%s (%d matches).', $result['message'], count($result['createdMatches'] ?? []))
+        );
+
+        return $this->redirectToRoute('app_admin_tournament_show', ['id' => $tournament->getId()]);
+    }
+
+    #[Route('/{id}/finalize', name: 'app_admin_tournament_finalize', methods: ['POST'])]
+    public function finalize(
+        Request $request,
+        Tournament $tournament,
+        TournamentFinalizationService $finalizationService,
+        TournamentNotificationService $notificationService
+    ): Response {
+        if (!$this->isCsrfTokenValid('finalize_tournament_'.$tournament->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid CSRF token.');
+            return $this->redirectToRoute('app_admin_tournament_show', ['id' => $tournament->getId()]);
+        }
+
+        $rows = $finalizationService->finishTournament($tournament);
+        $winner = $rows[0]['username'] ?? null;
+        $notificationService->notifyParticipants(
+            $tournament,
+            $winner !== null
+                ? sprintf('Tournament "%s" is finished. Winner: %s.', (string) $tournament->getTitle(), (string) $winner)
+                : sprintf('Tournament "%s" is finished.', (string) $tournament->getTitle())
+        );
+
+        $this->addFlash('success', sprintf('Tournament finalized. %d leaderboard entries generated.', count($rows)));
+
+        return $this->redirectToRoute('app_admin_tournament_show', ['id' => $tournament->getId()]);
     }
 
     #[Route('/{id}/edit', name: 'app_admin_tournament_edit', methods: ['GET', 'POST'])]
@@ -272,5 +312,51 @@ class TournamentController extends AbstractController
             return null;
         }
     }
-}
 
+    /**
+     * @return array{
+     *   rows: array<int, array{0:Tournament, participantsCount:string}>,
+     *   filters: array<string,mixed>,
+     *   sort: array{by:string,dir:string},
+     *   pagination: array{page:int,perPage:int,totalItems:int,totalPages:int}
+     * }
+     */
+    private function buildListData(Request $request, TournamentRepository $tournamentRepository, int $perPage): array
+    {
+        [$filters, $sort] = $this->extractListParams($request);
+        $page = max(1, (int) $request->query->get('page', 1));
+        $totalItems = $tournamentRepository->countFiltered(
+            $filters['q'],
+            $filters['status'],
+            $filters['dateFrom'],
+            $filters['dateTo'],
+            $filters['mode']
+        );
+        $totalPages = max(1, (int) ceil($totalItems / $perPage));
+        $page = min($page, $totalPages);
+
+        $rows = $tournamentRepository->findWithParticipantsCountFiltered(
+            $filters['q'],
+            $filters['status'],
+            $filters['dateFrom'],
+            $filters['dateTo'],
+            $filters['mode'],
+            $sort['by'],
+            $sort['dir'],
+            $perPage,
+            ($page - 1) * $perPage
+        );
+
+        return [
+            'rows' => $rows,
+            'filters' => $filters,
+            'sort' => $sort,
+            'pagination' => [
+                'page' => $page,
+                'perPage' => $perPage,
+                'totalItems' => $totalItems,
+                'totalPages' => $totalPages,
+            ],
+        ];
+    }
+}

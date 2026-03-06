@@ -10,8 +10,10 @@ use App\Repository\TournamentParticipationRepository;
 use App\Repository\TournamentRepository;
 use App\Repository\VoucherRepository;
 use App\Service\TournamentAiGeneratorService;
-use App\Service\TournamentVoucherService;
 use App\Service\LeaderboardService;
+use App\Service\TournamentNotificationService;
+use App\Service\TournamentPredictionService;
+use App\Service\TournamentVoucherService;
 use App\Service\WaitingListService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -31,67 +33,41 @@ class TournamentController extends AbstractController
         TournamentRepository $tournamentRepository,
         TournamentParticipationRepository $participationRepository
     ): Response {
-        [$filters, $sort] = $this->extractListParams($request);
-        $page = max(1, (int) $request->query->get('page', 1));
-        $perPage = 6;
-        $totalItems = $tournamentRepository->countFiltered(
-            $filters['q'],
-            $filters['status'],
-            $filters['dateFrom'],
-            $filters['dateTo'],
-            $filters['mode']
-        );
-        $totalPages = max(1, (int) ceil($totalItems / $perPage));
-        $page = min($page, $totalPages);
-
-        $rows = $tournamentRepository->findWithParticipantsCountFiltered(
-            $filters['q'],
-            $filters['status'],
-            $filters['dateFrom'],
-            $filters['dateTo'],
-            $filters['mode'],
-            $sort['by'],
-            $sort['dir'],
-            $perPage,
-            ($page - 1) * $perPage
-        );
-        $tournaments = [];
-        $user = $this->getUser();
-
-        foreach ($rows as $row) {
-            /** @var Tournament $tournament */
-            $tournament = $row[0];
-            $participantsCount = (int) $row['participantsCount'];
-            $isJoined = false;
-
-            if ($user) {
-                $isJoined = null !== $participationRepository->findOneByUserAndTournament($user, $tournament);
-            }
-
-            $tournaments[] = [
-                'entity' => $tournament,
-                'participantsCount' => $participantsCount,
-                'isJoined' => $isJoined,
-            ];
-        }
+        $listData = $this->buildTournamentListData($request, $tournamentRepository, $participationRepository, 6);
 
         return $this->render('front/modules/tournaments.html.twig', [
             'page' => 'tournaments',
-            'tournaments' => $tournaments,
+            'tournaments' => $listData['tournaments'],
             'filters' => [
-                'q' => $filters['q'],
-                'status' => $filters['status'],
-                'mode' => $filters['mode'],
-                'dateFrom' => $filters['dateFromRaw'],
-                'dateTo' => $filters['dateToRaw'],
+                'q' => $listData['filters']['q'],
+                'status' => $listData['filters']['status'],
+                'mode' => $listData['filters']['mode'],
+                'dateFrom' => $listData['filters']['dateFromRaw'],
+                'dateTo' => $listData['filters']['dateToRaw'],
             ],
-            'sort' => $sort,
+            'sort' => $listData['sort'],
+            'pagination' => $listData['pagination'],
+        ]);
+    }
+
+    #[Route('/tournaments/ajax-list', name: 'front_tournaments_ajax_list', methods: ['GET'])]
+    public function ajaxList(
+        Request $request,
+        TournamentRepository $tournamentRepository,
+        TournamentParticipationRepository $participationRepository
+    ): JsonResponse {
+        $listData = $this->buildTournamentListData($request, $tournamentRepository, $participationRepository, 6);
+
+        return $this->json([
+            'success' => true,
+            'tournaments' => $this->serializeTournamentRows($listData['tournaments']),
             'pagination' => [
-                'page' => $page,
-                'perPage' => $perPage,
-                'totalItems' => $totalItems,
-                'totalPages' => $totalPages,
+                'page' => $listData['pagination']['page'],
+                'totalPages' => $listData['pagination']['totalPages'],
             ],
+            'html' => $this->renderView('front/modules/_tournaments_results.html.twig', [
+                'tournaments' => $listData['tournaments'],
+            ]),
         ]);
     }
 
@@ -187,14 +163,15 @@ class TournamentController extends AbstractController
         ]);
     }
 
-    #[Route('/tournaments/{id}', name: 'front_tournaments_show', methods: ['GET'])]
+    #[Route('/tournaments/{id}', name: 'front_tournaments_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(
         Tournament $tournament,
         TournamentParticipationRepository $participationRepository,
         VoucherRepository $voucherRepository,
         TournamentVoucherService $voucherService,
         LeaderboardService $leaderboardService,
-        WaitingListService $waitingListService
+        WaitingListService $waitingListService,
+        TournamentPredictionService $predictionService
     ): Response {
         $user = $this->getUser();
         $isJoined = false;
@@ -209,11 +186,30 @@ class TournamentController extends AbstractController
 
         $leaderboardRows = [];
         $waitingListRows = [];
+        $prediction = null;
+
         try {
             $leaderboardRows = $leaderboardService->getTournamentLeaderboard($tournament);
-            $waitingListRows = $waitingListService->getWaitingList($tournament);
+            if (strtolower((string) $tournament->getStatus()) === 'finished' && $leaderboardRows === []) {
+                // Lazy rebuild for finished tournaments that were completed before leaderboard generation was wired.
+                $leaderboardService->generateForTournament($tournament);
+                $leaderboardRows = $leaderboardService->getTournamentLeaderboard($tournament);
+            }
         } catch (\Throwable) {
             // Backward compatibility while advanced tables are not migrated yet.
+        }
+
+        try {
+            $waitingListRows = $waitingListService->getWaitingList($tournament);
+        } catch (\Throwable) {
+            // Backward compatibility while waiting-list tables are not migrated yet.
+        }
+
+        try {
+            $prediction = $predictionService->predict($tournament)->toArray();
+        } catch (\Throwable) {
+            // Prediction should degrade gracefully when advanced tables are unavailable.
+            $prediction = null;
         }
 
         return $this->render('front/modules/tournament_show.html.twig', [
@@ -226,10 +222,14 @@ class TournamentController extends AbstractController
             'participations' => $tournament->getParticipations(),
             'leaderboardRows' => $leaderboardRows,
             'waitingListRows' => $waitingListRows,
+            'prediction' => $prediction,
+            'tournamentPublicUrl' => $this->buildPublicTournamentUrl($tournament),
+            'facebookShareQuote' => $this->buildFacebookShareQuote($tournament),
+            'shareText' => $this->buildTournamentShareText($tournament),
         ]);
     }
 
-    #[Route('/tournaments/{id}/edit', name: 'front_tournaments_edit', methods: ['GET', 'POST'])]
+    #[Route('/tournaments/{id}/edit', name: 'front_tournaments_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function edit(Request $request, Tournament $tournament, EntityManagerInterface $entityManager): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -253,7 +253,7 @@ class TournamentController extends AbstractController
         ]);
     }
 
-    #[Route('/tournaments/{id}/delete', name: 'front_tournaments_delete', methods: ['POST'])]
+    #[Route('/tournaments/{id}/delete', name: 'front_tournaments_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function delete(Request $request, Tournament $tournament, EntityManagerInterface $entityManager): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -272,14 +272,15 @@ class TournamentController extends AbstractController
         return $this->redirectToRoute('front_tournaments');
     }
 
-    #[Route('/tournaments/{id}/join', name: 'front_tournaments_join', methods: ['POST'])]
+    #[Route('/tournaments/{id}/join', name: 'front_tournaments_join', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function join(
         Request $request,
         Tournament $tournament,
         TournamentParticipationRepository $participationRepository,
         VoucherRepository $voucherRepository,
         EntityManagerInterface $entityManager,
-        WaitingListService $waitingListService
+        WaitingListService $waitingListService,
+        TournamentNotificationService $tournamentNotificationService
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -333,13 +334,18 @@ class TournamentController extends AbstractController
 
         $entityManager->persist($participation);
         $entityManager->flush();
+        $tournamentNotificationService->notifyUser(
+            $user,
+            $tournament,
+            sprintf('You joined tournament "%s".', (string) $tournament->getTitle())
+        );
 
         $this->addFlash('success', 'You joined the tournament.');
 
         return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
     }
 
-    #[Route('/tournaments/{id}/purchase-voucher', name: 'front_tournaments_purchase_voucher', methods: ['POST'])]
+    #[Route('/tournaments/{id}/purchase-voucher', name: 'front_tournaments_purchase_voucher', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function purchaseVoucher(
         Request $request,
         Tournament $tournament,
@@ -361,7 +367,7 @@ class TournamentController extends AbstractController
         return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
     }
 
-    #[Route('/tournaments/{id}/prize-pool', name: 'front_tournaments_prize_pool', methods: ['GET'])]
+    #[Route('/tournaments/{id}/prize-pool', name: 'front_tournaments_prize_pool', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function prizePool(Tournament $tournament, TournamentVoucherService $voucherService): JsonResponse
     {
         $snapshot = $voucherService->getPrizePoolSnapshot($tournament);
@@ -378,7 +384,7 @@ class TournamentController extends AbstractController
         ]);
     }
 
-    #[Route('/tournaments/{id}/share/feed', name: 'front_tournaments_share_feed', methods: ['POST'])]
+    #[Route('/tournaments/{id}/share/feed', name: 'front_tournaments_share_feed', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function shareToFeed(
         Request $request,
         Tournament $tournament,
@@ -396,13 +402,7 @@ class TournamentController extends AbstractController
         $post->setUser($user);
         $post->setType('tournament_share');
         $post->setTitle('Tournament shared: '.$tournament->getTitle());
-        $post->setContent(sprintf(
-            'I shared this %s tournament: %s. Start %s. %s',
-            $tournament->isPaid() ? 'paid' : 'free',
-            $tournament->getTitle(),
-            $tournament->getStartDate()?->format('Y-m-d H:i') ?? 'N/A',
-            $this->generateUrl('front_tournaments_show', ['id' => $tournament->getId()])
-        ));
+        $post->setContent($this->buildTournamentShareText($tournament));
         $entityManager->persist($post);
         $entityManager->flush();
 
@@ -410,26 +410,41 @@ class TournamentController extends AbstractController
         return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
     }
 
-    #[Route('/tournaments/{id}/share/{platform}', name: 'front_tournaments_share_external', methods: ['GET'])]
+    #[Route('/tournaments/{id}/share/{platform}', name: 'front_tournaments_share_external', requirements: ['id' => '\d+', 'platform' => '[a-zA-Z]+'], methods: ['GET'])]
     public function shareExternal(Tournament $tournament, string $platform): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
         $platform = strtolower($platform);
-        $absoluteUrl = $this->generateUrl('front_tournaments_show', ['id' => $tournament->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-        $message = sprintf(
-            '%s tournament: %s (%s, fee %.2f)',
-            strtoupper($platform),
-            $tournament->getTitle(),
-            strtoupper((string) $tournament->getMode()),
-            $tournament->getEntryFee()
-        );
+        $absoluteUrl = $this->buildPublicTournamentUrl($tournament);
+        // Must stay identical to feed-share text.
+        $message = $this->buildTournamentShareText($tournament);
 
         if ($platform === 'facebook') {
-            return $this->redirect('https://www.facebook.com/sharer/sharer.php?u='.rawurlencode($absoluteUrl));
+            $facebookAppId = (string) ($_ENV['FACEBOOK_APP_ID'] ?? $_SERVER['FACEBOOK_APP_ID'] ?? '');
+            if ($facebookAppId !== '') {
+                return $this->redirect(
+                    'https://www.facebook.com/dialog/share?app_id='
+                    .rawurlencode($facebookAppId)
+                    .'&display=popup'
+                    .'&href='
+                    .rawurlencode($absoluteUrl)
+                    .'&quote='
+                    .rawurlencode($message)
+                    .'&redirect_uri='
+                    .rawurlencode($absoluteUrl)
+                );
+            }
+
+            return $this->redirect(
+                'https://www.facebook.com/sharer/sharer.php?u='
+                .rawurlencode($absoluteUrl)
+                .'&quote='
+                .rawurlencode($message)
+            );
         }
 
         if ($platform === 'instagram') {
-            $this->addFlash('success', 'Instagram sharing simulated: '.$message.' | URL: '.$absoluteUrl);
+            $this->addFlash('info', 'Instagram does not allow caption prefill from web links. Use this exact text: '.$message);
             return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
         }
 
@@ -437,13 +452,14 @@ class TournamentController extends AbstractController
         return $this->redirectToRoute('front_tournaments_show', ['id' => $tournament->getId()]);
     }
 
-    #[Route('/tournaments/{id}/leave', name: 'front_tournaments_leave', methods: ['POST'])]
+    #[Route('/tournaments/{id}/leave', name: 'front_tournaments_leave', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function leave(
         Request $request,
         Tournament $tournament,
         TournamentParticipationRepository $participationRepository,
         EntityManagerInterface $entityManager,
-        WaitingListService $waitingListService
+        WaitingListService $waitingListService,
+        TournamentNotificationService $tournamentNotificationService
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -463,6 +479,11 @@ class TournamentController extends AbstractController
 
         $entityManager->remove($participation);
         $entityManager->flush();
+        $tournamentNotificationService->notifyUser(
+            $user,
+            $tournament,
+            sprintf('You left tournament "%s".', (string) $tournament->getTitle())
+        );
 
         try {
             $promoted = $waitingListService->promoteNextUser($tournament);
@@ -483,7 +504,8 @@ class TournamentController extends AbstractController
         Request $request,
         TournamentParticipation $participation,
         string $status,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        LeaderboardService $leaderboardService
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -502,10 +524,198 @@ class TournamentController extends AbstractController
 
         $participation->setStatus($status);
         $entityManager->flush();
+        try {
+            $leaderboardService->generateForTournament($participation->getTournament());
+        } catch (\Throwable) {
+            // Backward compatibility while advanced tables are not migrated yet.
+        }
 
         $this->addFlash('success', 'Participation status updated.');
 
         return $this->redirectToRoute('front_tournaments_show', ['id' => $participation->getTournament()?->getId()]);
+    }
+
+    #[Route('/tournaments/vouchers', name: 'front_tournament_vouchers', methods: ['GET'])]
+    public function vouchers(Request $request, VoucherRepository $voucherRepository, TournamentRepository $tournamentRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $q = trim((string) $request->query->get('q', ''));
+        $tournamentId = max(0, (int) $request->query->get('tournament', 0));
+        $page = max(1, (int) $request->query->get('page', 1));
+        $perPage = 10;
+
+        $totalItems = $voucherRepository->countByUserFiltered($user, $q !== '' ? $q : null, $tournamentId > 0 ? $tournamentId : null);
+        $totalPages = max(1, (int) ceil($totalItems / $perPage));
+        $page = min($page, $totalPages);
+        $vouchers = $voucherRepository->findByUserFiltered(
+            $user,
+            $q !== '' ? $q : null,
+            $tournamentId > 0 ? $tournamentId : null,
+            $perPage,
+            ($page - 1) * $perPage
+        );
+
+        return $this->render('front/modules/tournament_vouchers.html.twig', [
+            'page' => 'tournaments',
+            'vouchers' => $vouchers,
+            'tournaments' => $tournamentRepository->findBy([], ['title' => 'ASC']),
+            'filters' => ['q' => $q, 'tournament' => $tournamentId > 0 ? $tournamentId : null],
+            'pagination' => ['page' => $page, 'totalPages' => $totalPages],
+        ]);
+    }
+
+    #[Route('/tournaments/vouchers/ajax-list', name: 'front_tournament_vouchers_ajax_list', methods: ['GET'])]
+    public function vouchersAjaxList(Request $request, VoucherRepository $voucherRepository): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $q = trim((string) $request->query->get('q', ''));
+        $tournamentId = max(0, (int) $request->query->get('tournament', 0));
+        $page = max(1, (int) $request->query->get('page', 1));
+        $perPage = 10;
+
+        $totalItems = $voucherRepository->countByUserFiltered($user, $q !== '' ? $q : null, $tournamentId > 0 ? $tournamentId : null);
+        $totalPages = max(1, (int) ceil($totalItems / $perPage));
+        $page = min($page, $totalPages);
+        $vouchers = $voucherRepository->findByUserFiltered(
+            $user,
+            $q !== '' ? $q : null,
+            $tournamentId > 0 ? $tournamentId : null,
+            $perPage,
+            ($page - 1) * $perPage
+        );
+
+        return $this->json([
+            'success' => true,
+            'vouchers' => $this->serializeVoucherRows($vouchers),
+            'pagination' => ['page' => $page, 'totalPages' => $totalPages],
+            'html' => $this->renderView('front/modules/_tournament_vouchers_results.html.twig', [
+                'vouchers' => $vouchers,
+            ]),
+        ]);
+    }
+
+    /**
+     * @return array{
+     *   filters: array<string,mixed>,
+     *   sort: array{by:string,dir:string},
+     *   tournaments: array<int, array{entity:Tournament,participantsCount:int,isJoined:bool}>,
+     *   pagination: array{page:int,perPage:int,totalItems:int,totalPages:int}
+     * }
+     */
+    private function buildTournamentListData(
+        Request $request,
+        TournamentRepository $tournamentRepository,
+        TournamentParticipationRepository $participationRepository,
+        int $perPage
+    ): array {
+        [$filters, $sort] = $this->extractListParams($request);
+        $page = max(1, (int) $request->query->get('page', 1));
+        $totalItems = $tournamentRepository->countFiltered(
+            $filters['q'],
+            $filters['status'],
+            $filters['dateFrom'],
+            $filters['dateTo'],
+            $filters['mode']
+        );
+        $totalPages = max(1, (int) ceil($totalItems / $perPage));
+        $page = min($page, $totalPages);
+
+        $rows = $tournamentRepository->findWithParticipantsCountFiltered(
+            $filters['q'],
+            $filters['status'],
+            $filters['dateFrom'],
+            $filters['dateTo'],
+            $filters['mode'],
+            $sort['by'],
+            $sort['dir'],
+            $perPage,
+            ($page - 1) * $perPage
+        );
+
+        $tournaments = [];
+        $user = $this->getUser();
+        foreach ($rows as $row) {
+            /** @var Tournament $tournament */
+            $tournament = $row[0];
+            $participantsCount = (int) $row['participantsCount'];
+            $isJoined = false;
+
+            if ($user) {
+                $isJoined = null !== $participationRepository->findOneByUserAndTournament($user, $tournament);
+            }
+
+            $tournaments[] = [
+                'entity' => $tournament,
+                'participantsCount' => $participantsCount,
+                'isJoined' => $isJoined,
+            ];
+        }
+
+        return [
+            'filters' => $filters,
+            'sort' => $sort,
+            'tournaments' => $tournaments,
+            'pagination' => [
+                'page' => $page,
+                'perPage' => $perPage,
+                'totalItems' => $totalItems,
+                'totalPages' => $totalPages,
+            ],
+        ];
+    }
+
+    /**
+     * @param array<int, array{entity:Tournament,participantsCount:int,isJoined:bool}> $rows
+     * @return array<int, array<string,mixed>>
+     */
+    private function serializeTournamentRows(array $rows): array
+    {
+        $payload = [];
+        foreach ($rows as $row) {
+            $tournament = $row['entity'];
+            $payload[] = [
+                'id' => (int) $tournament->getId(),
+                'title' => (string) $tournament->getTitle(),
+                'description' => (string) $tournament->getDescription(),
+                'status' => (string) $tournament->getStatus(),
+                'mode' => (string) $tournament->getMode(),
+                'entryFee' => (float) $tournament->getEntryFee(),
+                'isPaid' => $tournament->isPaid(),
+                'maxPlayers' => (int) $tournament->getMaxPlayers(),
+                'participantsCount' => (int) $row['participantsCount'],
+                'isJoined' => (bool) $row['isJoined'],
+                'startDate' => $tournament->getStartDate()?->format(\DateTimeInterface::ATOM),
+            ];
+        }
+
+        return $payload;
+    }
+
+    /**
+     * @param array<int, \App\Entity\Voucher> $vouchers
+     * @return array<int, array<string,mixed>>
+     */
+    private function serializeVoucherRows(array $vouchers): array
+    {
+        $payload = [];
+        foreach ($vouchers as $voucher) {
+            $payload[] = [
+                'id' => (int) $voucher->getId(),
+                'code' => (string) $voucher->getCode(),
+                'amount' => (float) $voucher->getAmount(),
+                'tournamentTitle' => (string) ($voucher->getTournament()?->getTitle() ?? 'Unknown'),
+                'purchasedAt' => $voucher->getPurchasedAt()?->format(\DateTimeInterface::ATOM),
+                'isUsed' => $voucher->isUsed(),
+            ];
+        }
+
+        return $payload;
     }
 
     /**
@@ -570,5 +780,54 @@ class TournamentController extends AbstractController
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    private function buildTournamentShareText(Tournament $tournament, bool $absoluteUrl = false): string
+    {
+        $url = $absoluteUrl
+            ? $this->buildPublicTournamentUrl($tournament)
+            : $this->generateUrl('front_tournaments_show', ['id' => $tournament->getId()], UrlGeneratorInterface::ABSOLUTE_PATH);
+
+        return sprintf(
+            'I shared this %s tournament: %s. Start %s. %s',
+            $tournament->isPaid() ? 'paid' : 'free',
+            (string) $tournament->getTitle(),
+            $tournament->getStartDate()?->format('Y-m-d H:i') ?? 'N/A',
+            $url
+        );
+    }
+
+    private function buildPublicTournamentUrl(Tournament $tournament): string
+    {
+        $path = $this->generateUrl('front_tournaments_show', ['id' => $tournament->getId()], UrlGeneratorInterface::ABSOLUTE_PATH);
+        $publicBase = $this->getPublicBaseUrl();
+        if ($publicBase !== null) {
+            return rtrim($publicBase, '/').$path;
+        }
+
+        return $this->generateUrl('front_tournaments_show', ['id' => $tournament->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+    }
+
+    private function getPublicBaseUrl(): ?string
+    {
+        $raw = (string) ($_ENV['PUBLIC_APP_URL'] ?? $_SERVER['PUBLIC_APP_URL'] ?? $_ENV['APP_URL'] ?? $_SERVER['APP_URL'] ?? '');
+        $base = trim($raw);
+        if ($base === '') {
+            return null;
+        }
+        if (!str_starts_with($base, 'http://') && !str_starts_with($base, 'https://')) {
+            return null;
+        }
+
+        return rtrim($base, '/');
+    }
+
+    private function buildFacebookShareQuote(Tournament $tournament): string
+    {
+        return sprintf(
+            'Check out this tournament: %s on %s. Join or follow the event!',
+            (string) $tournament->getTitle(),
+            $tournament->getStartDate()?->format('Y-m-d H:i') ?? 'TBA'
+        );
     }
 }

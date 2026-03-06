@@ -118,6 +118,12 @@
                             <p>Analytics</p>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ path('app_admin_external_interest_index') }}" class="nav-link {{ app.request.attributes.get('_route') starts with 'app_admin_external_interest' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-globe2"></i>
+                            <p>External Interests</p>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </div>
