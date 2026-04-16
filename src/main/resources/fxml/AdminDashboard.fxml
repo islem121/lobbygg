@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.shape.Circle?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="org.example.controller.AdminDashboardController"
+            stylesheets="@../styles/style.css">
+    
+    <!-- Sidebar -->
+    <left>
+        <VBox styleClass="sidebar" spacing="10">
+            <Label text="ADMIN PANEL" styleClass="sidebar-title"/>
+            
+            <Button text="Tableau de bord" onAction="#showStats" styleClass="nav-button, active" fx:id="statsBtn"/>
+            <Button text="Gestion Utilisateurs" onAction="#showUserManagement" styleClass="nav-button" fx:id="userBtn"/>
+            <Button text="Gestion Golds" onAction="#showGoldManagement" styleClass="nav-button" fx:id="goldBtn"/>
+            <Button text="Paramètres" styleClass="nav-button"/>
+            
+            <VBox VBox.vgrow="ALWAYS"/> <!-- Spacer -->
+            
+            <Button text="Déconnexion" onAction="#handleLogout" styleClass="logout-btn"/>
+        </VBox>
+    </left>
+    
+    <!-- Main Area -->
+    <center>
+        <VBox>
+            <!-- Header -->
+            <HBox styleClass="header" alignment="CENTER_LEFT" spacing="20">
+                <Label text="Tableau de bord" styleClass="header-title"/>
+                <HBox HBox.hgrow="ALWAYS"/>
+                <Label fx:id="adminNameLabel" text="Admin" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <Circle radius="15" fill="#f39c12"/>
+            </HBox>
+            
+            <!-- Content -->
+            <StackPane fx:id="contentStack" VBox.vgrow="ALWAYS">
+                <ScrollPane fx:id="statsView" fitToWidth="true" style="-fx-background-color: transparent;">
+                    <VBox styleClass="content-area" spacing="30">
+                        <Label text="Statistiques Globales" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1a2a44;"/>
+                        
+                        <FlowPane hgap="20" vgap="20">
+                            <!-- Users Card -->
+                            <VBox styleClass="card">
+                                <Label text="UTILISATEURS" styleClass="card-title"/>
+                                <Label fx:id="usersCountLabel" text="0" styleClass="card-value"/>
+                                <HBox alignment="BOTTOM_RIGHT">
+                                    <Label text="👥" styleClass="card-icon"/>
+                                </HBox>
+                            </VBox>
+                            
+                            <!-- Reservations Card -->
+                            <VBox styleClass="card">
+                                <Label text="RÉSERVATIONS" styleClass="card-title"/>
+                                <Label fx:id="reservationsCountLabel" text="0" styleClass="card-value"/>
+                                <HBox alignment="BOTTOM_RIGHT">
+                                    <Label text="📅" styleClass="card-icon"/>
+                                </HBox>
+                            </VBox>
+                            
+                            <!-- Articles Card -->
+                            <VBox styleClass="card">
+                                <Label text="ARTICLES" styleClass="card-title"/>
+                                <Label fx:id="articlesCountLabel" text="0" styleClass="card-value"/>
+                                <HBox alignment="BOTTOM_RIGHT">
+                                    <Label text="📝" styleClass="card-icon"/>
+                                </HBox>
+                            </VBox>
+                        </FlowPane>
+                        
+                        <!-- Additional Actions -->
+                        <HBox spacing="20">
+                            <Button text="Exporter les données" styleClass="btn-primary"/>
+                            <Button text="Générer un rapport" styleClass="btn-primary"/>
+                        </HBox>
+                    </VBox>
+                </ScrollPane>
+            </StackPane>
+        </VBox>
+    </center>
+    
+</BorderPane>

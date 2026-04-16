@@ -1,0 +1,113 @@
+/* Modern Admin Dashboard Styles */
+
+.root {
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    -fx-background-color: #ecf0f1;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    -fx-background-color: #1a2a44; /* Navy Blue */
+    -fx-pref-width: 250px;
+    -fx-padding: 20px;
+}
+
+.sidebar-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 30px 0;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #bdc3c7;
+    -fx-alignment: center-left;
+    -fx-font-size: 14px;
+    -fx-pref-width: 210px;
+    -fx-padding: 10px 15px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+}
+
+.nav-button:hover {
+    -fx-background-color: #2c3e50; /* Anthracite Grey */
+    -fx-text-fill: #ffffff;
+}
+
+.nav-button.active {
+    -fx-background-color: #f39c12; /* Orange for active/action items */
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+}
+
+/* Header Styles */
+.header {
+    -fx-background-color: #ffffff;
+    -fx-padding: 15px 30px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+}
+
+.header-title {
+    -fx-text-fill: #2c3e50;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+/* Main Content Area */
+.content-area {
+    -fx-padding: 30px;
+}
+
+/* Card Styles */
+.card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10px;
+    -fx-padding: 20px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);
+    -fx-pref-width: 250px;
+    -fx-min-height: 120px;
+}
+
+.card-title {
+    -fx-text-fill: #7f8c8d;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.card-value {
+    -fx-text-fill: #1a2a44;
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 0 0 0;
+}
+
+.card-icon {
+    -fx-text-fill: #f39c12; /* Orange touch */
+    -fx-font-size: 24px;
+}
+
+/* Action Buttons */
+.btn-primary {
+    -fx-background-color: #f39c12;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+}
+
+.btn-primary:hover {
+    -fx-background-color: #e67e22;
+}
+
+.logout-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e74c3c;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.logout-btn:hover {
+    -fx-text-fill: #c0392b;
+}
