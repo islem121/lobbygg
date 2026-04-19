@@ -1,0 +1,100 @@
+<div th:fragment="content">
+    <div class="space-y-12">
+        <header class="flex flex-col md:flex-row justify-between items-end gap-6">
+            <div class="space-y-4">
+                <span class="text-xs font-black text-lobby-violet uppercase tracking-[0.2em]">Steam Style</span>
+                <h1 class="text-5xl font-black text-white font-poppins tracking-tighter">Marketplace</h1>
+                <p class="text-gray-400 max-w-lg leading-relaxed">Gear up with the best hardware, digital assets, and professional services. Spend your earned Golds on elite gaming products.</p>
+            </div>
+            <div class="flex-grow max-w-md w-full relative">
+                <input type="text" placeholder="Search products, gear, services..." class="w-full bg-lobby-dark-card border border-lobby-dark-border rounded-2xl px-12 py-4 text-white focus:outline-none focus:border-lobby-violet focus:ring-1 focus:ring-lobby-violet transition-all text-sm font-medium">
+                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Filters Sidebar -->
+            <aside class="col-span-1 space-y-8">
+                <div class="glass rounded-3xl p-6 space-y-8">
+                    <div>
+                        <h4 class="text-xs font-black text-white uppercase tracking-widest mb-4">Categories</h4>
+                        <div class="space-y-3">
+                            <label th:each="category : ${categories}" class="flex items-center space-x-3 cursor-pointer group">
+                                <input type="checkbox" class="w-4 h-4 rounded border-lobby-dark-border text-lobby-violet focus:ring-lobby-violet bg-lobby-dark-bg">
+                                <span class="text-sm font-bold text-gray-400 group-hover:text-white transition-colors" th:text="${category.name}">Category Name</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-black text-white uppercase tracking-widest mb-4">Price Range</h4>
+                        <input type="range" class="w-full h-1 bg-lobby-dark-border rounded-lg appearance-none cursor-pointer accent-lobby-violet">
+                        <div class="flex justify-between mt-2">
+                            <span class="text-[10px] font-bold text-gray-500">0 Gold</span>
+                            <span class="text-[10px] font-bold text-gray-500">10k+ Gold</span>
+                        </div>
+                    </div>
+                    <button class="w-full py-3 bg-lobby-violet text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all violet-glow">Apply Filters</button>
+                </div>
+            </aside>
+
+            <!-- Products Grid -->
+            <div class="col-span-1 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic Product Cards -->
+                <div th:each="product : ${products}" class="glass rounded-3xl p-4 group hover:border-lobby-violet transition-all duration-500 flex flex-col">
+                    <div class="relative aspect-square rounded-2xl overflow-hidden bg-lobby-dark-bg mb-4">
+                        <img th:src="${product.image != null and product.image.contains('http') ? product.image : 'https://images.unsplash.com/photo-1612117561166-7b450c268800?auto=format&fit=crop&q=80&w=600'}" 
+                             alt="Product Image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute top-3 left-3 bg-lobby-dark-bg/80 backdrop-blur-md px-2 py-1 rounded text-[10px] font-black text-white uppercase tracking-widest"
+                             th:text="${product.stock > 0 ? 'In Stock' : 'Out of Stock'}">In Stock</div>
+                    </div>
+                    <div class="flex-grow space-y-4">
+                        <div>
+                            <h3 class="font-bold text-white group-hover:text-lobby-violet transition-colors" th:text="${product.name}">Product Name</h3>
+                            <p class="text-xs text-gray-500 font-medium" th:text="${product.category.name}">Category</p>
+                        </div>
+                        <div class="flex items-center justify-between border-t border-lobby-dark-border pt-4">
+                            <div>
+                                <span class="block text-[10px] text-gray-500 font-black uppercase tracking-widest">Price</span>
+                                <span class="text-lg font-black text-white"><span th:text="${product.price}">450</span> <span class="text-[10px] text-lobby-violet uppercase">Gold</span></span>
+                            </div>
+                            <form th:action="@{/marketplace/buy}" method="post" class="m-0">
+                                <input type="hidden" name="productId" th:value="${product.id}">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="w-10 h-10 rounded-xl bg-lobby-violet/10 text-lobby-violet hover:bg-lobby-violet hover:text-white flex items-center justify-center transition-all"
+                                        th:disabled="${product.stock <= 0}">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                <!-- Product Card 3 -->
+                <div class="glass rounded-3xl p-4 group hover:border-lobby-violet transition-all duration-500 flex flex-col">
+                    <div class="relative aspect-square rounded-2xl overflow-hidden bg-lobby-dark-bg mb-4">
+                        <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=600" alt="Product" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute top-3 left-3 bg-lobby-dark-bg/80 backdrop-blur-md px-2 py-1 rounded text-[10px] font-black text-white uppercase tracking-widest">In Stock</div>
+                    </div>
+                    <div class="flex-grow space-y-4">
+                        <div>
+                            <h3 class="font-bold text-white group-hover:text-lobby-violet transition-colors">NVIDIA RTX 4080</h3>
+                            <p class="text-xs text-gray-500 font-medium">Ultimate Performance GPU</p>
+                        </div>
+                        <div class="flex items-center justify-between border-t border-lobby-dark-border pt-4">
+                            <div>
+                                <span class="block text-[10px] text-gray-500 font-black uppercase tracking-widest">Price</span>
+                                <span class="text-lg font-black text-white">4,200 <span class="text-[10px] text-lobby-violet uppercase">Gold</span></span>
+                            </div>
+                            <button class="w-10 h-10 rounded-xl bg-lobby-violet/10 text-lobby-violet hover:bg-lobby-violet hover:text-white flex items-center justify-center transition-all">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

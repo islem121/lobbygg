@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.controller.MarketplaceManagementController"
+      spacing="16" styleClass="content-area"
+      stylesheets="@../styles/style.css">
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Gestion Marketplace" styleClass="header-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Rafraîchir" onAction="#loadAll" styleClass="btn-primary"/>
+    </HBox>
+
+    <TabPane VBox.vgrow="ALWAYS">
+        <tabs>
+            <Tab text="Catégories" closable="false">
+                <VBox spacing="12" style="-fx-padding: 16;">
+                    <HBox spacing="10">
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="Ajouter Catégorie" onAction="#handleAddCategory" styleClass="btn-primary"/>
+                    </HBox>
+                    <TableView fx:id="categoryTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="categoryIdCol" text="ID" prefWidth="70"/>
+                            <TableColumn fx:id="categoryNameCol" text="Nom" prefWidth="180"/>
+                            <TableColumn fx:id="categoryDescriptionCol" text="Description" prefWidth="320"/>
+                            <TableColumn fx:id="categoryActionsCol" text="Actions" prefWidth="180"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+            <Tab text="Produits" closable="false">
+                <VBox spacing="12" style="-fx-padding: 16;">
+                    <HBox spacing="10">
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="Ajouter Produit" onAction="#handleAddProduct" styleClass="btn-primary"/>
+                    </HBox>
+                    <TableView fx:id="productTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="productIdCol" text="ID" prefWidth="60"/>
+                            <TableColumn fx:id="productNameCol" text="Nom" prefWidth="180"/>
+                            <TableColumn fx:id="productPriceCol" text="Prix" prefWidth="100"/>
+                            <TableColumn fx:id="productStockCol" text="Stock" prefWidth="80"/>
+                            <TableColumn fx:id="productCategoryCol" text="Catégorie" prefWidth="90"/>
+                            <TableColumn fx:id="productSellerCol" text="Vendeur" prefWidth="90"/>
+                            <TableColumn fx:id="productActionsCol" text="Actions" prefWidth="180"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+            <Tab text="Commandes" closable="false">
+                <VBox spacing="12" style="-fx-padding: 16;">
+                    <HBox spacing="10">
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="Ajouter Commande" onAction="#handleAddOrder" styleClass="btn-primary"/>
+                    </HBox>
+                    <TableView fx:id="orderTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="orderIdCol" text="ID" prefWidth="60"/>
+                            <TableColumn fx:id="orderProductCol" text="Produit" prefWidth="90"/>
+                            <TableColumn fx:id="orderUserCol" text="Utilisateur" prefWidth="90"/>
+                            <TableColumn fx:id="orderQuantityCol" text="Qté" prefWidth="70"/>
+                            <TableColumn fx:id="orderStatusCol" text="Statut" prefWidth="120"/>
+                            <TableColumn fx:id="orderDateCol" text="Date" prefWidth="160"/>
+                            <TableColumn fx:id="orderActionsCol" text="Actions" prefWidth="180"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+        </tabs>
+    </TabPane>
+</VBox>

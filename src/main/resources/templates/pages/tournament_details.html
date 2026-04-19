@@ -1,0 +1,129 @@
+<div th:fragment="content">
+    <div class="space-y-12 max-w-7xl mx-auto">
+        <!-- Tournament Hero -->
+        <div class="relative rounded-[3.5rem] overflow-hidden violet-glow h-[500px] group">
+            <img th:src="${tournament.description != null and tournament.description.contains('http') ? tournament.description : 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=1600'}" 
+                 alt="Tournament" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s]">
+            <div class="absolute inset-0 bg-gradient-to-t from-lobby-dark-bg via-lobby-dark-bg/60 to-transparent"></div>
+            <div class="absolute bottom-0 left-0 p-16 w-full flex flex-col md:flex-row justify-between items-end gap-8">
+                <div class="space-y-6 max-w-2xl">
+                    <div class="flex items-center space-x-3">
+                        <span class="bg-lobby-violet text-white text-[10px] font-black px-3 py-1.5 rounded uppercase tracking-widest border border-white/10" th:text="${tournament.status}">CS2 Major Qualifiers</span>
+                    </div>
+                    <h1 class="text-6xl font-black text-white font-poppins tracking-tighter leading-tight" th:text="${tournament.title}">Copenhagen Masters 2026</h1>
+                    <div class="flex items-center space-x-8 text-sm font-bold text-gray-300 uppercase tracking-widest">
+                        <div class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-lobby-violet" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <span th:text="${#temporals.format(tournament.startDate, 'MMM dd, yyyy')}">Date</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end space-y-4">
+                    <div class="text-right">
+                        <span class="block text-xs font-black text-gray-500 uppercase tracking-[0.2em] mb-1">Prize Pool</span>
+                        <span class="text-4xl font-black text-white" th:text="${tournament.prizePool ?: '50k Gold'}">$250,000</span>
+                    </div>
+                    <button class="bg-lobby-violet hover:bg-lobby-violet-hover text-white px-12 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all violet-glow transform hover:-translate-y-1 shadow-2xl"
+                            th:if="${tournament.status == 'OUVERT'}">Join Now</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <!-- Left: Info -->
+            <div class="lg:col-span-8 space-y-12">
+                <section class="glass rounded-[3rem] overflow-hidden">
+                    <div class="flex border-b border-lobby-dark-border overflow-x-auto scrollbar-hide">
+                        <button class="px-10 py-6 text-xs font-black text-lobby-violet uppercase tracking-widest border-b-2 border-lobby-violet">Overview</button>
+                        <button class="px-10 py-6 text-xs font-black text-gray-500 uppercase tracking-widest hover:text-white transition-colors">Rules & FAQ</button>
+                        <button class="px-10 py-6 text-xs font-black text-gray-500 uppercase tracking-widest hover:text-white transition-colors">Participants (64)</button>
+                        <button class="px-10 py-6 text-xs font-black text-gray-500 uppercase tracking-widest hover:text-white transition-colors">Bracket</button>
+                    </div>
+                    <div class="p-12 space-y-10">
+                        <div class="space-y-6">
+                            <h3 class="text-2xl font-black text-white font-poppins tracking-tight uppercase tracking-widest">About the Tournament</h3>
+                            <p class="text-gray-400 leading-relaxed font-medium">The Copenhagen Masters is a premier tier CS2 competition that brings together the finest elite gamers from around the globe. This major qualifier will determine the top 8 teams that will advance to the Grand Finals at the Royal Arena.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-lobby-dark-border/50">
+                            <div class="space-y-6">
+                                <h4 class="text-sm font-black text-white uppercase tracking-widest">Format</h4>
+                                <ul class="space-y-4">
+                                    <li class="flex items-center space-x-3 text-sm text-gray-500 font-bold">
+                                        <div class="w-2 h-2 rounded-full bg-lobby-violet"></div>
+                                        <span>Single Elimination Bracket</span>
+                                    </li>
+                                    <li class="flex items-center space-x-3 text-sm text-gray-500 font-bold">
+                                        <div class="w-2 h-2 rounded-full bg-lobby-violet"></div>
+                                        <span>Best of 3 (BO3) Matches</span>
+                                    </li>
+                                    <li class="flex items-center space-x-3 text-sm text-gray-500 font-bold">
+                                        <div class="w-2 h-2 rounded-full bg-lobby-violet"></div>
+                                        <span>Finals: Best of 5 (BO5)</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="space-y-6">
+                                <h4 class="text-sm font-black text-white uppercase tracking-widest">Platform & Anti-Cheat</h4>
+                                <ul class="space-y-4">
+                                    <li class="flex items-center space-x-3 text-sm text-gray-500 font-bold">
+                                        <div class="w-2 h-2 rounded-full bg-lobby-violet"></div>
+                                        <span>Lobby.GG Dedicated Servers</span>
+                                    </li>
+                                    <li class="flex items-center space-x-3 text-sm text-gray-500 font-bold">
+                                        <div class="w-2 h-2 rounded-full bg-lobby-violet"></div>
+                                        <span>Vanguard Anti-Cheat Required</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right: Stats -->
+            <aside class="lg:col-span-4 space-y-8">
+                <div class="glass rounded-[3rem] p-10 space-y-8">
+                    <h4 class="text-xs font-black text-white uppercase tracking-widest border-b border-lobby-dark-border pb-6 text-center">Tournament Partners</h4>
+                    <div class="space-y-8">
+                        <div class="flex items-center justify-between group cursor-pointer">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                    <span class="text-white font-black text-sm">INTL</span>
+                                </div>
+                                <div>
+                                    <h5 class="text-sm font-bold text-white">Intel Gaming</h5>
+                                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Title Sponsor</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between group cursor-pointer">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 rounded-2xl bg-green-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                    <span class="text-white font-black text-sm">RAZ</span>
+                                </div>
+                                <div>
+                                    <h5 class="text-sm font-bold text-white">Razer Pro</h5>
+                                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Peripheral Partner</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass rounded-[3rem] p-10 bg-gradient-to-br from-lobby-dark-card to-lobby-violet/10 border border-lobby-violet/20">
+                    <div class="space-y-6">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-black text-lobby-violet uppercase tracking-widest">Slots Left</span>
+                            <span class="text-lg font-black text-white">12 / 64</span>
+                        </div>
+                        <div class="w-full bg-lobby-dark-bg rounded-full h-2 overflow-hidden border border-lobby-dark-border">
+                            <div class="bg-lobby-violet h-full rounded-full violet-glow" style="width: 82%"></div>
+                        </div>
+                        <p class="text-[10px] text-gray-500 font-bold leading-relaxed text-center italic">Only professional teams with Lobby.GG verified status can apply for this tournament.</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>

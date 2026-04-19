@@ -1,0 +1,63 @@
+<div th:fragment="content">
+    <div class="space-y-12">
+        <header class="flex flex-col md:flex-row justify-between items-end gap-6">
+            <div class="space-y-4">
+                <span class="text-xs font-black text-lobby-violet uppercase tracking-[0.2em]">Global Arena</span>
+                <h1 class="text-5xl font-black text-white font-poppins tracking-tighter">Tournaments</h1>
+                <p class="text-gray-400 max-w-lg leading-relaxed">The biggest esports competitions on the planet. Prove your skill, win massive prizes, and get noticed by global sponsors.</p>
+            </div>
+            <div class="flex space-x-4">
+                <div class="relative">
+                    <select class="bg-lobby-dark-card border border-lobby-dark-border text-white px-6 py-3 rounded-xl appearance-none pr-12 focus:outline-none focus:border-lobby-violet text-sm font-bold">
+                        <option>All Games</option>
+                        <option>CS2</option>
+                        <option>Valorant</option>
+                        <option>League of Legends</option>
+                    </select>
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </div>
+                <button class="bg-lobby-violet hover:bg-lobby-violet-hover text-white px-8 py-3 rounded-xl font-bold text-sm transition-all violet-glow">Filters</button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Dynamic Tournament Cards -->
+            <div th:each="tournament : ${tournaments}" class="glass rounded-3xl overflow-hidden group hover:border-lobby-violet transition-all duration-500 flex flex-col">
+                <div class="relative h-56 overflow-hidden">
+                    <img th:src="${tournament.description != null and tournament.description.contains('http') ? tournament.description : 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=800'}" 
+                         alt="Tournament Image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                    <div class="absolute top-4 left-4 bg-lobby-dark-bg/80 backdrop-blur-md px-3 py-1 rounded-lg text-[10px] font-black text-white uppercase tracking-widest border border-white/10" 
+                         th:text="${tournament.status}">STATUS</div>
+                    <div class="absolute bottom-4 right-4 bg-lobby-violet text-white px-4 py-1.5 rounded-xl text-xs font-black shadow-lg"
+                         th:if="${tournament.status == 'OUVERT'}">JOIN NOW</div>
+                </div>
+                <div class="p-6 flex-grow space-y-6">
+                    <div>
+                        <h3 class="text-xl font-black text-white mb-2 group-hover:text-lobby-violet transition-colors tracking-tight" 
+                            th:text="${tournament.title}">Tournament Title</h3>
+                        <p class="text-gray-500 text-sm font-medium" th:text="${tournament.description}">Tournament Description</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 border-y border-lobby-dark-border py-4">
+                        <div>
+                            <span class="block text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Prize Pool</span>
+                            <span class="text-lg font-black text-white" th:text="${tournament.prizePool ?: '50k Gold'}">$250,000</span>
+                        </div>
+                        <div class="border-l border-lobby-dark-border pl-4">
+                            <span class="block text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Slots</span>
+                            <span class="text-lg font-black text-lobby-violet" th:text="${tournament.maxPlayers}">64</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2 text-xs text-gray-400 font-bold">
+                            <svg class="w-4 h-4 text-lobby-violet" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <span th:text="${#temporals.format(tournament.startDate, 'MMM dd, yyyy')}">Date</span>
+                        </div>
+                        <a th:href="@{'/tournament/' + ${tournament.id}}" class="bg-white/5 hover:bg-lobby-violet text-white hover:text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all border border-white/10 group-hover:border-lobby-violet">Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -49,6 +49,8 @@ import java.util.regex.Pattern;
 import javafx.stage.FileChooser;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.web.WebView;
+import javafx.scene.web.WebEngine;
 
 public class AuthApplication extends Application {
     private static final String LOGIN = "LOGIN";
@@ -70,6 +72,7 @@ public class AuthApplication extends Application {
 
     private TextField loginEmailField;
     private PasswordField loginPasswordField;
+    private ComboBox<String> loginRoleComboBox;
     private Label loginMessageLabel;
 
     private TextField signupNameField;
@@ -101,20 +104,131 @@ public class AuthApplication extends Application {
 
     @Override
     public void start(Stage stage) {
+        System.out.println("Initialisation du Stage JavaFX...");
         primaryStage = stage;
 
-        scene = new Scene(createAuthRoot(), 1240, 760);
-        scene.getStylesheets().add(getClass().getResource("/styles/auth.css").toExternalForm());
+        // Window Icons (Multiple sizes for OS compatibility)
+        System.out.println("Chargement des icones...");
+        try {
+            loadIcons(stage);
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement des icones : " + e.getMessage());
+        }
 
-        stage.setTitle("Violet Auth Desktop");
-        stage.setMinWidth(1080);
-        stage.setMinHeight(700);
-        stage.setScene(scene);
-        stage.show();
+        System.out.println("Creation de la scene...");
+         try {
+             scene = new Scene(createEntrySelector(), 1240, 760);
+             var cssResource = getClass().getResource("/styles/auth.css");
+             if (cssResource != null) {
+                 scene.getStylesheets().add(cssResource.toExternalForm());
+             } else {
+                 System.err.println("CSS introuvable : /styles/auth.css");
+             }
+ 
+             stage.setTitle("Lobby.GG Desktop");
+            stage.setMinWidth(1080);
+            stage.setMinHeight(700);
+            stage.setScene(scene);
+            
+            System.out.println("Affichage de la fenetre...");
+            stage.show();
 
-        showMode(LOGIN);
-        if (!MySqlConnection.testConnection()) {
-            updateMessage(loginMessageLabel, "Connexion MySQL indisponible. Verifie phpMyAdmin et les parametres JDBC.", false);
+            if (!MySqlConnection.testConnection()) {
+                updateMessage(loginMessageLabel, "Connexion MySQL indisponible. Verifie phpMyAdmin et les parametres JDBC.", false);
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la creation de l'UI : " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private StackPane createEntrySelector() {
+        VBox container = new VBox(40);
+        container.setAlignment(Pos.CENTER);
+        container.getStyleClass().add("auth-panel");
+
+        Label mainTitle = new Label("LOBBY.GG");
+        mainTitle.setStyle("-fx-font-family: 'Poppins'; -fx-font-size: 64px; -fx-font-weight: 900; -fx-text-fill: white; -fx-letter-spacing: -0.05em;");
+        
+        Label subtitle = new Label("Choose your entry point into the esports ecosystem");
+        subtitle.setStyle("-fx-font-size: 18px; -fx-text-fill: #9CA3AF; -fx-font-weight: 500;");
+
+        HBox cards = new HBox(30);
+        cards.setAlignment(Pos.CENTER);
+
+        VBox platformCard = createSelectorCard(
+                "EXPLORE PLATFORM",
+                "Join tournaments, visit the marketplace, and manage your pro gaming career.",
+                "client",
+                event -> showWebFrontOffice("client")
+        );
+
+        VBox adminCard = createSelectorCard(
+                "ADMIN DASHBOARD",
+                "Manage sponsors, tournaments, and oversee the entire Lobby.GG ecosystem.",
+                "admin",
+                event -> {
+                    scene.setRoot(createAuthRoot());
+                    showMode(LOGIN);
+                    loginRoleComboBox.setValue("admin");
+                }
+        );
+
+        cards.getChildren().addAll(platformCard, adminCard);
+
+        container.getChildren().addAll(mainTitle, subtitle, cards);
+
+        StackPane root = new StackPane(container);
+        root.getStyleClass().add("root");
+        return root;
+    }
+
+    private VBox createSelectorCard(String title, String description, String iconType, javafx.event.EventHandler<javafx.event.ActionEvent> onAction) {
+        VBox card = new VBox(20);
+        card.setAlignment(Pos.CENTER);
+        card.getStyleClass().add("auth-card");
+        card.setPrefWidth(400);
+        card.setPadding(new Insets(40));
+        card.setStyle("-fx-cursor: hand;");
+
+        // Simple icon representation
+        Label icon = new Label(iconType.equals("admin") ? "⚙" : "🎮");
+        icon.setStyle("-fx-font-size: 48px; -fx-text-fill: #7C3AED;");
+
+        Label titleLabel = new Label(title);
+        titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: 800; -fx-text-fill: white; -fx-font-family: 'Poppins';");
+
+        Label descLabel = new Label(description);
+        descLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #9CA3AF; -fx-text-alignment: center;");
+        descLabel.setWrapText(true);
+        descLabel.setPrefHeight(60);
+
+        Button actionBtn = new Button(iconType.equals("admin") ? "Access Dashboard" : "Access Platform");
+        actionBtn.getStyleClass().add("primary-button");
+        actionBtn.setMaxWidth(Double.MAX_VALUE);
+        actionBtn.setOnAction(onAction);
+
+        card.getChildren().addAll(icon, titleLabel, descLabel, actionBtn);
+
+        // Hover effect
+        card.setOnMouseEntered(e -> card.setStyle("-fx-border-color: #7C3AED; -fx-border-width: 2px; -fx-border-radius: 30px; -fx-background-radius: 30px; -fx-cursor: hand;"));
+        card.setOnMouseExited(e -> card.setStyle("-fx-border-color: transparent; -fx-cursor: hand;"));
+
+        return card;
+    }
+
+    private void loadIcons(Stage stage) {
+        String[] iconPaths = {
+            "/icons/logo-16.png", "/icons/logo-32.png", "/icons/logo-64.png", 
+            "/icons/logo-128.png", "/icons/logo-256.png"
+        };
+        for (String path : iconPaths) {
+            var stream = getClass().getResourceAsStream(path);
+            if (stream != null) {
+                stage.getIcons().add(new Image(stream));
+            } else {
+                System.err.println("Icone introuvable : " + path);
+            }
         }
     }
 
@@ -127,6 +241,16 @@ public class AuthApplication extends Application {
     }
 
     private VBox createBrandPanel() {
+        ImageView logoView = new ImageView();
+        var stream = getClass().getResourceAsStream("/images/logo.png");
+        if (stream != null) {
+            logoView.setImage(new Image(stream));
+        } else {
+            System.err.println("Logo introuvable : /images/logo.png");
+        }
+        logoView.setFitWidth(160);
+        logoView.setPreserveRatio(true);
+
         Label badge = new Label("Desktop App");
         badge.getStyleClass().add("badge");
 
@@ -135,7 +259,7 @@ public class AuthApplication extends Application {
         title.setWrapText(true);
 
         Label subtitle = new Label(
-                "Connecte un compte existant de la base first_project et arrive directement sur un espace desktop violet et blanc."
+                "Connecte un compte existant de la base lobbyjava et arrive directement sur un espace desktop violet et blanc."
         );
         subtitle.getStyleClass().add("brand-subtitle");
         subtitle.setWrapText(true);
@@ -147,7 +271,7 @@ public class AuthApplication extends Application {
         );
         featureCard.getStyleClass().add("feature-card");
 
-        VBox brandPanel = new VBox(26, badge, title, subtitle, featureCard);
+        VBox brandPanel = new VBox(26, logoView, badge, title, subtitle, featureCard);
         brandPanel.getStyleClass().add("brand-panel");
         brandPanel.setAlignment(Pos.CENTER_LEFT);
         return brandPanel;
@@ -209,6 +333,12 @@ public class AuthApplication extends Application {
         loginEmailField = createTextField("Adresse email");
         loginPasswordField = createPasswordField("Mot de passe");
 
+        loginRoleComboBox = new ComboBox<>();
+        loginRoleComboBox.getItems().addAll("client", "admin", "sponsor");
+        loginRoleComboBox.setValue("client");
+        loginRoleComboBox.getStyleClass().add("input-field");
+        loginRoleComboBox.setMaxWidth(Double.MAX_VALUE);
+
         Label hint = new Label("Utilise un compte deja existant dans la table user.");
         hint.getStyleClass().add("helper-text");
         hint.setWrapText(true);
@@ -239,14 +369,22 @@ public class AuthApplication extends Application {
         HBox footer = new HBox(6, footerText, goSignup);
         footer.setAlignment(Pos.CENTER_LEFT);
 
+        Hyperlink backToEntry = new Hyperlink("← Back to Selection");
+        backToEntry.getStyleClass().add("inline-link");
+        backToEntry.setStyle("-fx-text-fill: #9CA3AF;");
+        backToEntry.setOnAction(event -> scene.setRoot(createEntrySelector()));
+
         VBox form = new VBox(14,
                 createSectionLabel("Login"),
                 loginEmailField,
                 loginPasswordField,
+                new Label("Accéder en tant que :"),
+                loginRoleComboBox,
                 hint,
                 loginButton,
                 loginMessageLabel,
-                footer
+                footer,
+                backToEntry
         );
         form.getStyleClass().add("form-box");
         return form;
@@ -318,6 +456,11 @@ public class AuthApplication extends Application {
         HBox footer = new HBox(6, footerText, goLogin);
         footer.setAlignment(Pos.CENTER_LEFT);
 
+        Hyperlink backToEntry = new Hyperlink("← Back to Selection");
+        backToEntry.getStyleClass().add("inline-link");
+        backToEntry.setStyle("-fx-text-fill: #9CA3AF;");
+        backToEntry.setOnAction(event -> scene.setRoot(createEntrySelector()));
+
         VBox form = new VBox(14,
                 createSectionLabel("Sign Up"),
                 signupNameField,
@@ -333,7 +476,8 @@ public class AuthApplication extends Application {
                 signupButton,
                 signupMessageLabel,
                 terms,
-                footer
+                footer,
+                backToEntry
         );
         form.getStyleClass().add("form-box");
 
@@ -391,23 +535,34 @@ public class AuthApplication extends Application {
             return;
         }
 
+        System.out.println("Tentative d'authentification pour : " + email);
         Optional<User> authenticatedUser = userService.authenticate(email, password);
         if (authenticatedUser.isPresent()) {
             currentUser = authenticatedUser.get();
-            if ("admin".equals(currentUser.getRole())) {
+            String chosenRole = loginRoleComboBox.getValue();
+            System.out.println("Utilisateur authentifié : " + currentUser.getUsername() + " (Role DB: " + currentUser.getRole() + ", Role choisi: " + chosenRole + ")");
+            
+            // On vérifie si l'utilisateur a le droit d'utiliser ce rôle (Case insensitive)
+            if (!currentUser.getRole().equalsIgnoreCase(chosenRole) && !"admin".equalsIgnoreCase(currentUser.getRole())) {
+                System.out.println("Accès refusé : rôle incorrect.");
+                updateMessage(loginMessageLabel, "Vous n'avez pas les droits pour accéder en tant que " + chosenRole, false);
+                return;
+            }
+
+            if ("admin".equalsIgnoreCase(chosenRole)) {
                 showAdminDashboard();
-            } else if ("sponsor".equals(currentUser.getRole())) {
-                showDashboard("Sponsoring");
             } else {
-                showDashboard("Home");
+                showWebFrontOffice(chosenRole);
             }
         } else {
+            System.out.println("Authentification échouée : email ou mot de passe incorrect.");
             markError(loginEmailField, loginPasswordField);
             updateMessage(loginMessageLabel, "Email ou mot de passe incorrect.", false);
         }
     }
 
     private void showAdminDashboard() {
+        System.out.println("Lancement du BackOffice Admin (JavaFX)...");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AdminDashboard.fxml"));
             Parent root = loader.load();
@@ -417,14 +572,62 @@ public class AuthApplication extends Application {
             controller.setMainApp(this);
 
             scene.setRoot(root);
-            primaryStage.setTitle("Admin Dashboard - " + (currentUser.getNom() != null ? currentUser.getNom() : currentUser.getUsername()));
-            
-            // On s'assure que la deconnexion fonctionne
-            // (Note: on peut aussi injecter AuthApplication au controller)
+            primaryStage.setTitle("Lobby.GG - Admin Dashboard");
         } catch (Exception e) {
             System.err.println("Erreur de chargement du dashboard : " + e.getMessage());
             e.printStackTrace();
             updateMessage(loginMessageLabel, "Erreur lors du chargement du dashboard admin : " + e.getMessage(), false);
+        }
+    }
+
+    private void showWebFrontOffice(String role) {
+        System.out.println("Lancement du FrontOffice (Web View) pour : " + role);
+        try {
+            WebView webView = new WebView();
+            webView.getEngine().setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+            WebEngine engine = webView.getEngine();
+            
+            // On pointe vers l'URL du serveur Spring Boot démarré dans Main.java
+            String url = "http://localhost:8081/login";
+            System.out.println("Tentative de chargement : " + url);
+            
+            engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+                System.out.println("WebView State: " + newState);
+                if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
+                    System.out.println("Page chargée avec succès : " + engine.getLocation());
+                }
+                if (newState == javafx.concurrent.Worker.State.FAILED) {
+                    System.err.println("Erreur de chargement WebView : " + engine.getLoadWorker().getException());
+                    engine.loadContent("<html><body style='background:#0B0E14; color:white; font-family:sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; flex-direction:column;'>" +
+                            "<h1 style='color:#7C3AED'>Erreur de Connexion</h1>" +
+                            "<p>Le serveur Lobby.GG (Port 8081) ne répond pas.</p>" +
+                            "<p style='font-size:12px; color:gray;'>Détails : " + engine.getLoadWorker().getException() + "</p>" +
+                            "<button onclick='window.location.reload()' style='background:#7C3AED; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;'>Réessayer</button>" +
+                            "</body></html>");
+                }
+            });
+
+            engine.loadContent("<html><body style='background:#0B0E14; color:white; font-family:sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; flex-direction:column;'>" +
+                    "<div style='width:50px; height:50px; border:5px solid #161B22; border-top:5px solid #7C3AED; border-radius:50%; animation:spin 1s linear infinite;'></div>" +
+                    "<h2 style='margin-top:20px; font-weight:900; letter-spacing:-0.05em;'>LOBBY.GG</h2>" +
+                    "<p style='color:gray; font-size:14px;'>Chargement de votre portail sécurisé...</p>" +
+                    "<style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>" +
+                    "</body></html>");
+            
+            // On attend un court instant pour laisser Spring Boot finir de s'initialiser si besoin
+            javafx.animation.PauseTransition delay = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1));
+            delay.setOnFinished(e -> engine.load(url));
+            delay.play();
+
+            VBox webContainer = new VBox(webView);
+            VBox.setVgrow(webView, Priority.ALWAYS);
+            
+            scene.setRoot(webContainer);
+            primaryStage.setTitle("Lobby.GG - Portal " + role.toUpperCase());
+            primaryStage.setMaximized(true);
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'ouverture de la Web View : " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -495,10 +698,12 @@ public class AuthApplication extends Application {
         );
         if (userService.addUser(newUser)) {
             currentUser = userService.findByEmail(email).orElse(newUser);
-            if ("admin".equals(currentUser.getRole())) {
+            String chosenRole = currentUser.getRole();
+            
+            if ("admin".equalsIgnoreCase(chosenRole)) {
                 showAdminDashboard();
             } else {
-                showDashboard("Home");
+                showWebFrontOffice(chosenRole);
             }
         } else {
             updateMessage(signupMessageLabel, "Creation du compte impossible. Verifie la structure SQL de la table user.", false);
@@ -539,13 +744,23 @@ public class AuthApplication extends Application {
     private VBox createSidebar() {
         navigationButtons.clear();
 
-        Label appLabel = new Label("First Project");
+        ImageView logoView = new ImageView();
+        var stream = getClass().getResourceAsStream("/images/logo.png");
+        if (stream != null) {
+            logoView.setImage(new Image(stream));
+        } else {
+            System.err.println("Logo introuvable : /images/logo.png");
+        }
+        logoView.setFitWidth(120);
+        logoView.setPreserveRatio(true);
+
+        Label appLabel = new Label("Lobby.GG");
         appLabel.getStyleClass().add("sidebar-app-title");
 
         Label appSubtitle = new Label("Desktop navigation");
         appSubtitle.getStyleClass().add("sidebar-app-subtitle");
 
-        VBox header = new VBox(4, appLabel, appSubtitle);
+        VBox header = new VBox(10, logoView, appLabel, appSubtitle);
         header.getStyleClass().add("sidebar-header");
 
         Label nameLabel = new Label(currentUser.getDisplayName());
@@ -653,7 +868,7 @@ public class AuthApplication extends Application {
                             "Cette section est prete pour afficher les sponsors, contrats et actions marketing lies a ton projet."),
                     createMetricsRow(
                             createMetricCard("Etat", "Pret", "Navigation JavaFX operationnelle"),
-                            createMetricCard("Base", "first_project", "Connexion JDBC reutilisable"),
+                            createMetricCard("Base", "lobbyjava", "Connexion JDBC reutilisable"),
                             createMetricCard("Suite", "CRUD sponsoring", "A brancher ensuite")
                     )
             };
@@ -681,7 +896,7 @@ public class AuthApplication extends Application {
                     createMetricsRow(
                             createMetricCard("Home", "Actif", "Page affichee apres login"),
                             createMetricCard("Profil", safeValue(currentUser.getUsername()), "Compte charge depuis MySQL"),
-                            createMetricCard("Base", "first_project", "Connexion JDBC validee dans l'application")
+                            createMetricCard("Base", "lobbyjava", "Connexion JDBC validee dans l'application")
                     ),
                     createMetricsRow(
                             createMetricCard("Sponsoring", "Pret", "Bouton et espace disponibles"),

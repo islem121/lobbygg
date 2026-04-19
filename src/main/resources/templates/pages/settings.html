@@ -1,0 +1,58 @@
+<div th:fragment="content">
+    <div class="max-w-4xl mx-auto space-y-12">
+        <header class="space-y-4">
+            <span class="text-xs font-black text-lobby-violet uppercase tracking-[0.2em]">Account Management</span>
+            <h1 class="text-5xl font-black text-white font-poppins tracking-tighter">Settings</h1>
+            <p class="text-gray-400 leading-relaxed">Customize your professional identity, manage your privacy, and configure your notification preferences.</p>
+        </header>
+
+        <div class="glass rounded-[3rem] overflow-hidden flex flex-col md:flex-row min-h-[600px]">
+            <!-- Sidebar -->
+            <aside class="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-lobby-dark-border p-8 space-y-2">
+                <button class="w-full text-left px-6 py-4 rounded-2xl bg-lobby-violet/10 text-lobby-violet font-black text-xs uppercase tracking-widest transition-all">Profile Settings</button>
+                <button class="w-full text-left px-6 py-4 rounded-2xl text-gray-500 hover:text-white hover:bg-white/5 font-black text-xs uppercase tracking-widest transition-all">Account Security</button>
+                <button class="w-full text-left px-6 py-4 rounded-2xl text-gray-500 hover:text-white hover:bg-white/5 font-black text-xs uppercase tracking-widest transition-all">Privacy & Safety</button>
+                <button class="w-full text-left px-6 py-4 rounded-2xl text-gray-500 hover:text-white hover:bg-white/5 font-black text-xs uppercase tracking-widest transition-all">Notifications</button>
+                <button class="w-full text-left px-6 py-4 rounded-2xl text-gray-500 hover:text-white hover:bg-white/5 font-black text-xs uppercase tracking-widest transition-all">Payment Methods</button>
+                <div class="pt-8 mt-8 border-t border-lobby-dark-border">
+                    <button class="w-full text-left px-6 py-4 rounded-2xl text-red-500 hover:bg-red-500/10 font-black text-xs uppercase tracking-widest transition-all">Delete Account</button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-grow p-12 space-y-10">
+                <section class="space-y-6">
+                    <h3 class="text-xl font-black text-white font-poppins tracking-tight">Public Profile</h3>
+                    <div class="grid grid-cols-1 gap-6">
+                        <div class="flex items-center space-x-6 mb-4">
+                            <div class="w-24 h-24 rounded-[2rem] overflow-hidden border-4 border-lobby-dark-border shadow-xl">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Avatar">
+                            </div>
+                            <button class="bg-white/5 hover:bg-white/10 text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest border border-white/10 transition-all">Change Avatar</button>
+                            <button class="text-red-500 text-xs font-black uppercase tracking-widest hover:underline">Remove</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Display Name</label>
+                                <input type="text" value="Felix 'Nightshade'" class="w-full bg-lobby-dark-card border border-lobby-dark-border rounded-2xl px-6 py-3.5 text-white focus:outline-none focus:border-lobby-violet text-sm font-medium transition-all">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Username</label>
+                                <input type="text" value="nightshade_esports" class="w-full bg-lobby-dark-card border border-lobby-dark-border rounded-2xl px-6 py-3.5 text-white focus:outline-none focus:border-lobby-violet text-sm font-medium transition-all">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Bio</label>
+                            <textarea class="w-full bg-lobby-dark-card border border-lobby-dark-border rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-lobby-violet text-sm font-medium transition-all h-32 resize-none">Professional CS2 and Valorant player currently competing in the EU region. Dedicated to building the next generation of esports athletes through the Lobby.GG ecosystem.</textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="pt-8 border-t border-lobby-dark-border flex justify-end space-x-4">
+                    <button class="px-8 py-3 text-gray-500 hover:text-white font-black text-xs uppercase tracking-widest transition-colors">Discard Changes</button>
+                    <button class="bg-lobby-violet hover:bg-lobby-violet-hover text-white px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all violet-glow transform hover:-translate-y-1">Save Profile</button>
+                </div>
+            </main>
+        </div>
+    </div>
+</div>

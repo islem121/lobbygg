@@ -1,0 +1,93 @@
+<div th:fragment="content">
+    <div class="space-y-12">
+        <header class="flex flex-col md:flex-row justify-between items-end gap-6">
+            <div class="space-y-4">
+                <span class="text-xs font-black text-lobby-violet uppercase tracking-[0.2em]">News & Insights</span>
+                <h1 class="text-5xl font-black text-white font-poppins tracking-tighter">Esports Blog</h1>
+                <p class="text-gray-400 max-w-lg leading-relaxed">Stay updated with the latest in competitive gaming, meta shifts, and exclusive sponsor interviews.</p>
+            </div>
+            <div class="flex space-x-2 text-sm font-bold overflow-x-auto pb-2 scrollbar-hide">
+                <button class="bg-lobby-violet text-white px-6 py-2 rounded-xl transition-all">All</button>
+                <button class="text-gray-500 hover:text-white px-6 py-2 transition-colors">Interviews</button>
+                <button class="text-gray-500 hover:text-white px-6 py-2 transition-colors">Tournaments</button>
+                <button class="text-gray-500 hover:text-white px-6 py-2 transition-colors">Tech</button>
+                <button class="text-gray-500 hover:text-white px-6 py-2 transition-colors">Guides</button>
+            </div>
+        </header>
+
+        <!-- Featured Article -->
+        <div class="relative rounded-[2.5rem] overflow-hidden group h-[600px] violet-glow">
+            <img src="https://images.unsplash.com/photo-1542751110-97427bbecf20?auto=format&fit=crop&q=80&w=1600" alt="Featured" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000">
+            <div class="absolute inset-0 bg-gradient-to-t from-lobby-dark-bg via-lobby-dark-bg/60 to-transparent"></div>
+            <div class="absolute bottom-0 left-0 p-12 w-full lg:w-2/3">
+                <span class="bg-lobby-violet text-white text-[10px] font-black px-3 py-1 rounded uppercase tracking-[0.2em] mb-4 inline-block">Featured Story</span>
+                <h2 class="text-5xl font-black text-white mb-6 font-poppins tracking-tighter leading-tight group-hover:text-purple-200 transition-colors cursor-pointer">The Rise of Lobby.GG: How a Professional Ecosystem is Changing Esports Forever</h2>
+                <div class="flex items-center space-x-6">
+                    <div class="flex items-center space-x-3">
+                        <img class="w-10 h-10 rounded-full border-2 border-lobby-violet" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" alt="Author">
+                        <div>
+                            <p class="text-sm font-bold text-white">Lobby.GG Team</p>
+                            <p class="text-xs text-gray-500 font-semibold uppercase">Sept 12, 2026</p>
+                        </div>
+                    </div>
+                    <div class="h-8 w-px bg-lobby-dark-border"></div>
+                    <div class="flex items-center space-x-2 text-gray-400 text-sm font-bold">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span>8 min read</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Latest Posts Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Article 1 -->
+            <article class="group cursor-pointer flex flex-col h-full">
+                <div class="relative h-64 rounded-3xl overflow-hidden mb-6">
+                    <img src="https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&q=80&w=800" alt="News" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                    <div class="absolute top-4 right-4 bg-lobby-dark-bg/80 backdrop-blur-md px-3 py-1.5 rounded-xl text-[10px] font-black text-lobby-violet uppercase tracking-widest border border-lobby-violet/20">Guides</div>
+                </div>
+                <div class="flex-grow space-y-3">
+                    <h3 class="text-xl font-black text-white leading-tight group-hover:text-lobby-violet transition-colors tracking-tight">10 Pro Tips to Get Sponsored as a Solo Player in 2026</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed line-clamp-2 font-medium">Learn the secrets of the pros on how to attract global brands and secure your first professional contract.</p>
+                </div>
+                <div class="mt-6 pt-6 border-t border-lobby-dark-border flex items-center justify-between">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Sept 10, 2026</span>
+                    <span class="text-lobby-violet font-black text-xs uppercase tracking-widest group-hover:translate-x-1 transition-transform inline-block">Read &rarr;</span>
+                </div>
+            </article>
+
+            <!-- Article 2 -->
+            <article class="group cursor-pointer flex flex-col h-full">
+                <div class="relative h-64 rounded-3xl overflow-hidden mb-6">
+                    <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=800" alt="News" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                    <div class="absolute top-4 right-4 bg-lobby-dark-bg/80 backdrop-blur-md px-3 py-1.5 rounded-xl text-[10px] font-black text-lobby-violet uppercase tracking-widest border border-lobby-violet/20">Esports</div>
+                </div>
+                <div class="flex-grow space-y-3">
+                    <h3 class="text-xl font-black text-white leading-tight group-hover:text-lobby-violet transition-colors tracking-tight">Copenhagen Major: The Underdogs Who Shocked the World</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed line-clamp-2 font-medium">A deep dive into the incredible run of Team "Apex" during the last weekend's regional qualifiers.</p>
+                </div>
+                <div class="mt-6 pt-6 border-t border-lobby-dark-border flex items-center justify-between">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Sept 08, 2026</span>
+                    <span class="text-lobby-violet font-black text-xs uppercase tracking-widest group-hover:translate-x-1 transition-transform inline-block">Read &rarr;</span>
+                </div>
+            </article>
+
+            <!-- Article 3 -->
+            <article class="group cursor-pointer flex flex-col h-full">
+                <div class="relative h-64 rounded-3xl overflow-hidden mb-6">
+                    <img src="https://images.unsplash.com/photo-1614018424573-69020986794d?auto=format&fit=crop&q=80&w=800" alt="News" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                    <div class="absolute top-4 right-4 bg-lobby-dark-bg/80 backdrop-blur-md px-3 py-1.5 rounded-xl text-[10px] font-black text-lobby-violet uppercase tracking-widest border border-lobby-violet/20">Tech</div>
+                </div>
+                <div class="flex-grow space-y-3">
+                    <h3 class="text-xl font-black text-white leading-tight group-hover:text-lobby-violet transition-colors tracking-tight">The Best Gaming Setup for 2026: Performance Meets Style</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed line-clamp-2 font-medium">We review the top hardware components and peripherals that every pro gamer should have in their arsenal.</p>
+                </div>
+                <div class="mt-6 pt-6 border-t border-lobby-dark-border flex items-center justify-between">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Sept 05, 2026</span>
+                    <span class="text-lobby-violet font-black text-xs uppercase tracking-widest group-hover:translate-x-1 transition-transform inline-block">Read &rarr;</span>
+                </div>
+            </article>
+        </div>
+    </div>
+</div>

@@ -1,91 +1,107 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml/1" 
+<BorderPane xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.example.controller.AdminDashboardController"
             stylesheets="@../styles/style.css">
-    
-    <!-- Sidebar -->
     <left>
         <VBox styleClass="sidebar" spacing="10">
-            <Label text="ADMIN PANEL" styleClass="sidebar-title"/>
-            
+            <ImageView fitWidth="120" preserveRatio="true">
+                <Image url="@../images/logo.png"/>
+            </ImageView>
+            <Label text="Lobby.GG ADMIN" styleClass="sidebar-title"/>
+
             <Button text="Tableau de bord" onAction="#showStats" styleClass="nav-button, active" fx:id="statsBtn"/>
             <Button text="Gestion Utilisateurs" onAction="#showUserManagement" styleClass="nav-button" fx:id="userBtn"/>
             <Button text="Gestion Golds" onAction="#showGoldManagement" styleClass="nav-button" fx:id="goldBtn"/>
-            <Button text="Paramètres" styleClass="nav-button"/>
-            
-            <VBox VBox.vgrow="ALWAYS"/> <!-- Spacer -->
-            
+            <Button text="Gestion Sponsors" onAction="#showSponsorManagement" styleClass="nav-button" fx:id="sponsorBtn"/>
+            <Button text="Gestion Tournois" onAction="#showTournamentManagement" styleClass="nav-button" fx:id="tournamentBtn"/>
+            <Button text="Marketplace" onAction="#showMarketplaceManagement" styleClass="nav-button" fx:id="marketplaceBtn"/>
+            <Button text="Blog" onAction="#showBlogManagement" styleClass="nav-button" fx:id="blogBtn"/>
+
+            <VBox VBox.vgrow="ALWAYS"/>
+
             <Button text="Déconnexion" onAction="#handleLogout" styleClass="logout-btn"/>
         </VBox>
     </left>
-    
-    <!-- Main Area -->
+
     <center>
         <VBox>
-            <!-- Header -->
             <HBox styleClass="header" alignment="CENTER_LEFT" spacing="20">
-                <Label text="Tableau de bord" styleClass="header-title"/>
+                <Label text="Tableau de bord admin" styleClass="header-title"/>
                 <HBox HBox.hgrow="ALWAYS"/>
                 <Label fx:id="adminNameLabel" text="Admin" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
                 <Circle radius="15" fill="#f39c12"/>
             </HBox>
-            
-            <!-- Content -->
+
             <StackPane fx:id="contentStack" VBox.vgrow="ALWAYS">
                 <ScrollPane fx:id="statsView" fitToWidth="true" style="-fx-background-color: transparent;">
                     <VBox styleClass="content-area" spacing="30">
-                        <Label text="Statistiques Globales" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1a2a44;"/>
-                        
+                        <Label text="Vue d'ensemble du backoffice" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1a2a44;"/>
+
                         <FlowPane hgap="20" vgap="20">
-                            <!-- Users Card -->
                             <VBox styleClass="card">
                                 <Label text="UTILISATEURS" styleClass="card-title"/>
                                 <Label fx:id="usersCountLabel" text="0" styleClass="card-value"/>
-                                <HBox alignment="BOTTOM_RIGHT">
-                                    <Label text="👥" styleClass="card-icon"/>
-                                </HBox>
+                                <HBox alignment="BOTTOM_RIGHT"><Label text="Users" styleClass="card-icon"/></HBox>
                             </VBox>
-                            
-                            <!-- Reservations Card -->
                             <VBox styleClass="card">
-                                <Label text="RÉSERVATIONS" styleClass="card-title"/>
-                                <Label fx:id="reservationsCountLabel" text="0" styleClass="card-value"/>
-                                <HBox alignment="BOTTOM_RIGHT">
-                                    <Label text="📅" styleClass="card-icon"/>
-                                </HBox>
+                                <Label text="SPONSORS" styleClass="card-title"/>
+                                <Label fx:id="sponsorsCountLabel" text="0" styleClass="card-value"/>
+                                <HBox alignment="BOTTOM_RIGHT"><Label text="Sponsors" styleClass="card-icon"/></HBox>
                             </VBox>
-                            
-                            <!-- Articles Card -->
                             <VBox styleClass="card">
-                                <Label text="ARTICLES" styleClass="card-title"/>
-                                <Label fx:id="articlesCountLabel" text="0" styleClass="card-value"/>
-                                <HBox alignment="BOTTOM_RIGHT">
-                                    <Label text="📝" styleClass="card-icon"/>
-                                </HBox>
+                                <Label text="TOURNOIS" styleClass="card-title"/>
+                                <Label fx:id="tournamentsCountLabel" text="0" styleClass="card-value"/>
+                                <HBox alignment="BOTTOM_RIGHT"><Label text="Tournois" styleClass="card-icon"/></HBox>
+                            </VBox>
+                            <VBox styleClass="card">
+                                <Label text="CATEGORIES" styleClass="card-title"/>
+                                <Label fx:id="categoriesCountLabel" text="0" styleClass="card-value"/>
+                                <HBox alignment="BOTTOM_RIGHT"><Label text="Cat" styleClass="card-icon"/></HBox>
+                            </VBox>
+                            <VBox styleClass="card">
+                                <Label text="PRODUITS" styleClass="card-title"/>
+                                <Label fx:id="productsCountLabel" text="0" styleClass="card-value"/>
+                                <HBox alignment="BOTTOM_RIGHT"><Label text="Prod" styleClass="card-icon"/></HBox>
+                            </VBox>
+                            <VBox styleClass="card">
+                                <Label text="COMMANDES" styleClass="card-title"/>
+                                <Label fx:id="ordersCountLabel" text="0" styleClass="card-value"/>
+                                <HBox alignment="BOTTOM_RIGHT"><Label text="Cmd" styleClass="card-icon"/></HBox>
+                            </VBox>
+                            <VBox styleClass="card">
+                                <Label text="POSTS" styleClass="card-title"/>
+                                <Label fx:id="postsCountLabel" text="0" styleClass="card-value"/>
+                                <HBox alignment="BOTTOM_RIGHT"><Label text="Posts" styleClass="card-icon"/></HBox>
+                            </VBox>
+                            <VBox styleClass="card">
+                                <Label text="COMMENTAIRES" styleClass="card-title"/>
+                                <Label fx:id="commentsCountLabel" text="0" styleClass="card-value"/>
+                                <HBox alignment="BOTTOM_RIGHT"><Label text="Com" styleClass="card-icon"/></HBox>
                             </VBox>
                         </FlowPane>
-                        
-                        <!-- Additional Actions -->
+
                         <HBox spacing="20">
-                            <Button text="Exporter les données" styleClass="btn-primary"/>
-                            <Button text="Générer un rapport" styleClass="btn-primary"/>
+                            <Button text="Gérer Sponsors" onAction="#showSponsorManagement" styleClass="btn-primary"/>
+                            <Button text="Gérer Tournois" onAction="#showTournamentManagement" styleClass="btn-primary"/>
+                            <Button text="Gérer Marketplace" onAction="#showMarketplaceManagement" styleClass="btn-primary"/>
+                            <Button text="Gérer Blog" onAction="#showBlogManagement" styleClass="btn-primary"/>
                         </HBox>
                     </VBox>
                 </ScrollPane>
             </StackPane>
         </VBox>
     </center>
-    
 </BorderPane>

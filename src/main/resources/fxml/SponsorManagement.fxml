@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.controller.SponsorManagementController"
+      spacing="20" styleClass="content-area"
+      stylesheets="@../styles/style.css">
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Gestion des Sponsors" styleClass="header-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Ajouter Sponsor" onAction="#handleAddSponsor" styleClass="btn-primary"/>
+        <Button text="Rafraîchir" onAction="#loadSponsors" styleClass="btn-primary"/>
+    </HBox>
+
+    <TableView fx:id="sponsorTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="idCol" text="ID" prefWidth="60"/>
+            <TableColumn fx:id="companyCol" text="Société" prefWidth="180"/>
+            <TableColumn fx:id="amountCol" text="Montant" prefWidth="100"/>
+            <TableColumn fx:id="targetCol" text="Cible" prefWidth="100"/>
+            <TableColumn fx:id="userIdCol" text="ID Sponsor" prefWidth="100"/>
+            <TableColumn fx:id="createdCol" text="Créé le" prefWidth="150"/>
+            <TableColumn fx:id="actionsCol" text="Actions" prefWidth="180"/>
+        </columns>
+    </TableView>
+</VBox>

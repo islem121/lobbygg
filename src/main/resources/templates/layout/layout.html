@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lobby.GG - Esports Social Network</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lobby-violet': '#7C3AED',
+                        'lobby-violet-hover': '#6D28D9',
+                        'lobby-dark-bg': '#0B0E14',
+                        'lobby-dark-card': '#161B22',
+                        'lobby-dark-border': '#30363D',
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'manrope': ['Manrope', 'sans-serif'],
+                        'poppins': ['Poppins', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0B0E14;
+            color: #E6EDF3;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass {
+            background: rgba(22, 27, 34, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+        }
+        .violet-glow {
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.25);
+        }
+        .nav-active {
+            color: #7C3AED;
+            border-bottom: 2px solid #7C3AED;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <div th:replace="~{components/navbar :: navbar}"></div>
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div th:replace="~{${content} :: content}"></div>
+    </main>
+
+    <div th:replace="~{components/footer :: footer}"></div>
+</body>
+</html>

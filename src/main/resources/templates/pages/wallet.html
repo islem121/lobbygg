@@ -1,0 +1,91 @@
+<div th:fragment="content">
+    <div class="space-y-12">
+        <header class="flex flex-col md:flex-row justify-between items-end gap-6">
+            <div class="space-y-4">
+                <span class="text-xs font-black text-lobby-violet uppercase tracking-[0.2em]">Finances</span>
+                <h1 class="text-5xl font-black text-white font-poppins tracking-tighter">My Wallet</h1>
+                <p class="text-gray-400 max-w-lg leading-relaxed">Manage your Gold virtual currency, track your earnings from tournaments, and monitor your Marketplace purchases.</p>
+            </div>
+            <button class="bg-lobby-violet hover:bg-lobby-violet-hover text-white px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all violet-glow transform hover:-translate-y-1">Add Gold</button>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-4 space-y-8">
+                <div class="glass rounded-[3rem] p-10 bg-gradient-to-br from-lobby-violet to-purple-900 violet-glow relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                    <div class="relative z-10 space-y-8">
+                        <div>
+                            <span class="text-xs font-black text-purple-200 uppercase tracking-widest mb-2 block">Total Balance</span>
+                            <div class="flex items-end space-x-3">
+                                <h2 class="text-6xl font-black text-white font-poppins" th:text="${#numbers.formatDecimal(account.solde, 0, 'COMMA', 2, 'POINT')}">4,250</h2>
+                                <span class="text-lg font-black text-purple-300 mb-2 uppercase tracking-widest">Gold</span>
+                            </div>
+                        </div>
+                        <div class="pt-8 border-t border-white/10">
+                            <form th:action="@{/wallet/recharge}" method="post" class="space-y-4">
+                                <input type="number" name="amount" step="10" min="10" value="100" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-purple-300 focus:outline-none focus:border-white transition-all text-sm font-bold" placeholder="Amount to recharge">
+                                <button type="submit" class="w-full bg-white text-lobby-violet hover:bg-purple-100 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all">Quick Recharge</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass rounded-[2.5rem] p-8 space-y-6">
+                    <h4 class="text-xs font-black text-white uppercase tracking-widest border-b border-lobby-dark-border pb-4">Exchange Rates</h4>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-lobby-dark-bg rounded-lg border border-lobby-dark-border flex items-center justify-center text-xs font-black">€</div>
+                                <span class="text-sm font-bold text-gray-400">Euro</span>
+                            </div>
+                            <span class="text-sm font-black text-white">100 G = 1.00 €</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-lobby-dark-bg rounded-lg border border-lobby-dark-border flex items-center justify-center text-xs font-black">$</div>
+                                <span class="text-sm font-bold text-gray-400">US Dollar</span>
+                            </div>
+                            <span class="text-sm font-black text-white">100 G = 1.10 $</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="lg:col-span-8 space-y-8">
+                <div class="glass rounded-[3rem] overflow-hidden">
+                    <div class="px-10 py-8 border-b border-lobby-dark-border flex justify-between items-center">
+                        <h3 class="text-xl font-black text-white font-poppins tracking-tight">Recent Transactions</h3>
+                    </div>
+                    <div class="p-4 overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                                <tr>
+                                    <th class="px-6 py-4">ID</th>
+                                    <th class="px-6 py-4">Type</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4">Date</th>
+                                    <th class="px-6 py-4 text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm font-bold divide-y divide-lobby-dark-border/50">
+                                <tr th:each="op : ${history}" class="group hover:bg-white/5 transition-colors">
+                                    <td class="px-6 py-6 text-gray-400" th:text="${'#TXN-' + op.id}">#TXN-98234-A</td>
+                                    <td class="px-6 py-6 text-white" th:text="${op.type}">Marketplace Purchase</td>
+                                    <td class="px-6 py-6">
+                                        <span class="bg-green-500/10 text-green-500 px-3 py-1 rounded-lg text-[10px] uppercase tracking-widest border border-green-500/20" th:text="${op.status}">Success</span>
+                                    </td>
+                                    <td class="px-6 py-6 text-gray-500" th:text="${#temporals.format(op.date, 'MMM dd, yyyy')}">Sept 18, 2026</td>
+                                    <td class="px-6 py-6 text-right" th:classappend="${op.montant < 0 ? 'text-red-500' : 'text-green-500'}" th:text="${(op.montant < 0 ? '- ' : '+ ') + #numbers.formatDecimal(op.montant < 0 ? -op.montant : op.montant, 0, 'COMMA', 0, 'POINT') + ' G'}">- 450 G</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div th:if="${history.empty}" class="p-10 text-center text-gray-500 font-bold italic">
+                            No transactions yet.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

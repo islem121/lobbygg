@@ -1,0 +1,131 @@
+<div th:fragment="content">
+    <div class="space-y-12 max-w-7xl mx-auto">
+        <!-- Sponsor Header -->
+        <div class="glass rounded-[3.5rem] overflow-hidden violet-glow relative">
+            <!-- Banner -->
+            <div class="h-[350px] bg-blue-600 relative">
+                <div class="absolute inset-0 opacity-40 mix-blend-overlay">
+                    <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=1600" alt="Banner" class="w-full h-full object-cover">
+                </div>
+                <div class="absolute bottom-10 left-16 flex items-end space-x-8 z-10">
+                    <div class="w-48 h-48 rounded-[2.5rem] border-8 border-lobby-dark-bg overflow-hidden shadow-2xl bg-white p-6">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Intel-logo.svg" alt="Sponsor Logo" class="w-full h-full object-contain">
+                    </div>
+                    <div class="pb-4 space-y-4">
+                        <div class="flex items-center space-x-3">
+                            <h1 class="text-6xl font-black text-white font-poppins tracking-tighter">Intel Gaming</h1>
+                            <div class="bg-blue-500/20 p-2 rounded-xl border border-blue-500/30">
+                                <svg class="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zM9.493 11.615l-1.56-1.56a1 1 0 10-1.415 1.414l2.267 2.267a1 1 0 001.415 0l4.266-4.267a1 1 0 00-1.414-1.414l-3.56 3.56z"/></svg>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-8 text-sm font-bold text-blue-100 uppercase tracking-widest">
+                            <span class="flex items-center space-x-2">
+                                <div class="w-2 h-2 rounded-full bg-blue-400"></div>
+                                <span>Technology & Hardware</span>
+                            </span>
+                            <span class="flex items-center space-x-2">
+                                <div class="w-2 h-2 rounded-full bg-blue-400"></div>
+                                <span>Global Partner</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sub Header -->
+            <div class="px-16 py-8 flex justify-end items-center space-x-6 border-t border-lobby-dark-border bg-lobby-dark-bg/50 backdrop-blur-md">
+                <div class="flex items-center space-x-8 text-center">
+                    <div>
+                        <span class="block text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Sponsored Teams</span>
+                        <span class="text-xl font-black text-white">124</span>
+                    </div>
+                    <div class="h-8 w-px bg-lobby-dark-border"></div>
+                    <div>
+                        <span class="block text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Active Campaigns</span>
+                        <span class="text-xl font-black text-white">42</span>
+                    </div>
+                </div>
+                <button class="bg-lobby-violet hover:bg-lobby-violet-hover text-white px-12 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all violet-glow transform hover:-translate-y-1">Apply for Sponsorship</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <!-- Left: Info -->
+            <div class="lg:col-span-8 space-y-12">
+                <section class="glass rounded-[3rem] p-12 space-y-10">
+                    <div class="space-y-6">
+                        <h3 class="text-2xl font-black text-white font-poppins tracking-tighter uppercase tracking-widest">About Intel Gaming</h3>
+                        <p class="text-gray-400 leading-relaxed font-medium">Intel Gaming is dedicated to delivering the world's best gaming experiences through cutting-edge technology and innovation. We empower professional athletes and aspiring gamers to reach their full potential through elite sponsorship programs and high-performance hardware.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 pt-10 border-t border-lobby-dark-border/50">
+                        <div class="space-y-6">
+                            <h4 class="text-sm font-black text-white uppercase tracking-widest">Target Roles</h4>
+                            <div class="flex flex-wrap gap-3">
+                                <span class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-xs font-bold text-gray-300">Elite Gamers</span>
+                                <span class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-xs font-bold text-gray-300">Pro Teams</span>
+                                <span class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-xs font-bold text-gray-300">Content Creators</span>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <h4 class="text-sm font-black text-white uppercase tracking-widest">Active Regions</h4>
+                            <div class="flex flex-wrap gap-3">
+                                <span class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-xs font-bold text-gray-300">North America</span>
+                                <span class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-xs font-bold text-gray-300">Europe</span>
+                                <span class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-xs font-bold text-gray-300">Asia Pacific</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="space-y-8">
+                    <h3 class="text-2xl font-black text-white font-poppins tracking-tighter uppercase tracking-widest">Latest Campaigns</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="glass rounded-[2.5rem] p-8 space-y-6 group hover:border-lobby-violet transition-all duration-500">
+                            <div class="flex justify-between items-start">
+                                <div class="w-12 h-12 rounded-xl bg-lobby-violet/10 flex items-center justify-center text-lobby-violet">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                                <span class="bg-green-500/10 text-green-500 text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest border border-green-500/20">Open Now</span>
+                            </div>
+                            <h4 class="text-xl font-black text-white font-poppins tracking-tight group-hover:text-lobby-violet transition-colors">Core i9 Pro Series Launch</h4>
+                            <p class="text-sm text-gray-500 leading-relaxed line-clamp-2">Seeking top-tier CS2 and Valorant players for our upcoming hardware launch campaign. Global reach required.</p>
+                            <button class="text-lobby-violet text-xs font-black uppercase tracking-widest group-hover:translate-x-2 transition-transform inline-block">Learn More &rarr;</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right: Contacts -->
+            <aside class="lg:col-span-4 space-y-8">
+                <div class="glass rounded-[3rem] p-10 space-y-8">
+                    <h4 class="text-xs font-black text-white uppercase tracking-widest border-b border-lobby-dark-border pb-6 text-center">Company Info</h4>
+                    <div class="space-y-6 text-sm font-bold">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500 uppercase tracking-widest text-[10px]">Website</span>
+                            <a href="#" class="text-lobby-violet hover:underline">intel.com/gaming</a>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500 uppercase tracking-widest text-[10px]">Industry</span>
+                            <span class="text-white">Hardware</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500 uppercase tracking-widest text-[10px]">Location</span>
+                            <span class="text-white">Santa Clara, CA</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass rounded-[3rem] p-10 space-y-8">
+                    <h4 class="text-xs font-black text-white uppercase tracking-widest border-b border-lobby-dark-border pb-6 text-center">Top Sponsored Athletes</h4>
+                    <div class="flex -space-x-4 justify-center">
+                        <img class="w-14 h-14 rounded-full border-4 border-lobby-dark-bg violet-glow" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User">
+                        <img class="w-14 h-14 rounded-full border-4 border-lobby-dark-bg" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Max" alt="User">
+                        <img class="w-14 h-14 rounded-full border-4 border-lobby-dark-bg" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka" alt="User">
+                        <div class="w-14 h-14 rounded-full bg-lobby-dark-card border-4 border-lobby-dark-bg flex items-center justify-center text-[10px] font-black text-gray-500 uppercase tracking-tighter">+121</div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>

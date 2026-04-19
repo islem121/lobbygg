@@ -8,40 +8,51 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.StackPane;
 import org.example.AuthApplication;
+import org.example.service.BackofficeService;
 import org.example.service.UserService;
 
 import java.io.IOException;
 import java.util.Map;
 
 public class AdminDashboardController {
-
     @FXML private Label adminNameLabel;
     @FXML private Label usersCountLabel;
-    @FXML private Label reservationsCountLabel;
-    @FXML private Label articlesCountLabel;
+    @FXML private Label sponsorsCountLabel;
+    @FXML private Label tournamentsCountLabel;
+    @FXML private Label categoriesCountLabel;
+    @FXML private Label productsCountLabel;
+    @FXML private Label ordersCountLabel;
+    @FXML private Label postsCountLabel;
+    @FXML private Label commentsCountLabel;
     @FXML private StackPane contentStack;
     @FXML private ScrollPane statsView;
-    @FXML private Button statsBtn, userBtn, goldBtn;
+    @FXML private Button statsBtn;
+    @FXML private Button userBtn;
+    @FXML private Button goldBtn;
+    @FXML private Button sponsorBtn;
+    @FXML private Button tournamentBtn;
+    @FXML private Button marketplaceBtn;
+    @FXML private Button blogBtn;
 
     private final UserService userService = new UserService();
+    private final BackofficeService backofficeService = new BackofficeService();
     private AuthApplication mainApp;
 
     @FXML
     public void initialize() {
-        try {
-            loadStats();
-        } catch (Exception e) {
-            System.err.println("Erreur lors de l'initialisation du dashboard : " + e.getMessage());
-            e.printStackTrace();
-        }
+        loadStats();
     }
 
     private void loadStats() {
         Map<String, Integer> stats = userService.getGlobalStats();
-        
         usersCountLabel.setText(String.valueOf(stats.getOrDefault("Utilisateurs", 0)));
-        reservationsCountLabel.setText(String.valueOf(stats.getOrDefault("Reservations", 0)));
-        articlesCountLabel.setText(String.valueOf(stats.getOrDefault("Articles", 0)));
+        sponsorsCountLabel.setText(String.valueOf(backofficeService.getCount("sponsor")));
+        tournamentsCountLabel.setText(String.valueOf(backofficeService.getCount("tournament")));
+        categoriesCountLabel.setText(String.valueOf(backofficeService.getCount("category")));
+        productsCountLabel.setText(String.valueOf(backofficeService.getCount("product")));
+        ordersCountLabel.setText(String.valueOf(backofficeService.getCount("`order`")));
+        postsCountLabel.setText(String.valueOf(backofficeService.getCount("post")));
+        commentsCountLabel.setText(String.valueOf(backofficeService.getCount("comment")));
     }
 
     @FXML
@@ -60,6 +71,26 @@ public class AdminDashboardController {
         loadView("/fxml/GoldManagement.fxml", goldBtn);
     }
 
+    @FXML
+    private void showSponsorManagement() {
+        loadView("/fxml/SponsorManagement.fxml", sponsorBtn);
+    }
+
+    @FXML
+    private void showTournamentManagement() {
+        loadView("/fxml/TournamentManagement.fxml", tournamentBtn);
+    }
+
+    @FXML
+    private void showMarketplaceManagement() {
+        loadView("/fxml/MarketplaceManagement.fxml", marketplaceBtn);
+    }
+
+    @FXML
+    private void showBlogManagement() {
+        loadView("/fxml/BlogManagement.fxml", blogBtn);
+    }
+
     private void loadView(String fxmlPath, Button activeBtn) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
@@ -72,11 +103,13 @@ public class AdminDashboardController {
 
     private void setActiveView(Node view, Button activeBtn) {
         contentStack.getChildren().setAll(view);
-        
-        // Update button styles
         statsBtn.getStyleClass().remove("active");
         userBtn.getStyleClass().remove("active");
         goldBtn.getStyleClass().remove("active");
+        sponsorBtn.getStyleClass().remove("active");
+        tournamentBtn.getStyleClass().remove("active");
+        marketplaceBtn.getStyleClass().remove("active");
+        blogBtn.getStyleClass().remove("active");
         activeBtn.getStyleClass().add("active");
     }
 
@@ -92,8 +125,6 @@ public class AdminDashboardController {
     private void handleLogout() {
         if (mainApp != null) {
             mainApp.logout();
-        } else {
-            System.out.println("MainApp instance not set.");
         }
     }
 }

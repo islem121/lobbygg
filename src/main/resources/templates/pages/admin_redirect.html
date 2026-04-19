@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal | Lobby.GG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lobby-violet': '#7C3AED',
+                        'lobby-dark-bg': '#0B0E14',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-lobby-dark-bg min-h-screen flex items-center justify-center p-4 font-inter">
+    <div class="max-w-md w-full text-center space-y-8">
+        <div class="w-24 h-24 bg-lobby-violet rounded-3xl flex items-center justify-center mx-auto shadow-2xl shadow-lobby-violet/20">
+            <span class="text-white font-black text-5xl">L</span>
+        </div>
+        <div class="space-y-4">
+            <h1 class="text-3xl font-black text-white uppercase tracking-tighter">Admin Access Only</h1>
+            <p class="text-gray-400 leading-relaxed">You are logged in as an Administrator. Please use the <strong>Lobby.GG BackOffice Desktop Application</strong> to manage the ecosystem.</p>
+        </div>
+        <div class="pt-8 flex flex-col space-y-4">
+            <a href="/home" class="text-lobby-violet font-bold hover:underline transition-all">Go to User Feed</a>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="w-full bg-white/5 hover:bg-white/10 text-gray-400 font-bold py-4 rounded-2xl transition-all border border-white/10">Sign Out</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

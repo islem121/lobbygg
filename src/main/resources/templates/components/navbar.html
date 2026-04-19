@@ -1,0 +1,42 @@
+<div th:fragment="navbar" class="sticky top-0 z-50 glass border-b border-lobby-dark-border py-4">
+    <div class="container mx-auto px-4 flex justify-between items-center">
+        <div class="flex items-center space-x-8">
+            <a href="/home" class="flex items-center space-x-2 group">
+                <div class="w-10 h-10 bg-lobby-violet rounded-lg flex items-center justify-center violet-glow group-hover:bg-lobby-violet-hover transition-colors">
+                    <span class="text-white font-bold text-xl font-poppins">L</span>
+                </div>
+                <span class="text-2xl font-black font-poppins tracking-tight text-white group-hover:text-lobby-violet transition-colors">Lobby<span class="text-lobby-violet">.GG</span></span>
+            </a>
+            <div class="hidden md:flex items-center space-x-6 text-sm font-semibold text-gray-400">
+                <a href="/home" class="hover:text-white transition-colors">Home Feed</a>
+                <a href="/tournaments" class="hover:text-white transition-colors">Tournaments</a>
+                <a href="/marketplace" class="hover:text-white transition-colors">Marketplace</a>
+                <a href="/blog" class="hover:text-white transition-colors">Blog & News</a>
+                <a href="/wallet" class="hover:text-white transition-colors">Wallet</a>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div sec:authorize="isAuthenticated()" class="flex items-center space-x-4">
+                <a href="/messages" class="text-gray-400 hover:text-lobby-violet relative transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    </svg>
+                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-lobby-violet rounded-full"></span>
+                </a>
+                <a href="/profile" class="flex items-center space-x-3 group">
+                    <span class="hidden md:block text-sm font-bold text-gray-300 group-hover:text-white transition-colors" th:text="${currentUser.displayName}">Felix</span>
+                    <div class="w-10 h-10 rounded-full border-2 border-lobby-dark-border group-hover:border-lobby-violet overflow-hidden transition-all">
+                        <img th:src="${currentUser.photoUrl != null ? currentUser.photoUrl : 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + currentUser.username}" alt="User Avatar">
+                    </div>
+                </a>
+                <form th:action="@{/logout}" method="post" class="m-0">
+                    <button type="submit" class="text-xs font-bold text-gray-500 hover:text-red-500 uppercase tracking-widest transition-colors">Logout</button>
+                </form>
+            </div>
+            <div sec:authorize="!isAuthenticated()" class="space-x-4">
+                <a href="/login" class="text-sm font-bold text-gray-400 hover:text-white transition-colors">Sign In</a>
+                <a href="/register" class="bg-lobby-violet hover:bg-lobby-violet-hover text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all violet-glow">Get Started</a>
+            </div>
+        </div>
+    </div>
+</div>

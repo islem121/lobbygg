@@ -1,0 +1,147 @@
+<div th:fragment="content">
+    <div class="glass rounded-[3rem] overflow-hidden violet-glow h-[800px] flex">
+        <!-- Sidebar: Conversation List -->
+        <aside class="w-1/3 border-r border-lobby-dark-border flex flex-col">
+            <div class="p-8 border-b border-lobby-dark-border space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-black text-white font-poppins tracking-tighter">Messages</h2>
+                    <button class="w-10 h-10 rounded-xl bg-lobby-violet/10 text-lobby-violet hover:bg-lobby-violet hover:text-white flex items-center justify-center transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                </div>
+                <div class="relative">
+                    <input type="text" placeholder="Search chats..." class="w-full bg-lobby-dark-card border border-lobby-dark-border rounded-2xl px-12 py-3 text-white focus:outline-none focus:border-lobby-violet text-xs font-medium transition-all">
+                    <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-grow overflow-y-auto scrollbar-hide divide-y divide-lobby-dark-border/50">
+                <!-- Chat Item 1 -->
+                <div class="p-6 bg-lobby-violet/5 border-l-4 border-lobby-violet group cursor-pointer">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl overflow-hidden border-2 border-lobby-violet">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Intel" alt="Intel">
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <div class="flex justify-between items-baseline mb-1">
+                                <h4 class="text-sm font-bold text-white truncate">Intel Gaming</h4>
+                                <span class="text-[10px] text-lobby-violet font-black uppercase tracking-widest">Just now</span>
+                            </div>
+                            <p class="text-xs text-gray-400 font-medium truncate">We loved your performance in the Copenhagen Major! Let's talk about a sponsorship deal.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Item 2 -->
+                <div class="p-6 hover:bg-white/5 group cursor-pointer transition-colors">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl overflow-hidden border-2 border-lobby-dark-border group-hover:border-gray-700 transition-colors">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Max" alt="Max">
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <div class="flex justify-between items-baseline mb-1">
+                                <h4 class="text-sm font-bold text-white truncate">Max "Apex" Henderson</h4>
+                                <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">2h ago</span>
+                            </div>
+                            <p class="text-xs text-gray-500 font-medium truncate">Are you down for some practice games tonight? Need to test the new meta.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Item 3 -->
+                <div class="p-6 hover:bg-white/5 group cursor-pointer transition-colors">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl overflow-hidden border-2 border-lobby-dark-border group-hover:border-gray-700 transition-colors">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Razer" alt="Razer">
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <div class="flex justify-between items-baseline mb-1">
+                                <h4 class="text-sm font-bold text-white truncate">Razer Support</h4>
+                                <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">1d ago</span>
+                            </div>
+                            <p class="text-xs text-gray-500 font-medium truncate">Your custom gaming gear order #TXN-98234-A has been shipped!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main: Chat Area -->
+        <main class="flex-grow flex flex-col bg-lobby-dark-bg/50 backdrop-blur-sm">
+            <!-- Chat Header -->
+            <div class="p-8 border-b border-lobby-dark-border flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <div class="w-14 h-14 rounded-[1.25rem] overflow-hidden border-2 border-lobby-violet shadow-lg">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Intel" alt="Intel">
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Intel Gaming</h3>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                            <span class="text-[10px] font-black text-green-500 uppercase tracking-widest">Sponsor Account</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex space-x-4">
+                    <button class="w-12 h-12 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all border border-white/10">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button class="w-12 h-12 rounded-xl bg-lobby-violet/10 hover:bg-lobby-violet text-lobby-violet hover:text-white flex items-center justify-center transition-all border border-lobby-violet/20">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages List -->
+            <div class="flex-grow overflow-y-auto p-12 space-y-8 scrollbar-hide">
+                <div class="flex justify-center">
+                    <span class="bg-white/5 px-4 py-1 rounded-lg text-[10px] font-black text-gray-500 uppercase tracking-widest border border-white/10">Today</span>
+                </div>
+
+                <!-- Recieved Message -->
+                <div class="flex items-end space-x-4 max-w-lg">
+                    <div class="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Intel" alt="Intel">
+                    </div>
+                    <div class="bg-lobby-dark-card border border-lobby-dark-border p-6 rounded-[2rem] rounded-bl-none">
+                        <p class="text-sm text-gray-300 leading-relaxed">Hello Nightshade! We've been following your progress on Lobby.GG. Your stats in the recent regional qualifiers are incredible. Are you available for a sponsorship meeting next week?</p>
+                        <span class="text-[10px] text-gray-500 font-black uppercase mt-4 block">10:42 AM</span>
+                    </div>
+                </div>
+
+                <!-- Sent Message -->
+                <div class="flex items-end space-x-4 max-w-lg ml-auto flex-row-reverse space-x-reverse">
+                    <div class="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Me">
+                    </div>
+                    <div class="bg-lobby-violet p-6 rounded-[2rem] rounded-br-none shadow-xl violet-glow">
+                        <p class="text-sm text-white leading-relaxed">Hello Intel Gaming! Thank you so much for reaching out. I'm definitely interested. I'm free on Tuesday at 2 PM UTC. Does that work for you?</p>
+                        <span class="text-[10px] text-purple-200 font-black uppercase mt-4 block">11:05 AM</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message Input -->
+            <div class="p-8 border-t border-lobby-dark-border bg-lobby-dark-bg/80 backdrop-blur-md">
+                <div class="flex items-center space-x-4">
+                    <button class="w-12 h-12 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <div class="flex-grow relative">
+                        <input type="text" placeholder="Write your message..." class="w-full bg-lobby-dark-card border border-lobby-dark-border rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-lobby-violet text-sm font-medium transition-all">
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex space-x-2">
+                            <button class="text-gray-500 hover:text-lobby-violet transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <button class="w-12 h-12 rounded-xl bg-lobby-violet hover:bg-lobby-violet-hover text-white flex items-center justify-center transition-all violet-glow transform hover:-translate-y-1 shadow-lg">
+                        <svg class="w-5 h-5 transform rotate-90" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>

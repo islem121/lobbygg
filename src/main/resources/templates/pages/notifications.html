@@ -1,0 +1,64 @@
+<div th:fragment="content">
+    <div class="max-w-4xl mx-auto space-y-10">
+        <header class="flex justify-between items-end">
+            <div class="space-y-4">
+                <span class="text-xs font-black text-lobby-violet uppercase tracking-[0.2em]">Activity Feed</span>
+                <h1 class="text-5xl font-black text-white font-poppins tracking-tighter">Notifications</h1>
+                <p class="text-gray-400">Stay updated with your latest interactions, tournament invites, and sponsor updates.</p>
+            </div>
+            <button class="text-lobby-violet text-xs font-black uppercase tracking-widest hover:underline">Mark all as read</button>
+        </header>
+
+        <div class="glass rounded-[3rem] overflow-hidden divide-y divide-lobby-dark-border/50">
+            <!-- Notification Item 1 -->
+            <div class="p-8 bg-lobby-violet/5 border-l-4 border-lobby-violet flex items-start space-x-6 group cursor-pointer transition-colors">
+                <div class="w-14 h-14 rounded-2xl bg-lobby-violet/10 flex items-center justify-center text-lobby-violet flex-shrink-0 group-hover:bg-lobby-violet group-hover:text-white transition-all">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="flex-grow space-y-2">
+                    <div class="flex justify-between items-baseline">
+                        <h4 class="text-lg font-bold text-white">New Tournament Invitation</h4>
+                        <span class="text-[10px] font-black text-lobby-violet uppercase tracking-widest">Just Now</span>
+                    </div>
+                    <p class="text-sm text-gray-400 font-medium">You have been invited to join the <span class="text-white font-bold">Copenhagen Masters 2026</span> regional qualifiers by Team Apex.</p>
+                    <div class="flex space-x-3 pt-4">
+                        <button class="bg-lobby-violet hover:bg-lobby-violet-hover text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all violet-glow">Accept</button>
+                        <button class="bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/10">Decline</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Item 2 -->
+            <div class="p-8 hover:bg-white/5 flex items-start space-x-6 group cursor-pointer transition-colors">
+                <div class="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 flex-shrink-0 group-hover:bg-blue-500 group-hover:text-white transition-all">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="flex-grow space-y-2">
+                    <div class="flex justify-between items-baseline">
+                        <h4 class="text-lg font-bold text-white">Sponsorship Request Approved</h4>
+                        <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest">2 Hours Ago</span>
+                    </div>
+                    <p class="text-sm text-gray-400 font-medium"><span class="text-white font-bold">Intel Gaming</span> has approved your professional profile for the upcoming hardware campaign.</p>
+                </div>
+            </div>
+
+            <!-- Notification Item 3 -->
+            <div class="p-8 hover:bg-white/5 flex items-start space-x-6 group cursor-pointer transition-colors">
+                <div class="w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-500 flex-shrink-0 group-hover:bg-green-500 group-hover:text-white transition-all">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="flex-grow space-y-2">
+                    <div class="flex justify-between items-baseline">
+                        <h4 class="text-lg font-bold text-white">Gold Earnings Received</h4>
+                        <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest">1 Day Ago</span>
+                    </div>
+                    <p class="text-sm text-gray-400 font-medium">You received <span class="text-lobby-violet font-bold">1,200 Golds</span> as a reward for reaching the Top 4 in the Radiant Rush Invitational.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex justify-center pt-8">
+            <button class="bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all border border-white/10">Load older notifications</button>
+        </div>
+    </div>
+</div>

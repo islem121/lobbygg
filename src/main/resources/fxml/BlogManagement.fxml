@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.controller.BlogManagementController"
+      spacing="16" styleClass="content-area"
+      stylesheets="@../styles/style.css">
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Gestion Blog" styleClass="header-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Rafraîchir" onAction="#loadAll" styleClass="btn-primary"/>
+    </HBox>
+
+    <TabPane VBox.vgrow="ALWAYS">
+        <tabs>
+            <Tab text="Posts" closable="false">
+                <VBox spacing="12" style="-fx-padding: 16;">
+                    <HBox spacing="10">
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="Ajouter Post" onAction="#handleAddPost" styleClass="btn-primary"/>
+                    </HBox>
+                    <TableView fx:id="postTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="postIdCol" text="ID" prefWidth="60"/>
+                            <TableColumn fx:id="postTitleCol" text="Titre" prefWidth="220"/>
+                            <TableColumn fx:id="postTypeCol" text="Catégorie" prefWidth="120"/>
+                            <TableColumn fx:id="postUserCol" text="Auteur" prefWidth="80"/>
+                            <TableColumn fx:id="postUpVotesCol" text="Up" prefWidth="60"/>
+                            <TableColumn fx:id="postDownVotesCol" text="Down" prefWidth="70"/>
+                            <TableColumn fx:id="postActionsCol" text="Actions" prefWidth="180"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+            <Tab text="Commentaires" closable="false">
+                <VBox spacing="12" style="-fx-padding: 16;">
+                    <HBox spacing="10">
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="Ajouter Commentaire" onAction="#handleAddComment" styleClass="btn-primary"/>
+                    </HBox>
+                    <TableView fx:id="commentTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="commentIdCol" text="ID" prefWidth="60"/>
+                            <TableColumn fx:id="commentPostCol" text="Post" prefWidth="80"/>
+                            <TableColumn fx:id="commentUserCol" text="Auteur" prefWidth="80"/>
+                            <TableColumn fx:id="commentUpVotesCol" text="Up" prefWidth="60"/>
+                            <TableColumn fx:id="commentDownVotesCol" text="Down" prefWidth="70"/>
+                            <TableColumn fx:id="commentContentCol" text="Contenu" prefWidth="300"/>
+                            <TableColumn fx:id="commentActionsCol" text="Actions" prefWidth="180"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+        </tabs>
+    </TabPane>
+</VBox>

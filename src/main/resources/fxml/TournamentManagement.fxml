@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.controller.TournamentManagementController"
+      spacing="20" styleClass="content-area"
+      stylesheets="@../styles/style.css">
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Gestion des Tournois" styleClass="header-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Ajouter Tournoi" onAction="#handleAddTournament" styleClass="btn-primary"/>
+        <Button text="Rafraîchir" onAction="#loadTournaments" styleClass="btn-primary"/>
+    </HBox>
+
+    <TableView fx:id="tournamentTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="idCol" text="ID" prefWidth="60"/>
+            <TableColumn fx:id="titleCol" text="Titre" prefWidth="180"/>
+            <TableColumn fx:id="statusCol" text="Statut" prefWidth="110"/>
+            <TableColumn fx:id="maxPlayersCol" text="Max joueurs" prefWidth="100"/>
+            <TableColumn fx:id="startCol" text="Début" prefWidth="150"/>
+            <TableColumn fx:id="endCol" text="Fin" prefWidth="120"/>
+            <TableColumn fx:id="actionsCol" text="Actions" prefWidth="180"/>
+        </columns>
+    </TableView>
+</VBox>
