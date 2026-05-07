@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="org.example.controller.MarketplaceManagementController"
+      spacing="20" style="-fx-background-color: #f4f6f9; -fx-padding: 25;">
+
+    <Label text="Gestion des Produits" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #343a40;"/>
+
+    <VBox spacing="15" style="-fx-padding: 20; -fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);" VBox.vgrow="ALWAYS">
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <TextField fx:id="searchProduitField" promptText="🔍 Rechercher un produit..." styleClass="search-field" prefWidth="300"/>
+            <ComboBox fx:id="filterCategorieCombo" promptText="Filtrer par catégorie" style="-fx-background-radius: 15;"/>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button text="+ Ajouter Produit" onAction="#handleAddProduit" style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 15; -fx-padding: 8 20;"/>
+            <Button text="Actualiser" onAction="#loadProduits" style="-fx-background-color: #17a2b8; -fx-text-fill: white; -fx-background-radius: 15;"/>
+        </HBox>
+
+        <TableView fx:id="produitTable" VBox.vgrow="ALWAYS" styleClass="table-view">
+            <columns>
+                <TableColumn fx:id="prodImageCol" text="Aperçu" prefWidth="60" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="prodNomCol" text="Nom du Produit" prefWidth="150"/>
+                <TableColumn fx:id="prodDescCol" text="Description" prefWidth="250"/>
+                <TableColumn fx:id="prodPrixCol" text="Prix" prefWidth="100" style="-fx-alignment: CENTER_RIGHT;"/>
+                <TableColumn fx:id="prodQuantiteCol" text="Stock" prefWidth="100" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="prodCategorieCol" text="Catégorie" prefWidth="120" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="prodActionsCol" text="Actions" prefWidth="180" style="-fx-alignment: CENTER;"/>
+            </columns>
+        </TableView>
+    </VBox>
+</VBox>

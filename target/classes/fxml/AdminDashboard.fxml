@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.image.ImageView?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="org.example.controller.AdminDashboardController"
+            stylesheets="@../styles/style.css">
+    
+    <!-- Sidebar -->
+    <left>
+        <VBox styleClass="admin-sidebar">
+            <!-- Sidebar Header -->
+            <HBox styleClass="admin-sidebar-header" alignment="CENTER_LEFT" spacing="10">
+                <Circle radius="15" fill="#4b545c"/>
+                <Label text="AdminLTE 4" styleClass="admin-logo-text"/>
+            </HBox>
+            
+            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                <VBox spacing="2">
+                    <Button text="🏠  Dashboard" onAction="#showStats" styleClass="admin-nav-item, active" fx:id="statsBtn"/>
+                    
+                    <Label text="MARKETPLACE" styleClass="admin-nav-group-label"/>
+                    <Button text="🛒  Marketplace      ▼" onAction="#toggleMarketMenu" styleClass="admin-nav-item"/>
+                    <VBox fx:id="marketSubMenu" visible="false" managed="false">
+                        <Button text="📊  Statistiques" onAction="#showMarketStats" styleClass="admin-nav-sub-item"/>
+                        <Button text="📦  Produits" onAction="#showMarketplaceManagement" styleClass="admin-nav-sub-item" fx:id="marketBtn"/>
+                        <Button text="🏷️  Catégories" onAction="#showCategories" styleClass="admin-nav-sub-item"/>
+                        <Button text="🛒  Commandes" onAction="#showOrders" styleClass="admin-nav-sub-item"/>
+                        <Button text="🔄  Retours" onAction="#showReturns" styleClass="admin-nav-sub-item"/>
+                    </VBox>
+                    
+                    <Label text="UTILISATEURS" styleClass="admin-nav-group-label"/>
+                    <Button text="👥  Users Management" onAction="#showUserManagement" styleClass="admin-nav-item" fx:id="userBtn"/>
+                    <Button text="🤝  Sponsor Management" onAction="#showSponsorManagement" styleClass="admin-nav-item" fx:id="sponsorBtn"/>
+                    
+                    <Label text="CONTENU" styleClass="admin-nav-group-label"/>
+                    <Button text="📝  Blog / Actualités" onAction="#showBlogManagement" styleClass="admin-nav-item" fx:id="blogBtn"/>
+                    <Button text="💬  Commentaires" onAction="#showComments" styleClass="admin-nav-item"/>
+                    
+                    <VBox prefHeight="20"/>
+                    <Button text="🚪  Déconnexion" onAction="#handleLogout" styleClass="admin-nav-item" style="-fx-text-fill: #ff7675;"/>
+                </VBox>
+            </ScrollPane>
+        </VBox>
+    </left>
+    
+    <!-- Main Area -->
+    <center>
+        <VBox style="-fx-background-color: #f4f6f9;">
+            <!-- Top Navbar -->
+            <HBox styleClass="admin-top-nav" alignment="CENTER_LEFT" spacing="20">
+                <Button text="☰" style="-fx-background-color: transparent; -fx-font-size: 16px;"/>
+                <Hyperlink text="Home" style="-fx-text-fill: #6c757d; -fx-underline: false;"/>
+                <Hyperlink text="Contact" style="-fx-text-fill: #6c757d; -fx-underline: false;"/>
+                
+                <Region HBox.hgrow="ALWAYS"/>
+                
+                <HBox alignment="CENTER" spacing="10">
+                    <Label fx:id="adminNameLabel" text="rezgui hela" style="-fx-text-fill: #343a40; -fx-font-size: 13px;"/>
+                    <Circle radius="16" fill="#dee2e6"/>
+                </HBox>
+            </HBox>
+            
+            <!-- Main Content Area -->
+            <StackPane fx:id="contentStack" VBox.vgrow="ALWAYS">
+                <ScrollPane fx:id="statsView" fitToWidth="true" style="-fx-background-color: transparent;">
+                    <VBox spacing="25" style="-fx-padding: 25;">
+                        <Label text="Tableau de Bord Général" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #343a40;"/>
+                        
+                        <!-- Info Cards Row -->
+                        <HBox spacing="20">
+                            <!-- Revenue Card -->
+                            <HBox styleClass="info-card, card-revenue" spacing="15" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                                <VBox styleClass="info-card-icon-box, icon-revenue">
+                                    <Label text="€" style="-fx-text-fill: white; -fx-font-size: 24px;"/>
+                                </VBox>
+                                <VBox spacing="2">
+                                    <Label text="REVENU TOTAL" styleClass="info-card-title"/>
+                                    <Label text="5,000.00 DT" styleClass="info-card-value"/>
+                                </VBox>
+                            </HBox>
+                            
+                            <!-- Orders Card -->
+                            <HBox styleClass="info-card, card-orders" spacing="15" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                                <VBox styleClass="info-card-icon-box, icon-orders">
+                                    <Label text="🛒" style="-fx-text-fill: white; -fx-font-size: 24px;"/>
+                                </VBox>
+                                <VBox spacing="2">
+                                    <Label text="COMMANDES" styleClass="info-card-title"/>
+                                    <Label fx:id="reservationsCountLabel" text="2" styleClass="info-card-value"/>
+                                </VBox>
+                            </HBox>
+                            
+                            <!-- Users Card -->
+                            <HBox styleClass="info-card, card-users" spacing="15" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                                <VBox styleClass="info-card-icon-box, icon-users">
+                                    <Label text="👥" style="-fx-text-fill: white; -fx-font-size: 24px;"/>
+                                </VBox>
+                                <VBox spacing="2">
+                                    <Label text="UTILISATEURS" styleClass="info-card-title"/>
+                                    <Label fx:id="usersCountLabel" text="5" styleClass="info-card-value"/>
+                                </VBox>
+                            </HBox>
+                            
+                            <!-- Sponsors Card -->
+                            <HBox styleClass="info-card, card-sponsors" spacing="15" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                                <VBox styleClass="info-card-icon-box, icon-sponsors">
+                                    <Label text="💼" style="-fx-text-fill: white; -fx-font-size: 24px;"/>
+                                </VBox>
+                                <VBox spacing="2">
+                                    <Label text="ARTICLES" styleClass="info-card-title"/>
+                                    <Label fx:id="articlesCountLabel" text="1" styleClass="info-card-value"/>
+                                </VBox>
+                            </HBox>
+                        </HBox>
+                        
+                        <!-- Middle Row: Recent Orders & New Members -->
+                        <HBox spacing="25" VBox.vgrow="ALWAYS">
+                            <!-- Recent Orders Table -->
+                            <VBox styleClass="admin-table-container" HBox.hgrow="ALWAYS" spacing="15">
+                                <HBox alignment="CENTER_LEFT">
+                                    <Label text="🕒 Commandes Récentes" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #343a40;"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Button text="Voir tout" style="-fx-background-color: transparent; -fx-text-fill: #007bff; -fx-border-color: #007bff; -fx-border-radius: 15; -fx-padding: 3 15;"/>
+                                </HBox>
+                                
+                                <TableView fx:id="recentOrdersTable" prefHeight="300" styleClass="table-view">
+                                    <columns>
+                                        <TableColumn text="ID" prefWidth="50"/>
+                                        <TableColumn text="CLIENT" prefWidth="150"/>
+                                        <TableColumn text="PRODUIT" prefWidth="150"/>
+                                        <TableColumn text="TOTAL" prefWidth="100"/>
+                                        <TableColumn text="STATUT" prefWidth="80"/>
+                                        <TableColumn text="DATE" prefWidth="100"/>
+                                    </columns>
+                                </TableView>
+                            </VBox>
+                            
+                            <!-- New Members Sidebar -->
+                            <VBox styleClass="members-list-container" prefWidth="300" spacing="15">
+                                <Label text="👥 Nouveaux Membres" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #343a40;"/>
+                                
+                                <VBox fx:id="newMembersList" spacing="10">
+                                    <!-- Member items will be added here dynamically -->
+                                </VBox>
+                                
+                                <Region VBox.vgrow="ALWAYS"/>
+                                <Button text="Gérer les utilisateurs" maxWidth="Infinity" style="-fx-background-color: #f8f9fa; -fx-text-fill: #343a40; -fx-background-radius: 15; -fx-padding: 8;"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </ScrollPane>
+            </StackPane>
+        </VBox>
+    </center>
+    
+</BorderPane>

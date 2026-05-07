@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="org.example.controller.ClientSponsorshipController"
+      spacing="20" styleClass="content-area"
+      stylesheets="@../styles/style.css">
+    
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Offres de Sponsoring Disponibles" styleClass="header-title" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+    <TabPane VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+            <Tab text="Toutes les Offres">
+                <VBox spacing="10">
+                    <TableView fx:id="offerTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="offerIdCol" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="offerTitleCol" text="Titre" prefWidth="150"/>
+                            <TableColumn fx:id="offerSponsorCol" text="Sponsor" prefWidth="150"/>
+                            <TableColumn fx:id="offerBudgetCol" text="Budget (€)" prefWidth="100"/>
+                            <TableColumn fx:id="offerDateCol" text="Date" prefWidth="150"/>
+                            <TableColumn fx:id="offerActionsCol" text="Actions" prefWidth="150"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+            <Tab text="Mes Candidatures">
+                <VBox spacing="10">
+                    <TableView fx:id="candidatureTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="candIdCol" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="candOfferCol" text="Offre" prefWidth="150"/>
+                            <TableColumn fx:id="candStatusCol" text="Statut" prefWidth="100"/>
+                            <TableColumn fx:id="candDateCol" text="Date de candidature" prefWidth="150"/>
+                            <TableColumn fx:id="candActionsCol" text="Actions" prefWidth="150"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+        </tabs>
+    </TabPane>
+</VBox>

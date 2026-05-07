@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="org.example.controller.GoldManagementController"
+      spacing="20" styleClass="content-area"
+      stylesheets="@../styles/style.css">
+    
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Gestion des Crédits Gold" styleClass="header-title"/>
+        <Region HBox.hgrow="ALWAYS" />
+        <TextField fx:id="searchField" promptText="Rechercher par ID Utilisateur..." styleClass="input-field"/>
+        <Button text="Ajouter Gold" onAction="#handleAddGold" styleClass="btn-primary" style="-fx-background-color: #f39c12;"/>
+        <Button text="Rafraîchir" onAction="#loadGolds" styleClass="btn-primary"/>
+    </HBox>
+
+    <TableView fx:id="goldTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="idCol" text="ID Gold" prefWidth="80"/>
+            <TableColumn fx:id="userIdCol" text="ID Utilisateur" prefWidth="120"/>
+            <TableColumn fx:id="soldeCol" text="Solde Gold" prefWidth="150"/>
+            <TableColumn fx:id="dateCol" text="Dernière MAJ" prefWidth="180"/>
+            <TableColumn fx:id="actionsCol" text="Actions" prefWidth="150"/>
+        </columns>
+    </TableView>
+</VBox>

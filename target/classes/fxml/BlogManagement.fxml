@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="org.example.controller.BlogManagementController"
+      spacing="20" styleClass="content-area"
+      stylesheets="@../styles/style.css">
+    
+    <TabPane VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+            <!-- Onglet Posts -->
+            <Tab text="Gestion des Posts">
+                <VBox spacing="15" style="-fx-padding: 15;">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="Tous les Posts" styleClass="header-title" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button text="Actualiser" onAction="#loadPosts" />
+                    </HBox>
+
+                    <TableView fx:id="postTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="postIdCol" text="ID" prefWidth="40"/>
+                            <TableColumn fx:id="postAuteurCol" text="Auteur" prefWidth="120"/>
+                            <TableColumn fx:id="postTitreCol" text="Titre" prefWidth="150"/>
+                            <TableColumn fx:id="postContenuCol" text="Contenu" prefWidth="300"/>
+                            <TableColumn fx:id="postDateCol" text="Date" prefWidth="150"/>
+                            <TableColumn fx:id="postActionsCol" text="Actions" prefWidth="120"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+
+            <!-- Onglet Commentaires -->
+            <Tab text="Gestion des Commentaires">
+                <VBox spacing="15" style="-fx-padding: 15;">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="Tous les Commentaires" styleClass="header-title" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button text="Actualiser" onAction="#loadComments" />
+                    </HBox>
+
+                    <TableView fx:id="commentTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="commIdCol" text="ID" prefWidth="60"/>
+                            <TableColumn fx:id="commAuteurCol" text="Auteur" prefWidth="150"/>
+                            <TableColumn fx:id="commContenuCol" text="Contenu" prefWidth="400"/>
+                            <TableColumn fx:id="commActionsCol" text="Actions" prefWidth="120"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+        </tabs>
+    </TabPane>
+</VBox>

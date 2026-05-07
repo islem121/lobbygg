@@ -1,0 +1,689 @@
+/* AdminLTE 4 Inspired Styles */
+.admin-sidebar {
+    -fx-background-color: #ffffff; /* Sidebar changed to White */
+    -fx-pref-width: 250;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 0 1 0 0;
+}
+
+.admin-sidebar-header {
+    -fx-padding: 15;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 0 0 1 0;
+}
+
+.admin-logo-text {
+    -fx-text-fill: #343a40; /* Logo text dark */
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.admin-nav-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: #000000; /* Text changed to Black */
+    -fx-alignment: center-left;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold; /* Bold for better visibility */
+    -fx-pref-width: 250;
+}
+
+.admin-nav-item:hover {
+    -fx-background-color: rgba(0,0,0,0.1); /* Darker hover effect */
+    -fx-text-fill: #000000;
+}
+
+.admin-nav-item.active {
+    -fx-background-color: #007bff;
+    -fx-text-fill: #ffffff;
+}
+
+.admin-nav-sub-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: #333333; /* Dark grey for sub-items */
+    -fx-alignment: center-left;
+    -fx-padding: 8 20 8 45;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 250;
+}
+
+.admin-nav-sub-item:hover {
+    -fx-background-color: rgba(0,0,0,0.05);
+    -fx-text-fill: #000000;
+}
+
+.admin-nav-group-label {
+    -fx-text-fill: #000000; /* Group labels also in black */
+    -fx-font-size: 11px;
+    -fx-font-weight: 900; /* Extra bold */
+    -fx-padding: 15 20 5 20;
+}
+
+/* Admin Top Navbar */
+.admin-top-nav {
+    -fx-background-color: #ffffff;
+    -fx-padding: 10 20;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* Admin Dashboard Cards */
+.info-card {
+    -fx-background-radius: 10;
+    -fx-padding: 20;
+    -fx-min-width: 230;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
+}
+
+.info-card-icon-box {
+    -fx-background-radius: 8;
+    -fx-min-width: 50;
+    -fx-min-height: 50;
+    -fx-alignment: center;
+}
+
+.info-card-title {
+    -fx-text-fill: #6c757d;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.info-card-value {
+    -fx-text-fill: #343a40;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.card-revenue { -fx-background-color: #ffffff; -fx-border-color: #28a745; -fx-border-width: 0 0 0 5; }
+.icon-revenue { -fx-background-color: #28a745; }
+
+.card-orders { -fx-background-color: #ffffff; -fx-border-color: #007bff; -fx-border-width: 0 0 0 5; }
+.icon-orders { -fx-background-color: #007bff; }
+
+.card-users { -fx-background-color: #ffffff; -fx-border-color: #ffc107; -fx-border-width: 0 0 0 5; }
+.icon-users { -fx-background-color: #ffc107; }
+
+.card-sponsors { -fx-background-color: #ffffff; -fx-border-color: #dc3545; -fx-border-width: 0 0 0 5; }
+.icon-sponsors { -fx-background-color: #dc3545; }
+
+/* Recent Orders Table */
+.admin-table-container {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);
+}
+
+.status-badge-paid {
+    -fx-background-color: #e9ecef;
+    -fx-text-fill: #495057;
+    -fx-padding: 2 8;
+    -fx-background-radius: 10;
+    -fx-font-size: 11px;
+}
+
+/* New Members List */
+.members-list-container {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);
+}
+
+.member-row {
+    -fx-padding: 10 0;
+    -fx-border-color: #f8f9fa;
+    -fx-border-width: 0 0 1 0;
+}
+
+.member-avatar {
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 20;
+    -fx-min-width: 40;
+    -fx-min-height: 40;
+    -fx-alignment: center;
+    -fx-text-fill: #343a40;
+    -fx-font-weight: bold;
+}
+
+.member-role-badge {
+    -fx-background-color: #f8f9fa;
+    -fx-text-fill: #6c757d;
+    -fx-padding: 2 8;
+    -fx-background-radius: 5;
+    -fx-font-size: 10px;
+    -fx-border-color: #dee2e6;
+}
+
+/* Lobby.GG Gaming Theme */
+.navbar {
+    -fx-background-color: #0f021b;
+    -fx-padding: 10 30;
+    -fx-border-color: #2d0b4d;
+    -fx-border-width: 0 0 1 0;
+}
+
+.logo-text {
+    -fx-fill: #ffffff;
+    -fx-font-size: 28px;
+    -fx-font-weight: 900;
+}
+
+.logo-gg {
+    -fx-fill: #7d4cf7;
+}
+
+.nav-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: #a29bfe;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 5 12;
+}
+
+.nav-item:hover {
+    -fx-text-fill: #ffffff;
+}
+
+.nav-item.active {
+    -fx-text-fill: #00d2ff;
+    -fx-border-color: #00d2ff;
+    -fx-border-width: 0 0 2 0;
+}
+
+.user-nav-box {
+    -fx-background-color: #1a082e;
+    -fx-background-radius: 20;
+    -fx-padding: 5 15;
+}
+
+/* Hero Section */
+.hero-container {
+    -fx-background-image: url("https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop");
+    -fx-background-size: cover;
+    -fx-background-position: center;
+}
+
+.hero-overlay {
+    -fx-background-color: rgba(13, 1, 24, 0.85);
+}
+
+.hero-subtitle {
+    -fx-text-fill: #00d2ff;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 5;
+}
+
+.hero-main-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 80px;
+    -fx-font-weight: 900;
+}
+
+.hero-description-text {
+    -fx-text-fill: #b2bec3;
+    -fx-font-size: 16px;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+}
+
+.btn-explore {
+    -fx-background-color: #6c5ce7;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 15 35;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.btn-browse {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-border-color: #2d3436;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 15 35;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+/* Footer Status Bar */
+.status-bar {
+    -fx-background-color: #0a0114;
+    -fx-padding: 5 15;
+    -fx-border-color: #1a082e;
+    -fx-border-width: 1 0 0 0;
+}
+
+.status-label {
+    -fx-text-fill: #636e72;
+    -fx-font-size: 10px;
+}
+
+/* Previous styles updated for dark theme compatibility */
+.content-panel {
+    -fx-background-color: #0d0118;
+}
+
+.card {
+    -fx-background-color: #1a082e;
+    -fx-border-color: #2d0b4d;
+    -fx-border-radius: 10;
+}
+
+.card-title { -fx-text-fill: #a29bfe; }
+.card-value { -fx-text-fill: #ffffff; }
+
+.table-view {
+    -fx-background-color: #1a082e;
+    -fx-control-inner-background: #1a082e;
+}
+.table-row-cell { -fx-background-color: #1a082e; -fx-text-fill: white; }
+.table-row-cell:hover { -fx-background-color: #2d0b4d; }
+.table-cell { -fx-text-fill: #dfe6e9; }
+.table-view .column-header-background { -fx-background-color: #0f021b; }
+.table-view .column-header .label { -fx-text-fill: #a29bfe; }
+
+/* Marketplace Grid Styling */
+.market-header {
+    -fx-padding: 40 0;
+    -fx-alignment: center;
+}
+
+.market-search-container {
+    -fx-background-color: #1a082e;
+    -fx-background-radius: 25;
+    -fx-padding: 10 20;
+    -fx-border-color: #2d0b4d;
+    -fx-border-radius: 25;
+    -fx-max-width: 500;
+}
+
+.market-search-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #636e72;
+    -fx-font-size: 14px;
+}
+
+.market-action-btn {
+    -fx-background-color: #1a082e;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 8 20;
+    -fx-background-radius: 10;
+    -fx-border-color: #2d0b4d;
+    -fx-border-radius: 10;
+    -fx-cursor: hand;
+}
+
+.market-action-btn:hover {
+    -fx-background-color: #2d0b4d;
+}
+
+.btn-sell {
+    -fx-border-color: #00d2ff;
+    -fx-text-fill: #00d2ff;
+}
+
+/* Product Cards */
+.product-card {
+    -fx-background-color: #1a082e;
+    -fx-background-radius: 15;
+    -fx-padding: 0;
+    -fx-border-color: #2d0b4d;
+    -fx-border-radius: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 5);
+}
+
+.product-card:hover {
+    -fx-border-color: #6c5ce7;
+    -fx-translate-y: -5;
+}
+
+.product-image-container {
+    -fx-background-color: #0f021b;
+    -fx-background-radius: 15 15 0 0;
+    -fx-min-height: 180;
+}
+
+.product-image-view {
+    -fx-background-radius: 15 15 0 0;
+}
+
+.product-info-container {
+    -fx-padding: 15;
+}
+
+.product-title {
+    -fx-text-fill: #dfe6e9;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.product-stock {
+    -fx-text-fill: #636e72;
+    -fx-font-size: 11px;
+}
+
+.product-price {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 18px;
+    -fx-font-weight: 900;
+}
+
+.product-currency {
+    -fx-text-fill: #636e72;
+    -fx-font-size: 10px;
+}
+
+.card-action-btn {
+    -fx-background-color: #6c5ce7;
+    -fx-text-fill: white;
+    -fx-background-radius: 10;
+    -fx-padding: 8;
+    -fx-cursor: hand;
+}
+
+.card-chat-btn {
+    -fx-background-color: #2d0b4d;
+    -fx-text-fill: white;
+    -fx-background-radius: 10;
+    -fx-padding: 8;
+    -fx-cursor: hand;
+}
+
+.category-tag {
+    -fx-background-color: #6c5ce7;
+    -fx-text-fill: white;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 3 10;
+    -fx-background-radius: 8;
+}
+
+/* Floating Action Buttons */
+.fab-container {
+    -fx-padding: 20;
+}
+
+.fab-btn {
+    -fx-background-color: #d63031;
+    -fx-text-fill: white;
+    -fx-background-radius: 30;
+    -fx-min-width: 50;
+    -fx-min-height: 50;
+    -fx-font-size: 20px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);
+    -fx-cursor: hand;
+}
+
+.fab-chat {
+    -fx-background-color: #6c5ce7;
+}
+
+.community-panel {
+    -fx-background-color: transparent;
+    -fx-spacing: 22;
+}
+
+.community-header {
+    -fx-padding: 30 0 0 0;
+}
+
+.community-title {
+    -fx-text-fill: white;
+    -fx-font-size: 32px;
+    -fx-font-weight: 800;
+}
+
+.community-description {
+    -fx-text-fill: #dfe6e9;
+    -fx-font-size: 14px;
+    -fx-max-width: 770;
+}
+
+.community-card {
+    -fx-background-color: #1a082e;
+    -fx-background-radius: 20;
+    -fx-padding: 24;
+    -fx-border-color: #2d0b4d;
+    -fx-border-radius: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.25), 16, 0, 0, 8);
+}
+
+.community-input-field {
+    -fx-background-color: #12061f;
+    -fx-border-color: #2d0b4d;
+    -fx-border-width: 1;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16;
+    -fx-padding: 14 16 14 16;
+    -fx-font-size: 14px;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #7f7f9a;
+}
+
+.community-input-field:focused {
+    -fx-border-color: #6c5ce7;
+    -fx-background-color: #1a082e;
+    -fx-effect: dropshadow(gaussian, rgba(108, 92, 231, 0.16), 10, 0.08, 0, 0);
+}
+
+.community-text-area {
+    -fx-control-inner-background: #12061f;
+    -fx-text-fill: white;
+    -fx-highlight-fill: #6c5ce7;
+    -fx-highlight-text-fill: white;
+}
+
+.community-meta {
+    -fx-text-fill: #9aa2b6;
+    -fx-font-size: 12px;
+}
+
+.community-comment-box {
+    -fx-background-color: #0f021b;
+    -fx-background-radius: 14;
+    -fx-padding: 14;
+}
+
+.btn-twitter {
+    -fx-background-color: #1DA1F2;
+}
+
+.btn-twitter:hover {
+    -fx-background-color: #1a8cd8;
+}
+
+/* Global Dialog & Dark Theme Overrides */
+.dialog-pane {
+    -fx-background-color: #1a082e;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #2d0b4d;
+}
+
+.dialog-pane .label {
+    -fx-text-fill: #dfe6e9;
+}
+
+.dialog-pane .button {
+    -fx-background-color: #6c5ce7;
+    -fx-text-fill: white;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+}
+
+.dialog-pane .button:hover {
+    -fx-background-color: #a29bfe;
+}
+
+.text-field, .text-area, .combo-box {
+    -fx-background-color: #0f021b;
+    -fx-text-fill: white;
+    -fx-border-color: #2d0b4d;
+    -fx-border-radius: 5;
+    -fx-prompt-text-fill: #636e72;
+}
+
+/* Boutique (My Shop) Dark Theme */
+.boutique-root {
+    -fx-background-color: #0d0118;
+    -fx-padding: 30;
+}
+
+.boutique-title {
+    -fx-text-fill: #6c5ce7;
+    -fx-font-size: 32px;
+    -fx-font-weight: 900;
+}
+
+.boutique-header {
+    -fx-padding: 0 0 20 0;
+}
+
+.btn-add-product {
+    -fx-background-color: #f39c12;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 20;
+    -fx-padding: 10 25;
+}
+
+.btn-refresh {
+    -fx-background-color: #dfe6e9;
+    -fx-text-fill: #2d3436;
+    -fx-background-radius: 20;
+}
+
+/* Cart Item Styling */
+.cart-item-row {
+    -fx-background-color: #2d0b4d;
+    -fx-padding: 10;
+    -fx-background-radius: 8;
+}
+
+.cart-total-label {
+    -fx-text-fill: #00d2ff;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}   -fx-cursor: hand;
+}
+
+.btn-primary:hover {
+    -fx-background-color: #e67e22;
+}
+
+.logout-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e74c3c;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.logout-btn:hover {
+    -fx-text-fill: #c0392b;
+}
+
+/* TableView Styling */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-base: #ffffff;
+    -fx-control-inner-background: #ffffff;
+    -fx-table-cell-border-color: #f1f2f6;
+    -fx-table-header-border-color: transparent;
+    -fx-padding: 5;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 8 8 0 0;
+    -fx-padding: 0 0 5 0;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-size: 40;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #2d3436;
+    -fx-font-weight: bold;
+    -fx-alignment: center-left;
+}
+
+.table-row-cell {
+    -fx-cell-size: 50;
+    -fx-background-color: #ffffff;
+    -fx-border-color: transparent transparent #f1f2f6 transparent;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #f1f2f6;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #e3f2fd;
+    -fx-text-fill: #1976d2;
+}
+
+.table-cell {
+    -fx-padding: 0 10 0 10;
+    -fx-alignment: center-left;
+    -fx-text-fill: #2d3436;
+}
+
+/* Custom UI Components */
+.search-field {
+    -fx-background-radius: 20;
+    -fx-padding: 8 15;
+    -fx-border-color: #dfe6e9;
+    -fx-border-radius: 20;
+    -fx-background-color: white;
+}
+
+.badge-category {
+    -fx-background-color: #e3f2fd;
+    -fx-text-fill: #1976d2;
+    -fx-padding: 2 8;
+    -fx-background-radius: 10;
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+}
+
+.badge-stock-low {
+    -fx-background-color: #fff3e0;
+    -fx-text-fill: #e65100;
+    -fx-padding: 2 8;
+    -fx-background-radius: 10;
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+}
+
+.badge-stock-out {
+    -fx-background-color: #ffebee;
+    -fx-text-fill: #c62828;
+    -fx-padding: 2 8;
+    -fx-background-radius: 10;
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+}
+
+.badge-stock-ok {
+    -fx-background-color: #e8f5e9;
+    -fx-text-fill: #2e7d32;
+    -fx-padding: 2 8;
+    -fx-background-radius: 10;
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+}
